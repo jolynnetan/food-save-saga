@@ -1,16 +1,20 @@
 import { NavLink, useLocation } from "react-router-dom";
-import { Home, Target, Camera, BarChart3, Trophy } from "lucide-react";
+import { Home, Target, Camera, BarChart3, MoreHorizontal } from "lucide-react";
 
 const navItems = [
   { to: "/", icon: Home, label: "Home" },
   { to: "/challenges", icon: Target, label: "Challenges" },
   { to: "/scanner", icon: Camera, label: "Scan" },
   { to: "/tracker", icon: BarChart3, label: "Tracker" },
-  { to: "/leaderboard", icon: Trophy, label: "Ranks" },
+  { to: "/more", icon: MoreHorizontal, label: "More" },
 ];
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const location = useLocation();
+
+  // Highlight "More" tab when on sub-pages
+  const moreRoutes = ["/more", "/pantry", "/share", "/shopping", "/portions", "/leaderboard"];
+  const isMoreActive = moreRoutes.includes(location.pathname);
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -41,7 +45,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       <nav className="fixed bottom-0 left-0 right-0 z-50 bg-card/95 backdrop-blur-md border-t">
         <div className="flex items-center justify-around px-2 py-2 max-w-lg mx-auto">
           {navItems.map(({ to, icon: Icon, label }) => {
-            const isActive = location.pathname === to;
+            const isActive = to === "/more" ? isMoreActive : location.pathname === to;
             return (
               <NavLink
                 key={to}
