@@ -67,6 +67,7 @@ function ProtectedRoutes() {
         <Route path="/weekly-report" element={<WeeklyReport />} />
         <Route path="/foodbank" element={<Foodbank />} />
         <Route path="/rewards" element={<Rewards />} />
+        <Route path="/reminders" element={<Reminders />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </AppLayout>
