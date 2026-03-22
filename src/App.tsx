@@ -1,10 +1,12 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { SettingsProvider } from "@/contexts/SettingsContext";
+import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import AppLayout from "@/components/AppLayout";
+import Auth from "@/pages/Auth";
 import Dashboard from "@/pages/Dashboard";
 import Challenges from "@/pages/Challenges";
 import Scanner from "@/pages/Scanner";
@@ -17,37 +19,65 @@ import ShoppingList from "@/pages/ShoppingList";
 import PortionCalc from "@/pages/PortionCalc";
 import Settings from "@/pages/Settings";
 import Friends from "@/pages/Friends";
+import RecipeGuide from "@/pages/RecipeGuide";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
 
+function ProtectedRoutes() {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center space-y-3">
+          <span className="text-4xl">🍃</span>
+          <p className="text-muted-foreground text-sm">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) return <Navigate to="/auth" replace />;
+
+  return (
+    <AppLayout>
+      <Routes>
+        <Route path="/" element={<Dashboard />} />
+        <Route path="/challenges" element={<Challenges />} />
+        <Route path="/scanner" element={<Scanner />} />
+        <Route path="/tracker" element={<Tracker />} />
+        <Route path="/leaderboard" element={<Leaderboard />} />
+        <Route path="/more" element={<More />} />
+        <Route path="/pantry" element={<Pantry />} />
+        <Route path="/share" element={<Share />} />
+        <Route path="/shopping" element={<ShoppingList />} />
+        <Route path="/portions" element={<PortionCalc />} />
+        <Route path="/settings" element={<Settings />} />
+        <Route path="/friends" element={<Friends />} />
+        <Route path="/recipes" element={<RecipeGuide />} />
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </AppLayout>
+  );
+}
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <SettingsProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <AppLayout>
+    <AuthProvider>
+      <SettingsProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
             <Routes>
-              <Route path="/" element={<Dashboard />} />
-              <Route path="/challenges" element={<Challenges />} />
-              <Route path="/scanner" element={<Scanner />} />
-              <Route path="/tracker" element={<Tracker />} />
-              <Route path="/leaderboard" element={<Leaderboard />} />
-              <Route path="/more" element={<More />} />
-              <Route path="/pantry" element={<Pantry />} />
-              <Route path="/share" element={<Share />} />
-              <Route path="/shopping" element={<ShoppingList />} />
-              <Route path="/portions" element={<PortionCalc />} />
-              <Route path="/settings" element={<Settings />} />
-              <Route path="/friends" element={<Friends />} />
-              <Route path="*" element={<NotFound />} />
+              <Route path="/auth" element={<Auth />} />
+              <Route path="/*" element={<ProtectedRoutes />} />
             </Routes>
-          </AppLayout>
-        </BrowserRouter>
-      </TooltipProvider>
-    </SettingsProvider>
+          </BrowserRouter>
+        </TooltipProvider>
+      </SettingsProvider>
+    </AuthProvider>
   </QueryClientProvider>
 );
 

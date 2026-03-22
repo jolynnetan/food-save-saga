@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Package, MapPin, ShoppingCart, Calculator, Settings, Trophy, ChevronRight } from "lucide-react";
+import { Package, MapPin, ShoppingCart, Calculator, Settings, Trophy, ChefHat, ChevronRight } from "lucide-react";
 
 const features = [
   {
@@ -46,6 +46,15 @@ const features = [
     description: "See how you rank among other food savers",
     color: "text-streak",
     bg: "bg-streak/10",
+  },
+  {
+    to: "/recipes",
+    icon: ChefHat,
+    emoji: "👨‍🍳",
+    title: "Recipe Guide",
+    description: "Step-by-step recipes with calorie breakdown",
+    color: "text-accent",
+    bg: "bg-accent/10",
   },
   {
     to: "/settings",

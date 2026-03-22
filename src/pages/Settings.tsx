@@ -1,12 +1,20 @@
-import { Globe, Type, Moon, Sun, Users, ChevronRight } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Globe, Type, Moon, Sun, Users, ChevronRight, LogOut } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
 import { useSettings, useT, languages } from "@/contexts/SettingsContext";
+import { useAuth } from "@/contexts/AuthContext";
 
 type FontSize = "small" | "medium" | "large";
 
 export default function Settings() {
   const { language, setLanguage, fontSize, setFontSize, theme, setTheme } = useSettings();
+  const { signOut, user } = useAuth();
+  const navigate = useNavigate();
   const t = useT();
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate("/auth");
+  };
 
   const fontSizes: { key: FontSize; label: string }[] = [
     { key: "small", label: t("small") },
@@ -123,6 +131,21 @@ export default function Settings() {
               />
             </button>
           </div>
+        </div>
+      </section>
+
+      {/* Sign out */}
+      <section className="animate-fade-up" style={{ animationDelay: "240ms" }}>
+        <div className="bg-card border rounded-2xl p-4">
+          <div className="flex items-center gap-3 mb-3">
+            <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
+          </div>
+          <button
+            onClick={handleSignOut}
+            className="w-full flex items-center justify-center gap-2 bg-destructive/10 text-destructive rounded-xl py-2.5 text-sm font-semibold transition-all active:scale-[0.97]"
+          >
+            <LogOut size={16} /> Sign Out
+          </button>
         </div>
       </section>
     </div>
