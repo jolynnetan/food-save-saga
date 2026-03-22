@@ -14,6 +14,86 @@ export type Database = {
   }
   public: {
     Tables: {
+      donation_points: {
+        Row: {
+          address: string
+          contact_info: string | null
+          created_at: string
+          current_stock_level: string | null
+          description: string | null
+          emoji: string | null
+          id: string
+          lat: number
+          lng: number
+          name: string
+          ngo_name: string
+          operating_hours: string | null
+          updated_at: string
+        }
+        Insert: {
+          address: string
+          contact_info?: string | null
+          created_at?: string
+          current_stock_level?: string | null
+          description?: string | null
+          emoji?: string | null
+          id?: string
+          lat: number
+          lng: number
+          name: string
+          ngo_name: string
+          operating_hours?: string | null
+          updated_at?: string
+        }
+        Update: {
+          address?: string
+          contact_info?: string | null
+          created_at?: string
+          current_stock_level?: string | null
+          description?: string | null
+          emoji?: string | null
+          id?: string
+          lat?: number
+          lng?: number
+          name?: string
+          ngo_name?: string
+          operating_hours?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      food_collections: {
+        Row: {
+          collected_at: string
+          donation_point_id: string
+          id: string
+          items_collected: string | null
+          user_id: string
+        }
+        Insert: {
+          collected_at?: string
+          donation_point_id: string
+          id?: string
+          items_collected?: string | null
+          user_id: string
+        }
+        Update: {
+          collected_at?: string
+          donation_point_id?: string
+          id?: string
+          items_collected?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "food_collections_donation_point_id_fkey"
+            columns: ["donation_point_id"]
+            isOneToOne: false
+            referencedRelation: "donation_points"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -46,6 +126,50 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      restock_logs: {
+        Row: {
+          created_at: string
+          donation_point_id: string
+          id: string
+          items_donated: string | null
+          lat: number | null
+          lng: number | null
+          notes: string | null
+          photo_url: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          donation_point_id: string
+          id?: string
+          items_donated?: string | null
+          lat?: number | null
+          lng?: number | null
+          notes?: string | null
+          photo_url?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          donation_point_id?: string
+          id?: string
+          items_donated?: string | null
+          lat?: number | null
+          lng?: number | null
+          notes?: string | null
+          photo_url?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "restock_logs_donation_point_id_fkey"
+            columns: ["donation_point_id"]
+            isOneToOne: false
+            referencedRelation: "donation_points"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
