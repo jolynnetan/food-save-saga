@@ -48,6 +48,15 @@ const features = [
     bg: "bg-streak/10",
   },
   {
+    to: "/recipes",
+    icon: ChefHat,
+    emoji: "👨‍🍳",
+    title: "Recipe Guide",
+    description: "Step-by-step recipes with calorie breakdown",
+    color: "text-accent",
+    bg: "bg-accent/10",
+  },
+  {
     to: "/settings",
     icon: Settings,
     emoji: "⚙️",
