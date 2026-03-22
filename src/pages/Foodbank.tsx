@@ -21,6 +21,14 @@ type DonationPoint = {
   emoji: string | null;
 };
 
+const availableItems: Record<string, string[]> = {
+  "KL Food Aid Center": ["Rice 5kg", "Canned sardines", "Cooking oil 1L", "Instant noodles x5"],
+  "Bangsar Community Pantry": ["Fresh vegetables", "Bread loaves", "Eggs (tray)", "UHT Milk 1L"],
+  "Cheras Hope Kitchen": ["Rice 10kg", "Canned tuna", "Sugar 1kg", "Flour 1kg", "Biscuits"],
+  "Petaling Jaya Food Bank": ["Dried pasta", "Cereal boxes", "Canned beans", "Cooking oil 2L", "Salt"],
+  "Sentul Relief Point": ["Baby formula", "Diapers", "Rice 5kg", "Canned food assorted"],
+};
+
 type Tab = "collect" | "restock" | "activity";
 
 const stockColors: Record<string, string> = {
