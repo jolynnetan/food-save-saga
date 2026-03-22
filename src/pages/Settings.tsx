@@ -1,6 +1,7 @@
-import { Globe, Type, Moon, Sun, Users, ChevronRight } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Globe, Type, Moon, Sun, Users, ChevronRight, LogOut } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
 import { useSettings, useT, languages } from "@/contexts/SettingsContext";
+import { useAuth } from "@/contexts/AuthContext";
 
 type FontSize = "small" | "medium" | "large";
 
