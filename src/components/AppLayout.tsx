@@ -1,5 +1,5 @@
-import { NavLink, useLocation } from "react-router-dom";
-import { Home, Target, Camera, BarChart3, MoreHorizontal } from "lucide-react";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
+import { Home, Target, Camera, BarChart3, MoreHorizontal, ArrowLeft, Settings } from "lucide-react";
 
 const navItems = [
   { to: "/", icon: Home, label: "Home" },
@@ -9,11 +9,16 @@ const navItems = [
   { to: "/more", icon: MoreHorizontal, label: "More" },
 ];
 
+const mainRoutes = ["/", "/challenges", "/scanner", "/tracker", "/more"];
+
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const location = useLocation();
+  const navigate = useNavigate();
+
+  const isSubPage = !mainRoutes.includes(location.pathname);
 
   // Highlight "More" tab when on sub-pages
-  const moreRoutes = ["/more", "/pantry", "/share", "/shopping", "/portions", "/leaderboard", "/settings", "/friends", "/calories", "/history", "/recipes"];
+  const moreRoutes = ["/more", "/pantry", "/share", "/shopping", "/portions", "/leaderboard", "/settings", "/friends", "/calories", "/history", "/recipes", "/weekly-report"];
   const isMoreActive = moreRoutes.includes(location.pathname);
 
   return (
@@ -21,7 +26,16 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       {/* Header */}
       <header className="sticky top-0 z-50 bg-card/80 backdrop-blur-md border-b px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <span className="text-2xl">🍃</span>
+          {isSubPage ? (
+            <button
+              onClick={() => navigate(-1)}
+              className="p-1 -ml-1 rounded-lg hover:bg-secondary transition-colors"
+            >
+              <ArrowLeft size={20} className="text-foreground" />
+            </button>
+          ) : (
+            <span className="text-2xl">🍃</span>
+          )}
           <h1 className="text-lg font-bold text-foreground tracking-tight">SavePlate</h1>
         </div>
         <div className="flex items-center gap-2">
@@ -33,6 +47,12 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             <span className="text-sm">⭐</span>
             <span className="text-sm font-semibold text-primary">240 pts</span>
           </div>
+          <button
+            onClick={() => navigate("/settings")}
+            className="p-2 rounded-lg hover:bg-secondary transition-colors"
+          >
+            <Settings size={20} className="text-muted-foreground" />
+          </button>
         </div>
       </header>
 
