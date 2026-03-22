@@ -34,6 +34,7 @@ export default function More() {
               <f.icon className={f.color} size={28} />
             </div>
             <span className="text-xs font-semibold text-foreground text-center leading-tight">{f.title}</span>
+            <span className="text-[10px] text-muted-foreground text-center leading-tight">{f.desc}</span>
           </Link>
         ))}
       </div>
