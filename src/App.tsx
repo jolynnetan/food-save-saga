@@ -13,6 +13,8 @@ import Scanner from "@/pages/Scanner";
 import Tracker from "@/pages/Tracker";
 import Leaderboard from "@/pages/Leaderboard";
 import More from "@/pages/More";
+import CalorieTracker from "@/pages/CalorieTracker";
+import History from "@/pages/History";
 import Pantry from "@/pages/Pantry";
 import Share from "@/pages/Share";
 import ShoppingList from "@/pages/ShoppingList";
