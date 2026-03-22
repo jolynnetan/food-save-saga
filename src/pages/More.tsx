@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Package, MapPin, ShoppingCart, Calculator, Settings, Trophy, ChefHat, ChevronRight, Flame, Clock } from "lucide-react";
+import { Package, MapPin, ShoppingCart, Calculator, Settings, Trophy, ChefHat, ChevronRight, Flame, Clock, BarChart3 } from "lucide-react";
 
 const features = [
   {
