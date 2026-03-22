@@ -298,6 +298,8 @@ export default function Foodbank() {
                     </div>
                   </div>
                 )}
+
+                {collectPointId === p.id && (
                   <div className="pt-2 space-y-2 border-t animate-fade-up">
                     <input
                       value={collectItems}
