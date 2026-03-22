@@ -9,6 +9,11 @@ import Challenges from "@/pages/Challenges";
 import Scanner from "@/pages/Scanner";
 import Tracker from "@/pages/Tracker";
 import Leaderboard from "@/pages/Leaderboard";
+import More from "@/pages/More";
+import Pantry from "@/pages/Pantry";
+import Share from "@/pages/Share";
+import ShoppingList from "@/pages/ShoppingList";
+import PortionCalc from "@/pages/PortionCalc";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -26,6 +31,11 @@ const App = () => (
             <Route path="/scanner" element={<Scanner />} />
             <Route path="/tracker" element={<Tracker />} />
             <Route path="/leaderboard" element={<Leaderboard />} />
+            <Route path="/more" element={<More />} />
+            <Route path="/pantry" element={<Pantry />} />
+            <Route path="/share" element={<Share />} />
+            <Route path="/shopping" element={<ShoppingList />} />
+            <Route path="/portions" element={<PortionCalc />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AppLayout>
