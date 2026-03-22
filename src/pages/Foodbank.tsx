@@ -285,7 +285,19 @@ export default function Foodbank() {
                 </div>
                 <p className="text-[10px] text-muted-foreground">{p.operating_hours}</p>
 
-                {collectPointId === p.id && (
+                {/* Available items */}
+                {(availableItems[p.name] || []).length > 0 && (
+                  <div className="pt-1.5 space-y-1">
+                    <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">Available Items</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {(availableItems[p.name] || []).map((item) => (
+                        <span key={item} className="inline-block bg-primary/10 text-primary text-[10px] font-medium px-2 py-0.5 rounded-full">
+                          {item}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
                   <div className="pt-2 space-y-2 border-t animate-fade-up">
                     <input
                       value={collectItems}
