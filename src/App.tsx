@@ -24,6 +24,7 @@ import Friends from "@/pages/Friends";
 import RecipeGuide from "@/pages/RecipeGuide";
 import WeeklyReport from "@/pages/WeeklyReport";
 import Foodbank from "@/pages/Foodbank";
+import Rewards from "@/pages/Rewards";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -64,6 +65,7 @@ function ProtectedRoutes() {
         <Route path="/recipes" element={<RecipeGuide />} />
         <Route path="/weekly-report" element={<WeeklyReport />} />
         <Route path="/foodbank" element={<Foodbank />} />
+        <Route path="/rewards" element={<Rewards />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </AppLayout>
