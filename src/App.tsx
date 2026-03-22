@@ -13,6 +13,8 @@ import Scanner from "@/pages/Scanner";
 import Tracker from "@/pages/Tracker";
 import Leaderboard from "@/pages/Leaderboard";
 import More from "@/pages/More";
+import CalorieTracker from "@/pages/CalorieTracker";
+import History from "@/pages/History";
 import Pantry from "@/pages/Pantry";
 import Share from "@/pages/Share";
 import ShoppingList from "@/pages/ShoppingList";
@@ -48,6 +50,8 @@ function ProtectedRoutes() {
         <Route path="/scanner" element={<Scanner />} />
         <Route path="/tracker" element={<Tracker />} />
         <Route path="/leaderboard" element={<Leaderboard />} />
+        <Route path="/calories" element={<CalorieTracker />} />
+        <Route path="/history" element={<History />} />
         <Route path="/more" element={<More />} />
         <Route path="/pantry" element={<Pantry />} />
         <Route path="/share" element={<Share />} />

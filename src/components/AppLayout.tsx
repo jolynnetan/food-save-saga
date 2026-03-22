@@ -13,7 +13,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const location = useLocation();
 
   // Highlight "More" tab when on sub-pages
-  const moreRoutes = ["/more", "/pantry", "/share", "/shopping", "/portions", "/leaderboard", "/settings", "/friends"];
+  const moreRoutes = ["/more", "/pantry", "/share", "/shopping", "/portions", "/leaderboard", "/settings", "/friends", "/calories", "/history", "/recipes"];
   const isMoreActive = moreRoutes.includes(location.pathname);
 
   return (

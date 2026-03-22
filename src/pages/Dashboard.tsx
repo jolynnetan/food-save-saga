@@ -19,6 +19,27 @@ const tips = [
   "Use stale bread to make croutons or breadcrumbs 🍞",
 ];
 
+const motivationalQuotes = [
+  "One-third of all food produced globally is wasted — your small actions today change that statistic. 🌍",
+  "Every meal you save feeds possibility. Food security starts on your plate. 💚",
+  "828 million people go hungry every night. Reducing waste is an act of solidarity. ✊",
+  "When you finish your leftovers, you're not just saving money — you're saving the planet's resources. 🌱",
+  "It takes 1,000 litres of water to produce 1 litre of milk. Nothing we save is too small to matter. 💧",
+  "Food waste in landfills produces methane, 80× more potent than CO₂. Your choices make the air cleaner. 🌬️",
+  "A family that reduces food waste saves an average of $1,500 a year. Your wallet thanks you too. 💰",
+  "Every grain of rice represents someone's labour under the sun. Honour it by wasting less. 🌾",
+  "Sustainable eating isn't a sacrifice — it's a superpower. You're already a hero. 🦸",
+  "The best time to fight food waste was yesterday. The second best time is right now. ⏰",
+];
+
+function getDailyQuote() {
+  const today = new Date();
+  const dayOfYear = Math.floor(
+    (today.getTime() - new Date(today.getFullYear(), 0, 0).getTime()) / 86400000
+  );
+  return motivationalQuotes[dayOfYear % motivationalQuotes.length];
+}
+
 export default function Dashboard() {
   return (
     <div className="px-4 py-5 max-w-lg mx-auto space-y-6">
@@ -102,8 +123,18 @@ export default function Dashboard() {
         </div>
       </section>
 
-      {/* Daily Tip */}
+      {/* Daily Motivation */}
       <section className="animate-fade-up" style={{ animationDelay: "320ms" }}>
+        <h3 className="text-base font-semibold text-foreground mb-3">🌍 Why It Matters</h3>
+        <div className="bg-primary/10 rounded-2xl p-4 border border-primary/20">
+          <p className="text-sm text-foreground leading-relaxed font-medium">
+            {getDailyQuote()}
+          </p>
+        </div>
+      </section>
+
+      {/* Daily Tip */}
+      <section className="animate-fade-up" style={{ animationDelay: "400ms" }}>
         <h3 className="text-base font-semibold text-foreground mb-3">💡 Daily Tip</h3>
         <div className="bg-secondary rounded-2xl p-4">
           <p className="text-sm text-secondary-foreground leading-relaxed">

@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Package, MapPin, ShoppingCart, Calculator, Settings, Trophy, ChefHat, ChevronRight } from "lucide-react";
+import { Package, MapPin, ShoppingCart, Calculator, Settings, Trophy, ChefHat, ChevronRight, Flame, Clock } from "lucide-react";
 
 const features = [
   {
@@ -37,6 +37,24 @@ const features = [
     description: "Calculate exact ingredients for zero leftovers",
     color: "text-earth",
     bg: "bg-earth/10",
+  },
+  {
+    to: "/calories",
+    icon: Flame,
+    emoji: "🔥",
+    title: "Calorie Tracker",
+    description: "Log meals, track macros and weekly nutrition trends",
+    color: "text-streak",
+    bg: "bg-streak/10",
+  },
+  {
+    to: "/history",
+    icon: Clock,
+    emoji: "📜",
+    title: "History",
+    description: "Review past meals and redo your favorite recipes",
+    color: "text-accent",
+    bg: "bg-accent/10",
   },
   {
     to: "/leaderboard",
