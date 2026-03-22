@@ -3,6 +3,7 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { SettingsProvider } from "@/contexts/SettingsContext";
 import AppLayout from "@/components/AppLayout";
 import Dashboard from "@/pages/Dashboard";
 import Challenges from "@/pages/Challenges";
@@ -14,33 +15,39 @@ import Pantry from "@/pages/Pantry";
 import Share from "@/pages/Share";
 import ShoppingList from "@/pages/ShoppingList";
 import PortionCalc from "@/pages/PortionCalc";
+import Settings from "@/pages/Settings";
+import Friends from "@/pages/Friends";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <AppLayout>
-          <Routes>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/challenges" element={<Challenges />} />
-            <Route path="/scanner" element={<Scanner />} />
-            <Route path="/tracker" element={<Tracker />} />
-            <Route path="/leaderboard" element={<Leaderboard />} />
-            <Route path="/more" element={<More />} />
-            <Route path="/pantry" element={<Pantry />} />
-            <Route path="/share" element={<Share />} />
-            <Route path="/shopping" element={<ShoppingList />} />
-            <Route path="/portions" element={<PortionCalc />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </AppLayout>
-      </BrowserRouter>
-    </TooltipProvider>
+    <SettingsProvider>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <AppLayout>
+            <Routes>
+              <Route path="/" element={<Dashboard />} />
+              <Route path="/challenges" element={<Challenges />} />
+              <Route path="/scanner" element={<Scanner />} />
+              <Route path="/tracker" element={<Tracker />} />
+              <Route path="/leaderboard" element={<Leaderboard />} />
+              <Route path="/more" element={<More />} />
+              <Route path="/pantry" element={<Pantry />} />
+              <Route path="/share" element={<Share />} />
+              <Route path="/shopping" element={<ShoppingList />} />
+              <Route path="/portions" element={<PortionCalc />} />
+              <Route path="/settings" element={<Settings />} />
+              <Route path="/friends" element={<Friends />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </AppLayout>
+        </BrowserRouter>
+      </TooltipProvider>
+    </SettingsProvider>
   </QueryClientProvider>
 );
 
