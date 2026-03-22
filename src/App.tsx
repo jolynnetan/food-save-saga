@@ -24,6 +24,7 @@ import Friends from "@/pages/Friends";
 import RecipeGuide from "@/pages/RecipeGuide";
 import WeeklyReport from "@/pages/WeeklyReport";
 import Foodbank from "@/pages/Foodbank";
+import Rewards from "@/pages/Rewards";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
