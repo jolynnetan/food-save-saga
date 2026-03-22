@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Package, MapPin, ShoppingCart, Calculator, Settings, Trophy, ChefHat, ChevronRight, Flame, Clock } from "lucide-react";
+import { Package, MapPin, ShoppingCart, Calculator, Settings, Trophy, ChefHat, ChevronRight, Flame, Clock, BarChart3 } from "lucide-react";
 
 const features = [
   {
@@ -73,6 +73,15 @@ const features = [
     description: "Step-by-step recipes with calorie breakdown",
     color: "text-accent",
     bg: "bg-accent/10",
+  },
+  {
+    to: "/weekly-report",
+    icon: BarChart3,
+    emoji: "📊",
+    title: "Weekly Report",
+    description: "Nutrition summary & food waste progress",
+    color: "text-primary",
+    bg: "bg-primary/10",
   },
   {
     to: "/settings",
