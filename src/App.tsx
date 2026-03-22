@@ -50,6 +50,8 @@ function ProtectedRoutes() {
         <Route path="/scanner" element={<Scanner />} />
         <Route path="/tracker" element={<Tracker />} />
         <Route path="/leaderboard" element={<Leaderboard />} />
+        <Route path="/calories" element={<CalorieTracker />} />
+        <Route path="/history" element={<History />} />
         <Route path="/more" element={<More />} />
         <Route path="/pantry" element={<Pantry />} />
         <Route path="/share" element={<Share />} />

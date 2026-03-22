@@ -123,8 +123,18 @@ export default function Dashboard() {
         </div>
       </section>
 
-      {/* Daily Tip */}
+      {/* Daily Motivation */}
       <section className="animate-fade-up" style={{ animationDelay: "320ms" }}>
+        <h3 className="text-base font-semibold text-foreground mb-3">🌍 Why It Matters</h3>
+        <div className="bg-primary/10 rounded-2xl p-4 border border-primary/20">
+          <p className="text-sm text-foreground leading-relaxed font-medium">
+            {getDailyQuote()}
+          </p>
+        </div>
+      </section>
+
+      {/* Daily Tip */}
+      <section className="animate-fade-up" style={{ animationDelay: "400ms" }}>
         <h3 className="text-base font-semibold text-foreground mb-3">💡 Daily Tip</h3>
         <div className="bg-secondary rounded-2xl p-4">
           <p className="text-sm text-secondary-foreground leading-relaxed">
