@@ -2,16 +2,16 @@ import { Link } from "react-router-dom";
 import { Package, MapPin, ShoppingCart, Calculator, Settings, Trophy, ChefHat, Flame, Clock, BarChart3 } from "lucide-react";
 
 const features = [
-  { to: "/pantry", icon: Package, emoji: "🥗", title: "Smart Pantry", color: "text-primary", bg: "bg-primary/10" },
-  { to: "/share", icon: MapPin, emoji: "📍", title: "Food Drop", color: "text-warning", bg: "bg-warning/10" },
-  { to: "/shopping", icon: ShoppingCart, emoji: "📉", title: "Smart Shopping", color: "text-success", bg: "bg-success/10" },
-  { to: "/portions", icon: Calculator, emoji: "🍱", title: "Portions", color: "text-earth", bg: "bg-earth/10" },
-  { to: "/calories", icon: Flame, emoji: "🔥", title: "Calories", color: "text-streak", bg: "bg-streak/10" },
-  { to: "/history", icon: Clock, emoji: "📜", title: "History", color: "text-accent", bg: "bg-accent/10" },
-  { to: "/leaderboard", icon: Trophy, emoji: "🏆", title: "Leaderboard", color: "text-streak", bg: "bg-streak/10" },
-  { to: "/recipes", icon: ChefHat, emoji: "👨‍🍳", title: "Recipes", color: "text-accent", bg: "bg-accent/10" },
-  { to: "/weekly-report", icon: BarChart3, emoji: "📊", title: "Weekly Report", color: "text-primary", bg: "bg-primary/10" },
-  { to: "/settings", icon: Settings, emoji: "⚙️", title: "Settings", color: "text-muted-foreground", bg: "bg-muted" },
+  { to: "/pantry", icon: Package, title: "Smart Pantry", desc: "Track expiry dates", color: "text-primary", bg: "bg-primary/10" },
+  { to: "/share", icon: MapPin, title: "Food Drop", desc: "Share with neighbors", color: "text-warning", bg: "bg-warning/10" },
+  { to: "/shopping", icon: ShoppingCart, title: "Smart Shopping", desc: "Waste-aware lists", color: "text-success", bg: "bg-success/10" },
+  { to: "/portions", icon: Calculator, title: "Portions", desc: "Zero leftover calc", color: "text-earth", bg: "bg-earth/10" },
+  { to: "/calories", icon: Flame, title: "Calories", desc: "Log meals & macros", color: "text-streak", bg: "bg-streak/10" },
+  { to: "/history", icon: Clock, title: "History", desc: "Past meals & recipes", color: "text-accent", bg: "bg-accent/10" },
+  { to: "/leaderboard", icon: Trophy, title: "Leaderboard", desc: "Rank among savers", color: "text-streak", bg: "bg-streak/10" },
+  { to: "/recipes", icon: ChefHat, title: "Recipes", desc: "Step-by-step guides", color: "text-accent", bg: "bg-accent/10" },
+  { to: "/weekly-report", icon: BarChart3, title: "Weekly Report", desc: "Nutrition & waste", color: "text-primary", bg: "bg-primary/10" },
+  { to: "/settings", icon: Settings, title: "Settings", desc: "Theme & preferences", color: "text-muted-foreground", bg: "bg-muted" },
 ];
 
 export default function More() {
@@ -34,6 +34,7 @@ export default function More() {
               <f.icon className={f.color} size={28} />
             </div>
             <span className="text-xs font-semibold text-foreground text-center leading-tight">{f.title}</span>
+            <span className="text-[10px] text-muted-foreground text-center leading-tight">{f.desc}</span>
           </Link>
         ))}
       </div>
