@@ -1,0 +1,116 @@
+import { Flame, Leaf, TrendingDown, ChevronRight, Camera } from "lucide-react";
+import { Link } from "react-router-dom";
+
+const quickStats = [
+  { icon: Flame, label: "Streak", value: "7 days", color: "text-streak", bg: "bg-streak/10" },
+  { icon: Leaf, label: "Saved", value: "3.2 kg", color: "text-leaf", bg: "bg-leaf/10" },
+  { icon: TrendingDown, label: "Waste", value: "-24%", color: "text-success", bg: "bg-success/10" },
+];
+
+const todayTasks = [
+  { id: 1, title: "Finish yesterday's rice", emoji: "🍚", done: true, pts: 10 },
+  { id: 2, title: "Plan meals for the week", emoji: "📋", done: false, pts: 15 },
+  { id: 3, title: "Use wilting vegetables", emoji: "🥬", done: false, pts: 20 },
+];
+
+const tips = [
+  "Store herbs in a glass of water to keep them fresh 3x longer 🌿",
+  "Freeze overripe bananas for smoothies later 🍌",
+  "Use stale bread to make croutons or breadcrumbs 🍞",
+];
+
+export default function Dashboard() {
+  return (
+    <div className="px-4 py-5 max-w-lg mx-auto space-y-6">
+      {/* Greeting */}
+      <div className="animate-fade-up">
+        <h2 className="text-2xl font-bold text-foreground leading-tight text-balance">
+          Good morning! 👋
+        </h2>
+        <p className="text-muted-foreground mt-1">
+          You've saved <span className="font-semibold text-primary">3.2 kg</span> of food this week.
+        </p>
+      </div>
+
+      {/* Quick Stats */}
+      <div className="grid grid-cols-3 gap-3 animate-fade-up" style={{ animationDelay: "80ms" }}>
+        {quickStats.map(({ icon: Icon, label, value, color, bg }) => (
+          <div key={label} className={`${bg} rounded-2xl p-3 text-center`}>
+            <Icon className={`${color} mx-auto mb-1`} size={22} />
+            <p className="text-lg font-bold text-foreground">{value}</p>
+            <p className="text-xs text-muted-foreground">{label}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Scan CTA */}
+      <Link
+        to="/scanner"
+        className="flex items-center gap-4 bg-primary text-primary-foreground rounded-2xl p-4 shadow-lg shadow-primary/20 transition-transform duration-200 active:scale-[0.97] animate-fade-up"
+        style={{ animationDelay: "160ms" }}
+      >
+        <div className="bg-primary-foreground/20 rounded-xl p-3">
+          <Camera size={24} />
+        </div>
+        <div className="flex-1">
+          <p className="font-semibold text-base">Scan your leftovers</p>
+          <p className="text-sm opacity-80">Get recipe ideas & reduce waste</p>
+        </div>
+        <ChevronRight size={20} className="opacity-60" />
+      </Link>
+
+      {/* Today's Challenges */}
+      <section className="animate-fade-up" style={{ animationDelay: "240ms" }}>
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-base font-semibold text-foreground">Today's Challenges</h3>
+          <Link to="/challenges" className="text-sm text-primary font-medium">See all</Link>
+        </div>
+        <div className="space-y-2.5">
+          {todayTasks.map((task) => (
+            <div
+              key={task.id}
+              className={`flex items-center gap-3 bg-card rounded-xl p-3 border transition-all duration-200 ${
+                task.done ? "opacity-60" : "shadow-sm"
+              }`}
+            >
+              <span className="text-xl">{task.emoji}</span>
+              <div className="flex-1 min-w-0">
+                <p className={`text-sm font-medium ${task.done ? "line-through text-muted-foreground" : "text-foreground"}`}>
+                  {task.title}
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded-full">
+                  +{task.pts}
+                </span>
+                <div
+                  className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors ${
+                    task.done
+                      ? "bg-success border-success"
+                      : "border-muted-foreground/30"
+                  }`}
+                >
+                  {task.done && (
+                    <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
+                      <path d="M1 4L3.5 6.5L9 1" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  )}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Daily Tip */}
+      <section className="animate-fade-up" style={{ animationDelay: "320ms" }}>
+        <h3 className="text-base font-semibold text-foreground mb-3">💡 Daily Tip</h3>
+        <div className="bg-secondary rounded-2xl p-4">
+          <p className="text-sm text-secondary-foreground leading-relaxed">
+            {tips[Math.floor(Math.random() * tips.length)]}
+          </p>
+        </div>
+      </section>
+    </div>
+  );
+}
