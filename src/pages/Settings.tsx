@@ -7,7 +7,14 @@ type FontSize = "small" | "medium" | "large";
 
 export default function Settings() {
   const { language, setLanguage, fontSize, setFontSize, theme, setTheme } = useSettings();
+  const { signOut, user } = useAuth();
+  const navigate = useNavigate();
   const t = useT();
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate("/auth");
+  };
 
   const fontSizes: { key: FontSize; label: string }[] = [
     { key: "small", label: t("small") },
