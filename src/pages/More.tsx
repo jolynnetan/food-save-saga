@@ -1,9 +1,10 @@
 import { Link } from "react-router-dom";
-import { Package, MapPin, ShoppingCart, Calculator, Settings, Trophy, ChefHat, Flame, Clock, BarChart3 } from "lucide-react";
+import { Package, MapPin, ShoppingCart, Calculator, Settings, Trophy, ChefHat, Flame, Clock, BarChart3, Building2 } from "lucide-react";
 
 const features = [
   { to: "/pantry", icon: Package, title: "Smart Pantry", desc: "Track expiry dates", color: "text-primary", bg: "bg-primary/10" },
   { to: "/share", icon: MapPin, title: "Food Drop", desc: "Share with neighbors", color: "text-warning", bg: "bg-warning/10" },
+  { to: "/foodbank", icon: Building2, title: "Foodbank", desc: "NGO food donations", color: "text-earth", bg: "bg-earth/10" },
   { to: "/shopping", icon: ShoppingCart, title: "Smart Shopping", desc: "Waste-aware lists", color: "text-success", bg: "bg-success/10" },
   { to: "/portions", icon: Calculator, title: "Portions", desc: "Zero leftover calc", color: "text-earth", bg: "bg-earth/10" },
   { to: "/calories", icon: Flame, title: "Calories", desc: "Log meals & macros", color: "text-streak", bg: "bg-streak/10" },
