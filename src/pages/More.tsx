@@ -75,6 +75,15 @@ const features = [
     bg: "bg-accent/10",
   },
   {
+    to: "/weekly-report",
+    icon: BarChart3,
+    emoji: "📊",
+    title: "Weekly Report",
+    description: "Nutrition summary & food waste progress",
+    color: "text-primary",
+    bg: "bg-primary/10",
+  },
+  {
     to: "/settings",
     icon: Settings,
     emoji: "⚙️",
