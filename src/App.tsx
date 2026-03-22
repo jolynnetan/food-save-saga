@@ -22,6 +22,7 @@ import PortionCalc from "@/pages/PortionCalc";
 import Settings from "@/pages/Settings";
 import Friends from "@/pages/Friends";
 import RecipeGuide from "@/pages/RecipeGuide";
+import WeeklyReport from "@/pages/WeeklyReport";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
