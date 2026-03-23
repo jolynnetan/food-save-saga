@@ -54,10 +54,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           </div>
           <GlobalSearch />
           <button
-            onClick={() => navigate("/ai-assistant")}
-            className="p-2 rounded-lg hover:bg-purple-500/10 transition-colors"
+            onClick={() => setAiOpen(prev => !prev)}
+            className={`p-2 rounded-lg transition-colors ${aiOpen ? "bg-primary/10 text-primary" : "hover:bg-purple-500/10 text-purple-500"}`}
           >
-            <Sparkles size={20} className="text-purple-500" />
+            <Sparkles size={20} />
           </button>
           <button
             onClick={() => navigate("/settings")}
