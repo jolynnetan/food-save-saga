@@ -4,7 +4,7 @@ import { usePoints } from "@/contexts/PointsContext";
 
 const navItems = [
   { to: "/", icon: Home, label: "Home" },
-  { to: "/calories", icon: Flame, label: "Calories" },
+  { to: "/challenges", icon: Flame, label: "Challenges" },
   { to: "/scanner", icon: Camera, label: "Scan" },
   { to: "/recipes", icon: ChefHat, label: "Recipes" },
   { to: "/more", icon: MoreHorizontal, label: "More" },
