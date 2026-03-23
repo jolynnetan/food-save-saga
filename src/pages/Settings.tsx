@@ -164,6 +164,34 @@ export default function Settings() {
         </div>
       </section>
 
+      {/* Gamification toggle */}
+      <section className="space-y-3 animate-fade-up" style={{ animationDelay: "220ms" }}>
+        <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Gamification</h3>
+        <div className="bg-card border rounded-2xl p-4">
+          <div className="flex items-center gap-3">
+            <div className="bg-warning/10 rounded-xl p-2.5">
+              <Gamepad2 size={18} className="text-warning" />
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-semibold text-foreground">Gamification</p>
+              <p className="text-xs text-muted-foreground">XP, levels, badges & daily missions</p>
+            </div>
+            <button
+              onClick={() => setGamificationEnabled(!gamificationEnabled)}
+              className={`w-12 h-7 rounded-full transition-all duration-300 relative ${
+                gamificationEnabled ? "bg-primary" : "bg-muted"
+              }`}
+            >
+              <div
+                className={`absolute top-0.5 w-6 h-6 rounded-full bg-white shadow-md transition-all duration-300 ${
+                  gamificationEnabled ? "left-[22px]" : "left-0.5"
+                }`}
+              />
+            </button>
+          </div>
+        </div>
+      </section>
+
       {/* Sign out */}
       <section className="animate-fade-up" style={{ animationDelay: "240ms" }}>
         <div className="bg-card border rounded-2xl p-4">
