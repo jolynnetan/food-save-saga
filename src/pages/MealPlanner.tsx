@@ -104,23 +104,89 @@ export default function MealPlanner() {
     toast.success(`${recipe.emoji} ${recipe.name} added to ${DAYS[day]} ${slot}`);
   };
 
-  const addManualMeal = (day: number, slot: string) => {
+  const addManualMeal = async (day: number, slot: string) => {
     if (!manualName.trim()) return;
-    const meal: PlannedMeal = {
-      id: `${Date.now()}-${Math.random()}`,
-      name: manualName.trim(),
-      emoji: "🍽️",
-      slot: slot as any,
-      day,
-      ingredients: [],
-      calories: parseInt(manualCalories) || 0,
-      isFromRecipe: false,
-    };
-    setMeals(prev => [...prev.filter(m => !(m.day === day && m.slot === slot)), meal]);
-    setManualName("");
-    setManualCalories("");
-    setShowManualAdd(null);
-    toast.success(`Meal added to ${DAYS[day]} ${slot}`);
+    setAnalyzing(true);
+
+    try {
+      // Call AI to analyze the dish
+      const resp = await supabase.functions.invoke("food-assistant", {
+        body: {
+          mode: "meal-analyze",
+          messages: [{ role: "user", content: `Analyze this dish: ${manualName.trim()}` }],
+        },
+      });
+
+      let aiResult: any = null;
+      if (resp.data) {
+        // Parse SSE stream response
+        const text = typeof resp.data === "string" ? resp.data : await new Response(resp.data).text();
+        let fullContent = "";
+        for (const line of text.split("\n")) {
+          if (!line.startsWith("data: ") || line.includes("[DONE]")) continue;
+          try {
+            const parsed = JSON.parse(line.slice(6));
+            const c = parsed.choices?.[0]?.delta?.content;
+            if (c) fullContent += c;
+          } catch {}
+        }
+        // Extract JSON from response
+        const jsonMatch = fullContent.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          aiResult = JSON.parse(jsonMatch[0]);
+        }
+      }
+
+      const ingredients: Ingredient[] = aiResult?.ingredients || [];
+      const calories = aiResult?.calories || parseInt(manualCalories) || 0;
+      const emoji = aiResult?.emoji || "🍽️";
+
+      const meal: PlannedMeal = {
+        id: `${Date.now()}-${Math.random()}`,
+        name: aiResult?.name || manualName.trim(),
+        emoji,
+        slot: slot as any,
+        day,
+        ingredients,
+        calories,
+        isFromRecipe: false,
+      };
+
+      setMeals(prev => [...prev.filter(m => !(m.day === day && m.slot === slot)), meal]);
+
+      // Check pantry and add missing ingredients to shopping list
+      const missingIngredients = ingredients.filter(ing => !checkIngredientAvailability(ing.name, pantry));
+      if (missingIngredients.length > 0) {
+        try {
+          const existing = JSON.parse(localStorage.getItem("sp-shopping-extra") || "[]");
+          const newItems = missingIngredients.map(ing => ({ name: ing.name, amount: ing.amount }));
+          localStorage.setItem("sp-shopping-extra", JSON.stringify([...existing, ...newItems]));
+        } catch {}
+        toast.success(`${emoji} ${meal.name} added! ${missingIngredients.length} missing ingredients sent to Shopping List`);
+      } else {
+        toast.success(`${emoji} ${meal.name} added — all ingredients available! 🎉`);
+      }
+    } catch (err) {
+      console.error("AI analysis failed:", err);
+      // Fallback: add without AI
+      const meal: PlannedMeal = {
+        id: `${Date.now()}-${Math.random()}`,
+        name: manualName.trim(),
+        emoji: "🍽️",
+        slot: slot as any,
+        day,
+        ingredients: [],
+        calories: parseInt(manualCalories) || 0,
+        isFromRecipe: false,
+      };
+      setMeals(prev => [...prev.filter(m => !(m.day === day && m.slot === slot)), meal]);
+      toast.success(`Meal added to ${DAYS[day]} ${slot}`);
+    } finally {
+      setAnalyzing(false);
+      setManualName("");
+      setManualCalories("");
+      setShowManualAdd(null);
+    }
   };
 
   const removeMeal = (id: string) => {
