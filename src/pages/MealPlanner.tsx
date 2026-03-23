@@ -104,6 +104,25 @@ export default function MealPlanner() {
     toast.success(`${recipe.emoji} ${recipe.name} added to ${DAYS[day]} ${slot}`);
   };
 
+  const saveManualMeal = (day: number, slot: string) => {
+    if (!manualName.trim()) return;
+    const meal: PlannedMeal = {
+      id: `${Date.now()}-${Math.random()}`,
+      name: manualName.trim(),
+      emoji: "🍽️",
+      slot: slot as any,
+      day,
+      ingredients: [],
+      calories: 0,
+      isFromRecipe: false,
+    };
+    setMeals(prev => [...prev.filter(m => !(m.day === day && m.slot === slot)), meal]);
+    setManualName("");
+    setManualCalories("");
+    setShowManualAdd(null);
+    toast.success(`🍽️ ${meal.name} saved to ${DAYS[day]} ${SLOT_LABELS[slot].label}`);
+  };
+
   const addManualMeal = async (day: number, slot: string) => {
     if (!manualName.trim()) return;
     setAnalyzing(true);
@@ -479,26 +498,33 @@ export default function MealPlanner() {
                 className="w-full bg-muted rounded-xl px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
                 disabled={analyzing}
               />
-              <p className="text-[10px] text-muted-foreground">
-                🤖 AI will estimate calories & ingredients automatically. Missing ingredients will be added to your Shopping List.
-              </p>
-              <button
-                onClick={() => addManualMeal(showManualAdd.day, showManualAdd.slot)}
-                disabled={analyzing || !manualName.trim()}
-                className="w-full flex items-center justify-center gap-2 bg-primary text-primary-foreground rounded-xl py-2.5 text-sm font-semibold transition-all active:scale-[0.97] disabled:opacity-50"
-              >
-                {analyzing ? (
-                  <>
-                    <Loader2 size={16} className="animate-spin" />
-                    Analyzing with AI...
-                  </>
-                ) : (
-                  <>
-                    <Sparkles size={16} />
-                    Analyze & Add Meal
-                  </>
-                )}
-              </button>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => saveManualMeal(showManualAdd.day, showManualAdd.slot)}
+                  disabled={analyzing || !manualName.trim()}
+                  className="flex-1 flex items-center justify-center gap-2 bg-secondary text-secondary-foreground rounded-xl py-2.5 text-sm font-semibold transition-all active:scale-[0.97] disabled:opacity-50"
+                >
+                  <Plus size={16} />
+                  Save
+                </button>
+                <button
+                  onClick={() => addManualMeal(showManualAdd.day, showManualAdd.slot)}
+                  disabled={analyzing || !manualName.trim()}
+                  className="flex-1 flex items-center justify-center gap-2 bg-primary text-primary-foreground rounded-xl py-2.5 text-sm font-semibold transition-all active:scale-[0.97] disabled:opacity-50"
+                >
+                  {analyzing ? (
+                    <>
+                      <Loader2 size={16} className="animate-spin" />
+                      Analyzing...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles size={16} />
+                      Analyze & Save
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
           </div>
         </div>
