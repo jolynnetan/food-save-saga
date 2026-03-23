@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Package, MapPin, ShoppingCart, Calculator, Trophy, Clock, BarChart3, Building2, Gift, BellRing, Flame } from "lucide-react";
+import { Package, MapPin, ShoppingCart, Calculator, Trophy, Clock, BarChart3, Building2, BellRing, Flame } from "lucide-react";
 
 const features = [
   { to: "/calories", icon: Flame, title: "Calories", desc: "Track daily intake", color: "text-primary", bg: "bg-primary/10" },
@@ -11,7 +11,6 @@ const features = [
   { to: "/portions", icon: Calculator, title: "Portions", desc: "Zero leftover calc", color: "text-earth", bg: "bg-earth/10" },
   { to: "/history", icon: Clock, title: "History", desc: "Past meals & recipes", color: "text-accent", bg: "bg-accent/10" },
   { to: "/reminders", icon: BellRing, title: "Reminders", desc: "Weekly food checks", color: "text-blue-500", bg: "bg-blue-500/10" },
-  { to: "/rewards", icon: Gift, title: "Rewards", desc: "Redeem your points", color: "text-warning", bg: "bg-warning/10" },
   { to: "/leaderboard", icon: Trophy, title: "Leaderboard", desc: "Rank among savers", color: "text-streak", bg: "bg-streak/10" },
   { to: "/weekly-report", icon: BarChart3, title: "Weekly Report", desc: "Nutrition & waste", color: "text-primary", bg: "bg-primary/10" },
 ];
