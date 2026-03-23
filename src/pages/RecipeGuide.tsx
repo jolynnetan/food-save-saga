@@ -2,7 +2,7 @@ import { useState } from "react";
 import { ChefHat, ArrowRight, ArrowLeft, Flame, Check, RotateCcw } from "lucide-react";
 
 type DietaryPref = "vegetarian" | "vegan" | "halal" | "gluten-free" | "dairy-free" | "none";
-type CuisinePref = "asian" | "western" | "mediterranean" | "indian" | "mexican" | "any";
+type CuisinePref = "asian" | "western" | "mediterranean" | "indian" | "mexican" | "middle-eastern" | "japanese" | "korean" | "any";
 
 type Recipe = {
   name: string;
@@ -80,6 +80,117 @@ const allRecipes: Recipe[] = [
     ],
     steps: ["Cook sushi rice and season with rice vinegar.", "Cube tofu and marinate in soy sauce + sesame oil for 10 min.", "Pan-fry tofu cubes until golden, about 4 minutes per side.", "Slice cucumber into thin rounds.", "Arrange rice in bowls, top with tofu, edamame, cucumber.", "Drizzle with extra soy sauce and sprinkle sesame seeds."],
   },
+  // NEW RECIPES
+  {
+    name: "Lamb Shawarma Wrap", emoji: "🥙", cuisine: "middle-eastern", diet: ["halal", "dairy-free", "none"],
+    time: "30 min", calories: 520, protein: 32, carbs: 42, fat: 22, servings: 2,
+    ingredients: [
+      { name: "Lamb leg (sliced)", amount: "300g", cal: 250 }, { name: "Pita bread", amount: "2 large", cal: 170 },
+      { name: "Tahini", amount: "2 tbsp", cal: 90 }, { name: "Pickled turnip", amount: "50g", cal: 10 },
+      { name: "Tomato", amount: "1 medium", cal: 22 }, { name: "Sumac & cumin", amount: "1 tsp each", cal: 8 },
+    ],
+    steps: ["Marinate lamb slices in sumac, cumin, garlic, and olive oil for 15 min.", "Pan-sear lamb over high heat 3-4 minutes per side.", "Warm pita bread briefly on the pan.", "Dice tomato and slice pickled turnips.", "Spread tahini on pita, layer lamb, tomato, pickles.", "Roll tightly, slice in half, and serve."],
+  },
+  {
+    name: "Japanese Miso Ramen", emoji: "🍜", cuisine: "japanese", diet: ["dairy-free", "none"],
+    time: "25 min", calories: 440, protein: 26, carbs: 52, fat: 14, servings: 2,
+    ingredients: [
+      { name: "Ramen noodles", amount: "200g", cal: 280 }, { name: "White miso paste", amount: "3 tbsp", cal: 70 },
+      { name: "Soft-boiled eggs", amount: "2 pcs", cal: 144 }, { name: "Spring onions", amount: "3 stalks", cal: 5 },
+      { name: "Corn kernels", amount: "100g", cal: 86 }, { name: "Nori sheets", amount: "4 pcs", cal: 10 },
+    ],
+    steps: ["Bring 800ml water to boil, dissolve miso paste and soy sauce.", "Cook ramen noodles according to package, drain.", "Soft-boil eggs: cook 6.5 minutes, ice bath, peel and halve.", "Slice spring onions and prepare corn.", "Divide noodles into bowls, ladle hot miso broth over.", "Top with egg halves, corn, nori, and spring onions."],
+  },
+  {
+    name: "Korean Bibimbap", emoji: "🍚", cuisine: "korean", diet: ["gluten-free", "none"],
+    time: "35 min", calories: 480, protein: 28, carbs: 58, fat: 15, servings: 2,
+    ingredients: [
+      { name: "Short grain rice", amount: "200g", cal: 260 }, { name: "Beef mince", amount: "200g", cal: 250 },
+      { name: "Spinach", amount: "150g", cal: 23 }, { name: "Carrots", amount: "1 medium", cal: 25 },
+      { name: "Gochujang", amount: "2 tbsp", cal: 40 }, { name: "Sesame oil", amount: "1 tbsp", cal: 120 },
+    ],
+    steps: ["Cook rice. Season beef with soy sauce and sesame oil, sauté 5 min.", "Blanch spinach, squeeze dry, season with sesame oil and garlic.", "Julienne carrots, sauté until tender.", "Fry an egg sunny-side up per bowl.", "Arrange rice in bowls, place veggies and beef in sections around edge.", "Top with fried egg, drizzle gochujang. Mix everything before eating."],
+  },
+  {
+    name: "Falafel Bowl", emoji: "🧆", cuisine: "middle-eastern", diet: ["vegan", "vegetarian", "halal", "dairy-free", "none"],
+    time: "30 min", calories: 410, protein: 16, carbs: 50, fat: 18, servings: 2,
+    ingredients: [
+      { name: "Canned chickpeas", amount: "400g", cal: 210 }, { name: "Fresh parsley", amount: "1 cup", cal: 11 },
+      { name: "Couscous", amount: "150g", cal: 180 }, { name: "Tahini", amount: "2 tbsp", cal: 90 },
+      { name: "Lemon", amount: "1 pc", cal: 17 }, { name: "Cucumber", amount: "1 medium", cal: 16 },
+    ],
+    steps: ["Blend chickpeas, parsley, cumin, and garlic into a thick paste.", "Form into small patties and pan-fry 3 min per side until golden.", "Cook couscous: pour boiling water over, cover 5 min, fluff.", "Make dressing: whisk tahini, lemon juice, water, and salt.", "Dice cucumber. Arrange couscous, falafel, cucumber in bowls.", "Drizzle tahini dressing generously and serve."],
+  },
+  {
+    name: "Pasta Primavera", emoji: "🍝", cuisine: "western", diet: ["vegetarian", "none"],
+    time: "20 min", calories: 460, protein: 16, carbs: 62, fat: 16, servings: 2,
+    ingredients: [
+      { name: "Penne pasta", amount: "200g", cal: 350 }, { name: "Zucchini", amount: "1 medium", cal: 33 },
+      { name: "Bell pepper", amount: "1 large", cal: 31 }, { name: "Parmesan", amount: "30g", cal: 120 },
+      { name: "Olive oil", amount: "2 tbsp", cal: 240 }, { name: "Cherry tomatoes", amount: "150g", cal: 27 },
+    ],
+    steps: ["Cook penne in salted water until al dente.", "Slice zucchini and bell pepper into strips.", "Sauté vegetables in olive oil with garlic for 5 minutes.", "Halve cherry tomatoes, add to pan, cook 2 minutes.", "Toss drained pasta with vegetables.", "Grate parmesan over top, season with basil and pepper."],
+  },
+  {
+    name: "Chicken Burrito Bowl", emoji: "🌯", cuisine: "mexican", diet: ["gluten-free", "halal", "dairy-free", "none"],
+    time: "25 min", calories: 510, protein: 35, carbs: 55, fat: 16, servings: 2,
+    ingredients: [
+      { name: "Chicken thigh", amount: "300g", cal: 280 }, { name: "Brown rice", amount: "200g", cal: 220 },
+      { name: "Black beans", amount: "200g", cal: 140 }, { name: "Corn", amount: "100g", cal: 86 },
+      { name: "Lime", amount: "2 pcs", cal: 20 }, { name: "Avocado", amount: "1 medium", cal: 240 },
+    ],
+    steps: ["Season chicken with cumin, paprika, chili, and lime juice.", "Grill or pan-fry chicken 5-6 min per side, then slice.", "Cook brown rice according to package.", "Warm black beans with a pinch of cumin.", "Arrange rice in bowls, top with chicken, beans, corn.", "Slice avocado on top, squeeze lime, add hot sauce to taste."],
+  },
+  {
+    name: "Vegetable Pad Thai", emoji: "🥡", cuisine: "asian", diet: ["vegan", "vegetarian", "dairy-free", "none"],
+    time: "20 min", calories: 370, protein: 12, carbs: 55, fat: 12, servings: 2,
+    ingredients: [
+      { name: "Rice noodles", amount: "200g", cal: 210 }, { name: "Bean sprouts", amount: "100g", cal: 31 },
+      { name: "Peanuts", amount: "30g", cal: 170 }, { name: "Tofu", amount: "150g", cal: 120 },
+      { name: "Tamarind paste", amount: "2 tbsp", cal: 30 }, { name: "Lime", amount: "1 pc", cal: 10 },
+    ],
+    steps: ["Soak rice noodles in warm water for 10 minutes.", "Mix tamarind paste, soy sauce, sugar, and chili for the sauce.", "Press and cube tofu, fry until crispy 4 min per side.", "Stir-fry noodles with sauce in a hot wok for 2 minutes.", "Add bean sprouts, toss briefly to keep crunchy.", "Serve topped with crushed peanuts and lime wedges."],
+  },
+  {
+    name: "Dal Tadka", emoji: "🍲", cuisine: "indian", diet: ["vegan", "vegetarian", "gluten-free", "halal", "dairy-free", "none"],
+    time: "30 min", calories: 290, protein: 16, carbs: 42, fat: 6, servings: 3,
+    ingredients: [
+      { name: "Yellow lentils", amount: "200g", cal: 340 }, { name: "Tomatoes", amount: "2 medium", cal: 44 },
+      { name: "Onion", amount: "1 medium", cal: 44 }, { name: "Turmeric", amount: "1 tsp", cal: 8 },
+      { name: "Cumin seeds", amount: "1 tsp", cal: 8 }, { name: "Ghee or oil", amount: "1 tbsp", cal: 120 },
+    ],
+    steps: ["Wash lentils and pressure cook with turmeric and water for 15 min.", "Dice onion and tomatoes finely.", "Heat ghee, add cumin seeds until they splutter.", "Add onion, cook until golden. Add tomatoes and cook 5 min.", "Pour the tadka (tempering) over cooked dal.", "Stir well, garnish with cilantro. Serve with rice or roti."],
+  },
+  {
+    name: "Caprese Sandwich", emoji: "🥪", cuisine: "mediterranean", diet: ["vegetarian", "none"],
+    time: "10 min", calories: 380, protein: 18, carbs: 32, fat: 20, servings: 1,
+    ingredients: [
+      { name: "Ciabatta bread", amount: "1 roll", cal: 200 }, { name: "Fresh mozzarella", amount: "80g", cal: 180 },
+      { name: "Tomato", amount: "1 large", cal: 22 }, { name: "Fresh basil", amount: "6 leaves", cal: 2 },
+      { name: "Balsamic glaze", amount: "1 tbsp", cal: 20 }, { name: "Olive oil", amount: "1 tsp", cal: 40 },
+    ],
+    steps: ["Slice ciabatta in half horizontally.", "Layer thick slices of mozzarella and tomato.", "Tuck fresh basil leaves between layers.", "Drizzle with olive oil and balsamic glaze.", "Season with salt and cracked black pepper.", "Press gently, slice diagonally, and serve."],
+  },
+  {
+    name: "Teriyaki Salmon Bowl", emoji: "🐟", cuisine: "japanese", diet: ["dairy-free", "none"],
+    time: "25 min", calories: 490, protein: 34, carbs: 52, fat: 16, servings: 2,
+    ingredients: [
+      { name: "Salmon fillets", amount: "250g", cal: 310 }, { name: "Sushi rice", amount: "200g", cal: 260 },
+      { name: "Soy sauce", amount: "3 tbsp", cal: 25 }, { name: "Mirin", amount: "2 tbsp", cal: 30 },
+      { name: "Edamame", amount: "80g", cal: 96 }, { name: "Pickled ginger", amount: "20g", cal: 4 },
+    ],
+    steps: ["Cook sushi rice and season with rice vinegar.", "Mix soy sauce, mirin, and brown sugar for teriyaki glaze.", "Pan-sear salmon 3 min per side, brush with teriyaki in last minute.", "Steam edamame for 3 minutes.", "Divide rice into bowls, place salmon on top.", "Add edamame, pickled ginger, and drizzle remaining glaze."],
+  },
+  {
+    name: "Kimchi Fried Rice", emoji: "🍳", cuisine: "korean", diet: ["dairy-free", "none"],
+    time: "15 min", calories: 420, protein: 18, carbs: 58, fat: 12, servings: 2,
+    ingredients: [
+      { name: "Day-old rice", amount: "400g", cal: 520 }, { name: "Kimchi", amount: "150g", cal: 20 },
+      { name: "Eggs", amount: "2 pcs", cal: 144 }, { name: "Sesame oil", amount: "1 tbsp", cal: 120 },
+      { name: "Gochujang", amount: "1 tbsp", cal: 20 }, { name: "Spring onions", amount: "3 stalks", cal: 5 },
+    ],
+    steps: ["Chop kimchi into small pieces, reserve the juice.", "Heat sesame oil in a large wok or pan.", "Fry kimchi 2 minutes, add gochujang and kimchi juice.", "Add cold rice, stir-fry on high heat 3-4 minutes.", "Push rice aside, fry eggs sunny-side up in the same pan.", "Plate rice, top with egg, garnish with spring onions and sesame seeds."],
+  },
 ];
 
 const dietOptions: { key: DietaryPref; label: string; emoji: string }[] = [
@@ -98,10 +209,13 @@ const cuisineOptions: { key: CuisinePref; label: string; emoji: string }[] = [
   { key: "mediterranean", label: "Mediterranean", emoji: "🫒" },
   { key: "indian", label: "Indian", emoji: "🍛" },
   { key: "mexican", label: "Mexican", emoji: "🌮" },
+  { key: "middle-eastern", label: "Middle Eastern", emoji: "🥙" },
+  { key: "japanese", label: "Japanese", emoji: "🍱" },
+  { key: "korean", label: "Korean", emoji: "🥘" },
 ];
 
 export default function RecipeGuide() {
-  const [step, setStep] = useState(0); // 0=diet, 1=cuisine, 2=results, 3=recipe detail
+  const [step, setStep] = useState(0);
   const [diet, setDiet] = useState<DietaryPref>("none");
   const [cuisine, setCuisine] = useState<CuisinePref>("any");
   const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
@@ -123,7 +237,6 @@ export default function RecipeGuide() {
 
   return (
     <div className="px-4 py-5 max-w-lg mx-auto space-y-5">
-      {/* Header */}
       <div className="flex items-center justify-between animate-fade-up">
         <div>
           <h2 className="text-2xl font-bold text-foreground text-balance">Recipe Guide</h2>
@@ -151,7 +264,7 @@ export default function RecipeGuide() {
         ))}
       </div>
 
-      {/* Step 0: Diet selection */}
+      {/* Step 0: Diet */}
       {step === 0 && (
         <div className="space-y-3 animate-fade-up" style={{ animationDelay: "120ms" }}>
           {dietOptions.map((d) => (
@@ -176,7 +289,7 @@ export default function RecipeGuide() {
         </div>
       )}
 
-      {/* Step 1: Cuisine selection */}
+      {/* Step 1: Cuisine */}
       {step === 1 && (
         <div className="space-y-3 animate-fade-up" style={{ animationDelay: "120ms" }}>
           {cuisineOptions.map((c) => (
@@ -203,7 +316,7 @@ export default function RecipeGuide() {
         </div>
       )}
 
-      {/* Step 2: Recipe results */}
+      {/* Step 2: Results */}
       {step === 2 && (
         <div className="space-y-3 animate-fade-up" style={{ animationDelay: "120ms" }}>
           {filteredRecipes.length === 0 ? (
@@ -238,10 +351,9 @@ export default function RecipeGuide() {
         </div>
       )}
 
-      {/* Step 3: Recipe detail with step-by-step */}
+      {/* Step 3: Recipe detail */}
       {step === 3 && selectedRecipe && (
         <div className="space-y-4 animate-fade-up" style={{ animationDelay: "120ms" }}>
-          {/* Calorie breakdown */}
           <div className="bg-card border rounded-2xl p-4">
             <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
               <Flame size={16} className="text-streak" /> Nutrition per serving
@@ -260,11 +372,10 @@ export default function RecipeGuide() {
                 </div>
               ))}
             </div>
-            {/* Calorie bar */}
             <div className="mt-3 flex h-2 rounded-full overflow-hidden bg-muted">
-              <div className="bg-primary" style={{ width: `${(selectedRecipe.protein * 4 / (selectedRecipe.calories)) * 100}%` }} />
-              <div className="bg-warning" style={{ width: `${(selectedRecipe.carbs * 4 / (selectedRecipe.calories)) * 100}%` }} />
-              <div className="bg-destructive" style={{ width: `${(selectedRecipe.fat * 9 / (selectedRecipe.calories)) * 100}%` }} />
+              <div className="bg-primary" style={{ width: `${(selectedRecipe.protein * 4 / selectedRecipe.calories) * 100}%` }} />
+              <div className="bg-warning" style={{ width: `${(selectedRecipe.carbs * 4 / selectedRecipe.calories) * 100}%` }} />
+              <div className="bg-destructive" style={{ width: `${(selectedRecipe.fat * 9 / selectedRecipe.calories) * 100}%` }} />
             </div>
             <div className="flex justify-between mt-1.5 text-[9px] text-muted-foreground">
               <span>Protein {Math.round((selectedRecipe.protein * 4 / selectedRecipe.calories) * 100)}%</span>
@@ -273,7 +384,6 @@ export default function RecipeGuide() {
             </div>
           </div>
 
-          {/* Ingredients */}
           <div className="bg-card border rounded-2xl p-4">
             <h3 className="text-sm font-semibold text-foreground mb-3">📋 Ingredients</h3>
             <div className="space-y-2">
@@ -289,7 +399,6 @@ export default function RecipeGuide() {
             </div>
           </div>
 
-          {/* Step-by-step cooking */}
           <div className="bg-card border rounded-2xl p-4">
             <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
               <ChefHat size={16} className="text-primary" /> Step {currentStep + 1} of {selectedRecipe.steps.length}
@@ -299,8 +408,6 @@ export default function RecipeGuide() {
                 {selectedRecipe.steps[currentStep]}
               </p>
             </div>
-
-            {/* Step progress dots */}
             <div className="flex justify-center gap-2 mb-4">
               {selectedRecipe.steps.map((_, i) => (
                 <button
@@ -312,8 +419,6 @@ export default function RecipeGuide() {
                 />
               ))}
             </div>
-
-            {/* Navigation */}
             <div className="flex gap-2">
               <button
                 onClick={() => setCurrentStep(Math.max(0, currentStep - 1))}
