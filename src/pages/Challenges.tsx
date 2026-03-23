@@ -1,8 +1,10 @@
-import { useState, useEffect, useCallback } from "react";
-import { Flame, Calendar, Star, Gift, Check, Lock, Heart, TreePine, Sparkles, ShoppingBag, X, FileText, RefreshCw } from "lucide-react";
+import { useState, useEffect, useCallback, useRef } from "react";
+import { Flame, Calendar, Star, Gift, Check, Lock, Heart, TreePine, Sparkles, ShoppingBag, X, FileText, RefreshCw, Camera, Upload, MessageSquare } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { usePoints } from "@/contexts/PointsContext";
 import { addRedeemedItem } from "@/pages/Store";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
 
 type Challenge = {
   id: number;
@@ -12,6 +14,8 @@ type Challenge = {
   pts: number;
   done: boolean;
   category: "daily" | "weekly" | "monthly";
+  proofType?: "photo" | "text";
+  proofData?: string;
 };
 
 type Reward = {
@@ -25,17 +29,50 @@ type Reward = {
   voucherCode?: string;
 };
 
-const initialChallenges: Challenge[] = [
-  { id: 1, title: "Finish yesterday's rice", description: "Don't let cooked rice go to waste", emoji: "🍚", pts: 10, done: false, category: "daily" },
-  { id: 2, title: "Plan meals for the week", description: "Create a meal plan to avoid over-buying", emoji: "📋", pts: 15, done: false, category: "daily" },
-  { id: 3, title: "Use wilting vegetables", description: "Cook with veggies before they go bad", emoji: "🥬", pts: 20, done: false, category: "daily" },
-  { id: 4, title: "Zero waste lunch", description: "Prepare a lunch with no food waste", emoji: "🥗", pts: 15, done: false, category: "daily" },
-  { id: 5, title: "5 zero-waste days", description: "Go 5 consecutive days without wasting food", emoji: "🏆", pts: 100, done: false, category: "weekly" },
-  { id: 6, title: "Try 3 leftover recipes", description: "Cook 3 meals using only leftovers", emoji: "👨‍🍳", pts: 75, done: false, category: "weekly" },
-  { id: 7, title: "Reduce grocery bill 10%", description: "Spend less by buying only what you need", emoji: "💰", pts: 50, done: false, category: "weekly" },
-  { id: 8, title: "30-day no waste streak", description: "An entire month without food waste", emoji: "🌟", pts: 500, done: false, category: "monthly" },
-  { id: 9, title: "Compost challenge", description: "Start composting your food scraps", emoji: "🌱", pts: 200, done: false, category: "monthly" },
+// Large pool of challenges for random selection
+const challengePool: Omit<Challenge, "id" | "done">[] = [
+  // Daily
+  { title: "Finish yesterday's rice", description: "Don't let cooked rice go to waste", emoji: "🍚", pts: 10, category: "daily" },
+  { title: "Plan meals for the week", description: "Create a meal plan to avoid over-buying", emoji: "📋", pts: 15, category: "daily" },
+  { title: "Use wilting vegetables", description: "Cook with veggies before they go bad", emoji: "🥬", pts: 20, category: "daily" },
+  { title: "Zero waste lunch", description: "Prepare a lunch with no food waste", emoji: "🥗", pts: 15, category: "daily" },
+  { title: "Eat all leftovers", description: "Finish all leftover food in the fridge", emoji: "🍲", pts: 10, category: "daily" },
+  { title: "No takeaway today", description: "Cook at home to reduce packaging waste", emoji: "🏠", pts: 15, category: "daily" },
+  { title: "Use expiring items first", description: "Check dates and prioritize near-expiry food", emoji: "📅", pts: 10, category: "daily" },
+  { title: "Share extra food", description: "Give surplus food to a neighbor or friend", emoji: "🤝", pts: 20, category: "daily" },
+  { title: "Portion control meal", description: "Cook exact portions to avoid leftovers", emoji: "⚖️", pts: 10, category: "daily" },
+  { title: "Freeze surplus food", description: "Freeze food that might go to waste", emoji: "🧊", pts: 15, category: "daily" },
+  { title: "Fruit smoothie rescue", description: "Blend overripe fruits into a smoothie", emoji: "🍌", pts: 10, category: "daily" },
+  { title: "Use stale bread", description: "Turn stale bread into croutons or breadcrumbs", emoji: "🍞", pts: 10, category: "daily" },
+  // Weekly
+  { title: "5 zero-waste days", description: "Go 5 consecutive days without wasting food", emoji: "🏆", pts: 100, category: "weekly" },
+  { title: "Try 3 leftover recipes", description: "Cook 3 meals using only leftovers", emoji: "👨‍🍳", pts: 75, category: "weekly" },
+  { title: "Reduce grocery bill 10%", description: "Spend less by buying only what you need", emoji: "💰", pts: 50, category: "weekly" },
+  { title: "Meal prep Sunday", description: "Prep meals for the whole week ahead", emoji: "📦", pts: 60, category: "weekly" },
+  { title: "Empty the fridge challenge", description: "Use everything in your fridge before shopping", emoji: "🧹", pts: 80, category: "weekly" },
+  { title: "Teach someone food saving", description: "Share food-saving tips with a friend or family", emoji: "📚", pts: 50, category: "weekly" },
+  { title: "Visit a local foodbank", description: "Donate items to a community foodbank", emoji: "🏪", pts: 90, category: "weekly" },
+  { title: "No food waste for 3 days", description: "Track and ensure zero waste for 3 days", emoji: "✨", pts: 70, category: "weekly" },
+  // Monthly
+  { title: "30-day no waste streak", description: "An entire month without food waste", emoji: "🌟", pts: 500, category: "monthly" },
+  { title: "Compost challenge", description: "Start composting your food scraps", emoji: "🌱", pts: 200, category: "monthly" },
+  { title: "Organize a food drive", description: "Collect food donations from your community", emoji: "📢", pts: 400, category: "monthly" },
+  { title: "Grow your own herbs", description: "Plant herbs at home to reduce food miles", emoji: "🌿", pts: 150, category: "monthly" },
+  { title: "Zero-waste dinner party", description: "Host a dinner using rescued ingredients", emoji: "🎉", pts: 300, category: "monthly" },
+  { title: "Track all food waste", description: "Log every piece of wasted food for a month", emoji: "📊", pts: 250, category: "monthly" },
 ];
+
+function pickRandom<T>(arr: T[], count: number): T[] {
+  const shuffled = [...arr].sort(() => Math.random() - 0.5);
+  return shuffled.slice(0, count);
+}
+
+function generateChallenges(): Challenge[] {
+  const daily = pickRandom(challengePool.filter(c => c.category === "daily"), 4);
+  const weekly = pickRandom(challengePool.filter(c => c.category === "weekly"), 3);
+  const monthly = pickRandom(challengePool.filter(c => c.category === "monthly"), 2);
+  return [...daily, ...weekly, ...monthly].map((c, i) => ({ ...c, id: Date.now() + i, done: false }));
+}
 
 const rewardsList: Reward[] = [
   { id: 1, title: "Donate a Meal", emoji: "🍱", description: "A meal donated to a foodbank in your name", cost: 500, category: "donate" },
@@ -45,26 +82,10 @@ const rewardsList: Reward[] = [
   { id: 5, title: "Premium Recipe Pack", emoji: "👨‍🍳", description: "20 exclusive zero-waste recipes", cost: 300, category: "personal" },
   { id: 6, title: "Feed a Family", emoji: "👨‍👩‍👧‍👦", description: "Sponsor a week of meals for a family", cost: 3000, category: "donate" },
   { id: 7, title: "Food Saver Badge", emoji: "🏅", description: "Exclusive profile badge", cost: 800, category: "personal" },
-  {
-    id: 11, title: "RM10 Grocery Voucher", emoji: "🛒", description: "RM10 off at participating stores", cost: 1500, category: "voucher",
-    terms: "Valid for 30 days from redemption. Minimum purchase of RM50. Valid at participating stores only. Not combinable with other promotions. One voucher per transaction.",
-    voucherCode: "FOOD-SAVE-10",
-  },
-  {
-    id: 12, title: "RM5 Eco Market Voucher", emoji: "🥬", description: "RM5 off at eco-friendly markets", cost: 800, category: "voucher",
-    terms: "Valid for 14 days from redemption. No minimum purchase required. Valid at participating eco markets only. Cannot be exchanged for cash.",
-    voucherCode: "ECO-MKT-5",
-  },
-  {
-    id: 13, title: "Free Delivery Voucher", emoji: "🚚", description: "Free delivery on grocery order", cost: 600, category: "voucher",
-    terms: "Valid for 7 days from redemption. Minimum order of RM30. Delivery within city limits only. One use per account.",
-    voucherCode: "FREE-DLVR",
-  },
-  {
-    id: 14, title: "RM25 Meal Kit Voucher", emoji: "📦", description: "RM25 off a zero-waste meal kit", cost: 3500, category: "voucher",
-    terms: "Valid for 60 days from redemption. First-time subscription only. Cannot be used with other discounts.",
-    voucherCode: "MEALKIT-25",
-  },
+  { id: 11, title: "RM10 Grocery Voucher", emoji: "🛒", description: "RM10 off at participating stores", cost: 1500, category: "voucher", terms: "Valid for 30 days from redemption. Minimum purchase of RM50. Valid at participating stores only. Not combinable with other promotions. One voucher per transaction.", voucherCode: "FOOD-SAVE-10" },
+  { id: 12, title: "RM5 Eco Market Voucher", emoji: "🥬", description: "RM5 off at eco-friendly markets", cost: 800, category: "voucher", terms: "Valid for 14 days from redemption. No minimum purchase required. Valid at participating eco markets only. Cannot be exchanged for cash.", voucherCode: "ECO-MKT-5" },
+  { id: 13, title: "Free Delivery Voucher", emoji: "🚚", description: "Free delivery on grocery order", cost: 600, category: "voucher", terms: "Valid for 7 days from redemption. Minimum order of RM30. Delivery within city limits only. One use per account.", voucherCode: "FREE-DLVR" },
+  { id: 14, title: "RM25 Meal Kit Voucher", emoji: "📦", description: "RM25 off a zero-waste meal kit", cost: 3500, category: "voucher", terms: "Valid for 60 days from redemption. First-time subscription only. Cannot be used with other discounts.", voucherCode: "MEALKIT-25" },
 ];
 
 const challengeTabs = [
@@ -87,9 +108,16 @@ export default function Challenges() {
     if (saved) {
       try { return JSON.parse(saved); } catch { /* ignore */ }
     }
-    return initialChallenges;
+    return generateChallenges();
   });
   const [activeTab, setActiveTab] = useState<"daily" | "weekly" | "monthly">("daily");
+
+  // Proof submission state
+  const [proofChallenge, setProofChallenge] = useState<Challenge | null>(null);
+  const [proofType, setProofType] = useState<"photo" | "text">("photo");
+  const [proofText, setProofText] = useState("");
+  const [proofPhoto, setProofPhoto] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     localStorage.setItem("sp-challenges", JSON.stringify(challenges));
@@ -103,27 +131,62 @@ export default function Challenges() {
   const { toast } = useToast();
 
   const refreshChallenges = useCallback(() => {
-    setChallenges(initialChallenges);
-    localStorage.removeItem("sp-challenges");
-    toast({ title: "Challenges refreshed! 🔄", description: "All challenges have been reset." });
+    const newChallenges = generateChallenges();
+    setChallenges(newChallenges);
+    localStorage.setItem("sp-challenges", JSON.stringify(newChallenges));
+    toast({ title: "New challenges! 🎲", description: "Fresh challenges have been generated for you." });
   }, [toast]);
 
-  const toggleChallenge = (id: number) => {
-    setChallenges((prev) =>
-      prev.map((c) => {
-        if (c.id === id) {
-          const newDone = !c.done;
-          if (newDone) {
-            addPoints(c.pts);
-            toast({ title: `+${c.pts} points earned! 🎉`, description: `Completed: ${c.title}` });
-          } else {
+  const handleChallengeClick = (challenge: Challenge) => {
+    if (challenge.done) {
+      // Toggle off - undo
+      setChallenges(prev =>
+        prev.map(c => {
+          if (c.id === challenge.id) {
             spendPoints(c.pts);
+            return { ...c, done: false, proofType: undefined, proofData: undefined };
           }
-          return { ...c, done: newDone };
+          return c;
+        })
+      );
+      return;
+    }
+    // Open proof modal
+    setProofChallenge(challenge);
+    setProofType("photo");
+    setProofText("");
+    setProofPhoto(null);
+  };
+
+  const handlePhotoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      setProofPhoto(ev.target?.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const submitProof = () => {
+    if (!proofChallenge) return;
+    const proofData = proofType === "photo" ? proofPhoto : proofText;
+    if (!proofData || (proofType === "text" && proofText.trim().length < 5)) {
+      toast({ title: "Proof required", description: proofType === "photo" ? "Please upload a photo as proof." : "Please write at least a few words describing how you completed this.", variant: "destructive" });
+      return;
+    }
+
+    setChallenges(prev =>
+      prev.map(c => {
+        if (c.id === proofChallenge.id) {
+          addPoints(c.pts);
+          toast({ title: `+${c.pts} points earned! 🎉`, description: `Completed: ${c.title}` });
+          return { ...c, done: true, proofType, proofData: proofData };
         }
         return c;
       })
     );
+    setProofChallenge(null);
   };
 
   const handleRedeem = (reward: Reward) => {
@@ -177,35 +240,29 @@ export default function Challenges() {
         <span className="text-lg font-bold text-primary tabular-nums">{points.toLocaleString()} pts</span>
       </div>
 
-      {/* Top toggle: Challenges / Rewards */}
+      {/* Top toggle */}
       <div className="flex bg-muted rounded-xl p-1 animate-fade-up" style={{ animationDelay: "80ms" }}>
         <button
           onClick={() => setTopTab("challenges")}
           className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 active:scale-[0.97] ${
-            topTab === "challenges"
-              ? "bg-card text-foreground shadow-sm"
-              : "text-muted-foreground"
+            topTab === "challenges" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"
           }`}
         >
-          <Flame size={16} />
-          Challenges
+          <Flame size={16} /> Challenges
         </button>
         <button
           onClick={() => setTopTab("rewards")}
           className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 active:scale-[0.97] ${
-            topTab === "rewards"
-              ? "bg-card text-foreground shadow-sm"
-              : "text-muted-foreground"
+            topTab === "rewards" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"
           }`}
         >
-          <Gift size={16} />
-          Rewards
+          <Gift size={16} /> Rewards
         </button>
       </div>
 
       {topTab === "challenges" ? (
         <>
-          {/* Challenge category tabs */}
+          {/* Category tabs */}
           <div className="flex items-center gap-2 animate-fade-up" style={{ animationDelay: "120ms" }}>
             {challengeTabs.map(({ key, label, icon: Icon }) => (
               <button
@@ -217,26 +274,22 @@ export default function Challenges() {
                     : "bg-muted text-muted-foreground hover:bg-muted/80"
                 }`}
               >
-                <Icon size={14} />
-                {label}
+                <Icon size={14} /> {label}
               </button>
             ))}
             <button
               onClick={refreshChallenges}
               className="ml-auto flex items-center gap-1 px-3 py-2 rounded-full text-xs font-medium bg-muted text-muted-foreground hover:bg-muted/80 transition-all duration-200 active:scale-[0.96]"
-              title="Reset all challenges"
+              title="Get new challenges"
             >
-              <RefreshCw size={13} />
-              Reset
+              <RefreshCw size={13} /> New
             </button>
           </div>
 
           {/* Progress */}
           <div className="bg-card border rounded-2xl p-4 animate-fade-up" style={{ animationDelay: "160ms" }}>
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm text-muted-foreground">
-                {completedCount}/{filtered.length} completed
-              </span>
+              <span className="text-sm text-muted-foreground">{completedCount}/{filtered.length} completed</span>
               <span className="text-sm font-semibold text-primary">+{totalPts} pts earned</span>
             </div>
             <div className="w-full bg-muted rounded-full h-2.5">
@@ -252,7 +305,7 @@ export default function Challenges() {
             {filtered.map((challenge, i) => (
               <button
                 key={challenge.id}
-                onClick={() => toggleChallenge(challenge.id)}
+                onClick={() => handleChallengeClick(challenge)}
                 className={`w-full text-left flex items-start gap-3 bg-card rounded-xl p-4 border transition-all duration-200 active:scale-[0.97] animate-fade-up ${
                   challenge.done ? "opacity-60" : "shadow-sm hover:shadow-md"
                 }`}
@@ -264,16 +317,18 @@ export default function Challenges() {
                     {challenge.title}
                   </p>
                   <p className="text-xs text-muted-foreground mt-0.5">{challenge.description}</p>
+                  {challenge.done && challenge.proofType && (
+                    <div className="mt-1.5 flex items-center gap-1 text-[10px] text-success">
+                      {challenge.proofType === "photo" ? <Camera size={10} /> : <MessageSquare size={10} />}
+                      Proof submitted
+                    </div>
+                  )}
                 </div>
                 <div className="flex flex-col items-end gap-2">
-                  <span className="text-xs font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">
-                    +{challenge.pts}
-                  </span>
-                  <div
-                    className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors ${
-                      challenge.done ? "bg-success border-success" : "border-muted-foreground/30"
-                    }`}
-                  >
+                  <span className="text-xs font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">+{challenge.pts}</span>
+                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors ${
+                    challenge.done ? "bg-success border-success" : "border-muted-foreground/30"
+                  }`}>
                     {challenge.done && (
                       <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
                         <path d="M1 4L3.5 6.5L9 1" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
@@ -299,8 +354,7 @@ export default function Challenges() {
                     : "bg-muted text-muted-foreground hover:bg-muted/80"
                 }`}
               >
-                <Icon size={14} />
-                {label}
+                <Icon size={14} /> {label}
               </button>
             ))}
           </div>
@@ -310,13 +364,10 @@ export default function Challenges() {
             {filteredRewards.map((reward, i) => {
               const isRedeemed = redeemedIds.includes(reward.id);
               const canAfford = points >= reward.cost;
-
               return (
                 <div
                   key={reward.id}
-                  className={`bg-card border rounded-2xl p-4 transition-all duration-200 animate-fade-up ${
-                    isRedeemed ? "opacity-50" : ""
-                  }`}
+                  className={`bg-card border rounded-2xl p-4 transition-all duration-200 animate-fade-up ${isRedeemed ? "opacity-50" : ""}`}
                   style={{ animationDelay: `${160 + i * 60}ms` }}
                 >
                   <div className="flex items-start gap-3">
@@ -325,14 +376,9 @@ export default function Challenges() {
                       <p className="text-sm font-semibold text-foreground">{reward.title}</p>
                       <p className="text-xs text-muted-foreground mt-0.5">{reward.description}</p>
                       <div className="flex items-center gap-2 mt-2.5">
-                        <span className="text-xs font-bold text-primary bg-primary/10 px-2.5 py-1 rounded-full tabular-nums">
-                          {reward.cost.toLocaleString()} pts
-                        </span>
+                        <span className="text-xs font-bold text-primary bg-primary/10 px-2.5 py-1 rounded-full tabular-nums">{reward.cost.toLocaleString()} pts</span>
                         {reward.category === "voucher" && reward.terms && (
-                          <button
-                            onClick={() => setShowTerms(reward)}
-                            className="text-[10px] text-muted-foreground underline flex items-center gap-0.5"
-                          >
+                          <button onClick={() => setShowTerms(reward)} className="text-[10px] text-muted-foreground underline flex items-center gap-0.5">
                             <FileText size={10} /> T&C
                           </button>
                         )}
@@ -342,20 +388,12 @@ export default function Challenges() {
                       onClick={() => handleRedeem(reward)}
                       disabled={isRedeemed || !canAfford}
                       className={`shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all duration-200 active:scale-[0.95] ${
-                        isRedeemed
-                          ? "bg-success/10 text-success cursor-default"
-                          : canAfford
-                          ? "bg-primary text-primary-foreground shadow-sm hover:shadow-md"
+                        isRedeemed ? "bg-success/10 text-success cursor-default"
+                          : canAfford ? "bg-primary text-primary-foreground shadow-sm hover:shadow-md"
                           : "bg-muted text-muted-foreground cursor-not-allowed"
                       }`}
                     >
-                      {isRedeemed ? (
-                        <><Check size={14} /> Done</>
-                      ) : canAfford ? (
-                        <><Gift size={14} /> Redeem</>
-                      ) : (
-                        <><Lock size={14} /> Locked</>
-                      )}
+                      {isRedeemed ? <><Check size={14} /> Done</> : canAfford ? <><Gift size={14} /> Redeem</> : <><Lock size={14} /> Locked</>}
                     </button>
                   </div>
                 </div>
@@ -365,6 +403,95 @@ export default function Challenges() {
         </>
       )}
 
+      {/* Proof Submission Dialog */}
+      <Dialog open={!!proofChallenge} onOpenChange={(open) => !open && setProofChallenge(null)}>
+        <DialogContent className="max-w-sm rounded-2xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-base">
+              <span className="text-xl">{proofChallenge?.emoji}</span> Complete Challenge
+            </DialogTitle>
+            <DialogDescription className="text-xs">
+              Submit proof that you completed: <span className="font-medium text-foreground">{proofChallenge?.title}</span>
+            </DialogDescription>
+          </DialogHeader>
+
+          {/* Proof type toggle */}
+          <div className="flex bg-muted rounded-lg p-1 gap-1">
+            <button
+              onClick={() => setProofType("photo")}
+              className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-md text-xs font-medium transition-all ${
+                proofType === "photo" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"
+              }`}
+            >
+              <Camera size={14} /> Upload Photo
+            </button>
+            <button
+              onClick={() => setProofType("text")}
+              className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-md text-xs font-medium transition-all ${
+                proofType === "text" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"
+              }`}
+            >
+              <MessageSquare size={14} /> Description
+            </button>
+          </div>
+
+          {proofType === "photo" ? (
+            <div className="space-y-3">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                capture="environment"
+                onChange={handlePhotoSelect}
+                className="hidden"
+              />
+              {proofPhoto ? (
+                <div className="relative">
+                  <img src={proofPhoto} alt="Proof" className="w-full h-40 object-cover rounded-xl border" />
+                  <button
+                    onClick={() => { setProofPhoto(null); if (fileInputRef.current) fileInputRef.current.value = ""; }}
+                    className="absolute top-2 right-2 bg-foreground/70 text-background rounded-full p-1"
+                  >
+                    <X size={14} />
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  className="w-full h-40 border-2 border-dashed border-muted-foreground/30 rounded-xl flex flex-col items-center justify-center gap-2 text-muted-foreground hover:border-primary/40 hover:text-primary transition-colors"
+                >
+                  <Upload size={24} />
+                  <span className="text-xs font-medium">Tap to upload photo</span>
+                </button>
+              )}
+            </div>
+          ) : (
+            <Textarea
+              placeholder="Describe how you completed this challenge..."
+              value={proofText}
+              onChange={(e) => setProofText(e.target.value)}
+              rows={4}
+              className="text-sm resize-none"
+            />
+          )}
+
+          <div className="flex gap-2 pt-1">
+            <button
+              onClick={() => setProofChallenge(null)}
+              className="flex-1 bg-muted text-muted-foreground rounded-xl py-2.5 text-sm font-semibold transition-all active:scale-[0.97]"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={submitProof}
+              className="flex-1 bg-primary text-primary-foreground rounded-xl py-2.5 text-sm font-semibold transition-all active:scale-[0.97] shadow-lg shadow-primary/20"
+            >
+              Submit & Earn +{proofChallenge?.pts} pts
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* Terms & Conditions Modal */}
       {showTerms && (
         <div className="fixed inset-0 bg-foreground/50 z-50 flex items-end sm:items-center justify-center p-4">
@@ -373,9 +500,7 @@ export default function Challenges() {
               <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
                 <FileText size={18} className="text-primary" /> Terms & Conditions
               </h3>
-              <button onClick={() => setShowTerms(null)} className="text-muted-foreground hover:text-foreground">
-                <X size={18} />
-              </button>
+              <button onClick={() => setShowTerms(null)} className="text-muted-foreground hover:text-foreground"><X size={18} /></button>
             </div>
             <div className="flex items-center gap-3 bg-muted rounded-xl p-3">
               <span className="text-2xl">{showTerms.emoji}</span>
@@ -395,18 +520,8 @@ export default function Challenges() {
               </ul>
             </div>
             <div className="flex gap-2">
-              <button
-                onClick={() => setShowTerms(null)}
-                className="flex-1 bg-muted text-muted-foreground rounded-xl py-3 text-sm font-semibold transition-all active:scale-[0.97]"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => confirmRedeem(showTerms)}
-                className="flex-1 bg-primary text-primary-foreground rounded-xl py-3 text-sm font-semibold transition-all active:scale-[0.97] shadow-lg shadow-primary/20"
-              >
-                Accept & Redeem
-              </button>
+              <button onClick={() => setShowTerms(null)} className="flex-1 bg-muted text-muted-foreground rounded-xl py-3 text-sm font-semibold transition-all active:scale-[0.97]">Cancel</button>
+              <button onClick={() => confirmRedeem(showTerms)} className="flex-1 bg-primary text-primary-foreground rounded-xl py-3 text-sm font-semibold transition-all active:scale-[0.97] shadow-lg shadow-primary/20">Accept & Redeem</button>
             </div>
           </div>
         </div>
@@ -424,12 +539,7 @@ export default function Challenges() {
               <p className="text-xl font-bold text-primary tracking-widest tabular-nums">{showVoucher.voucherCode}</p>
             </div>
             <p className="text-[10px] text-muted-foreground">Screenshot this code. Show it at participating stores to redeem.</p>
-            <button
-              onClick={() => setShowVoucher(null)}
-              className="w-full bg-primary text-primary-foreground rounded-xl py-3 text-sm font-semibold transition-all active:scale-[0.97]"
-            >
-              Got it!
-            </button>
+            <button onClick={() => setShowVoucher(null)} className="w-full bg-primary text-primary-foreground rounded-xl py-3 text-sm font-semibold transition-all active:scale-[0.97]">Got it!</button>
           </div>
         </div>
       )}
