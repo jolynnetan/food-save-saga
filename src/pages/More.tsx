@@ -3,7 +3,7 @@ import { Package, MapPin, ShoppingCart, Calculator, Trophy, Clock, BarChart3, Bu
 
 const features = [
   { to: "/store", icon: ShoppingBag, title: "My Store", desc: "Redeemed rewards", color: "text-primary", bg: "bg-primary/10" },
-  { to: "/meal-planner", icon: CalendarDays, title: "Meal Planner", desc: "Plan weekly meals", color: "text-success", bg: "bg-success/10" },
+  
   { to: "/tracker", icon: BarChart3, title: "Tracker", desc: "Waste analytics", color: "text-success", bg: "bg-success/10" },
   { to: "/pantry", icon: Package, title: "Smart Pantry", desc: "Track expiry dates", color: "text-primary", bg: "bg-primary/10" },
   { to: "/share", icon: MapPin, title: "Food Drop", desc: "Share with neighbors", color: "text-warning", bg: "bg-warning/10" },
