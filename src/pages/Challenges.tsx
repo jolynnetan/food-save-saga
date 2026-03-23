@@ -94,17 +94,18 @@ export default function Challenges() {
     localStorage.setItem("sp-challenges", JSON.stringify(challenges));
   }, [challenges]);
 
-  const refreshChallenges = useCallback(() => {
-    setChallenges(initialChallenges);
-    localStorage.removeItem("sp-challenges");
-    toast({ title: "Challenges refreshed! 🔄", description: "All challenges have been reset." });
-  }, [toast]);
   const [rewardCategory, setRewardCategory] = useState<"all" | "donate" | "personal" | "eco" | "voucher">("all");
   const [redeemedIds, setRedeemedIds] = useState<number[]>([]);
   const [showTerms, setShowTerms] = useState<Reward | null>(null);
   const [showVoucher, setShowVoucher] = useState<Reward | null>(null);
   const { points, addPoints, spendPoints } = usePoints();
   const { toast } = useToast();
+
+  const refreshChallenges = useCallback(() => {
+    setChallenges(initialChallenges);
+    localStorage.removeItem("sp-challenges");
+    toast({ title: "Challenges refreshed! 🔄", description: "All challenges have been reset." });
+  }, [toast]);
 
   const toggleChallenge = (id: number) => {
     setChallenges((prev) =>
