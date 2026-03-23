@@ -1,12 +1,25 @@
+import { useState, useEffect } from "react";
 import { Flame, Leaf, TrendingDown, ChevronRight, Camera, Apple, Package, MapPin, ShoppingCart, Calculator, Trophy, Clock, BarChart3, Building2, BellRing } from "lucide-react";
 import { Link } from "react-router-dom";
 import { usePoints } from "@/contexts/PointsContext";
 
-const todayTasks = [
-  { id: 1, title: "Finish yesterday's rice", emoji: "🍚", done: true, pts: 10 },
+const initialDailyTasks = [
+  { id: 1, title: "Finish yesterday's rice", emoji: "🍚", done: false, pts: 10 },
   { id: 2, title: "Plan meals for the week", emoji: "📋", done: false, pts: 15 },
   { id: 3, title: "Use wilting vegetables", emoji: "🥬", done: false, pts: 20 },
 ];
+
+function getDailyChallenges() {
+  const saved = localStorage.getItem("sp-challenges");
+  if (saved) {
+    try {
+      const all = JSON.parse(saved);
+      const daily = all.filter((c: any) => c.category === "daily");
+      if (daily.length > 0) return daily.map((c: any) => ({ id: c.id, title: c.title, emoji: c.emoji, done: c.done, pts: c.pts }));
+    } catch { /* ignore */ }
+  }
+  return initialDailyTasks;
+}
 
 const tips = [
   "Store herbs in a glass of water to keep them fresh 3x longer 🌿",
