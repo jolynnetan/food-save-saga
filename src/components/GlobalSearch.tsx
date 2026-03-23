@@ -23,6 +23,7 @@ const searchableFeatures = [
   { name: "Food Drop", path: "/share", keywords: ["share", "neighbor", "community"], emoji: "📍" },
   { name: "Weekly Report", path: "/weekly-report", keywords: ["report", "summary", "nutrition"], emoji: "📈" },
   { name: "Friends", path: "/friends", keywords: ["social", "buddy", "connect"], emoji: "👥" },
+  { name: "National Impact", path: "/national-impact", keywords: ["national", "impact", "statistics", "collective", "country"], emoji: "🇲🇾" },
 ];
 
 export default function GlobalSearch() {

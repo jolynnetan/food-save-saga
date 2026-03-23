@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Flame, Leaf, TrendingDown, ChevronRight, Camera, Apple, Package, MapPin, ShoppingCart, Calculator, Trophy, Clock, BarChart3, Building2, BellRing } from "lucide-react";
+import ImpactStory from "@/components/ImpactStory";
 import { Link } from "react-router-dom";
 import { usePoints } from "@/contexts/PointsContext";
 import { useSettings } from "@/contexts/SettingsContext";
@@ -144,8 +145,11 @@ export default function Dashboard() {
         <ChevronRight size={18} className="text-muted-foreground" />
       </Link>
 
+      {/* Impact Story */}
+      {!isSimple && <ImpactStory />}
+
       {/* Today's Challenges */}
-      <section className="animate-fade-up" style={{ animationDelay: "240ms" }}>
+      <section className="animate-fade-up" style={{ animationDelay: "300ms" }}>
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-base font-semibold text-foreground">Today's Challenges</h3>
           <Link to="/challenges" className="text-sm text-primary font-medium">See all</Link>

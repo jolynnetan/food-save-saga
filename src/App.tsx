@@ -29,6 +29,7 @@ import Rewards from "@/pages/Rewards";
 import Reminders from "@/pages/Reminders";
 import AiAssistant from "@/pages/AiAssistant";
 import Store from "@/pages/Store";
+import NationalImpact from "@/pages/NationalImpact";
 
 import NotFound from "@/pages/NotFound";
 
@@ -74,6 +75,7 @@ function ProtectedRoutes() {
         <Route path="/reminders" element={<Reminders />} />
         <Route path="/ai-assistant" element={<AiAssistant />} />
         <Route path="/store" element={<Store />} />
+        <Route path="/national-impact" element={<NationalImpact />} />
         
         <Route path="*" element={<NotFound />} />
       </Routes>
