@@ -1,7 +1,9 @@
+import { useState } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { Home, Camera, MoreHorizontal, ArrowLeft, Settings, Sparkles, ChefHat, Flame } from "lucide-react";
 import { usePoints } from "@/contexts/PointsContext";
 import GlobalSearch from "@/components/GlobalSearch";
+import AiChatPopup from "@/components/AiChatPopup";
 
 const navItems = [
   { to: "/", icon: Home, label: "Home" },
