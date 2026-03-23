@@ -72,6 +72,7 @@ function ProtectedRoutes() {
         <Route path="/rewards" element={<Rewards />} />
         <Route path="/reminders" element={<Reminders />} />
         <Route path="/ai-assistant" element={<AiAssistant />} />
+        <Route path="/store" element={<Store />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </AppLayout>
