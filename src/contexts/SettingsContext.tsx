@@ -3,6 +3,7 @@ import { createContext, useContext, useState, useEffect, ReactNode } from "react
 type Language = "en" | "ms" | "zh" | "ta";
 type FontSize = "small" | "medium" | "large";
 type Theme = "light" | "dark";
+type AppMode = "simple" | "advanced";
 
 type SettingsContextType = {
   language: Language;
@@ -11,6 +12,8 @@ type SettingsContextType = {
   setFontSize: (f: FontSize) => void;
   theme: Theme;
   setTheme: (t: Theme) => void;
+  appMode: AppMode;
+  setAppMode: (m: AppMode) => void;
 };
 
 const SettingsContext = createContext<SettingsContextType | null>(null);
