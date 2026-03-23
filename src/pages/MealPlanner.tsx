@@ -109,28 +109,51 @@ export default function MealPlanner() {
     setAnalyzing(true);
 
     try {
-      // Call AI to analyze the dish
-      const resp = await supabase.functions.invoke("food-assistant", {
-        body: {
+      const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/food-assistant`;
+      const resp = await fetch(CHAT_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+        },
+        body: JSON.stringify({
           mode: "meal-analyze",
           messages: [{ role: "user", content: `Analyze this dish: ${manualName.trim()}` }],
-        },
+        }),
       });
 
+      if (!resp.ok) {
+        throw new Error("AI analysis request failed");
+      }
+
       let aiResult: any = null;
-      if (resp.data) {
-        // Parse SSE stream response
-        const text = typeof resp.data === "string" ? resp.data : await new Response(resp.data).text();
+      if (resp.body) {
+        const reader = resp.body.getReader();
+        const decoder = new TextDecoder();
         let fullContent = "";
-        for (const line of text.split("\n")) {
-          if (!line.startsWith("data: ") || line.includes("[DONE]")) continue;
-          try {
-            const parsed = JSON.parse(line.slice(6));
-            const c = parsed.choices?.[0]?.delta?.content;
-            if (c) fullContent += c;
-          } catch {}
+        let buf = "";
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buf += decoder.decode(value, { stream: true });
+
+          let idx: number;
+          while ((idx = buf.indexOf("\n")) !== -1) {
+            let line = buf.slice(0, idx);
+            buf = buf.slice(idx + 1);
+            if (line.endsWith("\r")) line = line.slice(0, -1);
+            if (!line.startsWith("data: ")) continue;
+            const json = line.slice(6).trim();
+            if (json === "[DONE]") break;
+            try {
+              const parsed = JSON.parse(json);
+              const c = parsed.choices?.[0]?.delta?.content;
+              if (c) fullContent += c;
+            } catch {}
+          }
         }
-        // Extract JSON from response
+
         const jsonMatch = fullContent.match(/\{[\s\S]*\}/);
         if (jsonMatch) {
           aiResult = JSON.parse(jsonMatch[0]);
