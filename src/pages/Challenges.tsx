@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Flame, Calendar, Star, Gift, Check, Lock, Heart, TreePine, Sparkles, ShoppingBag, X, FileText } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
+import { Flame, Calendar, Star, Gift, Check, Lock, Heart, TreePine, Sparkles, ShoppingBag, X, FileText, RefreshCw } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { usePoints } from "@/contexts/PointsContext";
 
@@ -81,14 +81,31 @@ const rewardCategories = [
 
 export default function Challenges() {
   const [topTab, setTopTab] = useState<"challenges" | "rewards">("challenges");
-  const [challenges, setChallenges] = useState(initialChallenges);
+  const [challenges, setChallenges] = useState<Challenge[]>(() => {
+    const saved = localStorage.getItem("sp-challenges");
+    if (saved) {
+      try { return JSON.parse(saved); } catch { /* ignore */ }
+    }
+    return initialChallenges;
+  });
   const [activeTab, setActiveTab] = useState<"daily" | "weekly" | "monthly">("daily");
+
+  useEffect(() => {
+    localStorage.setItem("sp-challenges", JSON.stringify(challenges));
+  }, [challenges]);
+
   const [rewardCategory, setRewardCategory] = useState<"all" | "donate" | "personal" | "eco" | "voucher">("all");
   const [redeemedIds, setRedeemedIds] = useState<number[]>([]);
   const [showTerms, setShowTerms] = useState<Reward | null>(null);
   const [showVoucher, setShowVoucher] = useState<Reward | null>(null);
   const { points, addPoints, spendPoints } = usePoints();
   const { toast } = useToast();
+
+  const refreshChallenges = useCallback(() => {
+    setChallenges(initialChallenges);
+    localStorage.removeItem("sp-challenges");
+    toast({ title: "Challenges refreshed! 🔄", description: "All challenges have been reset." });
+  }, [toast]);
 
   const toggleChallenge = (id: number) => {
     setChallenges((prev) =>
@@ -178,7 +195,7 @@ export default function Challenges() {
       {topTab === "challenges" ? (
         <>
           {/* Challenge category tabs */}
-          <div className="flex gap-2 animate-fade-up" style={{ animationDelay: "120ms" }}>
+          <div className="flex items-center gap-2 animate-fade-up" style={{ animationDelay: "120ms" }}>
             {challengeTabs.map(({ key, label, icon: Icon }) => (
               <button
                 key={key}
@@ -193,6 +210,14 @@ export default function Challenges() {
                 {label}
               </button>
             ))}
+            <button
+              onClick={refreshChallenges}
+              className="ml-auto flex items-center gap-1 px-3 py-2 rounded-full text-xs font-medium bg-muted text-muted-foreground hover:bg-muted/80 transition-all duration-200 active:scale-[0.96]"
+              title="Reset all challenges"
+            >
+              <RefreshCw size={13} />
+              Reset
+            </button>
           </div>
 
           {/* Progress */}
