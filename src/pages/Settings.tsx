@@ -6,7 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 type FontSize = "small" | "medium" | "large";
 
 export default function Settings() {
-  const { language, setLanguage, fontSize, setFontSize, theme, setTheme } = useSettings();
+  const { language, setLanguage, fontSize, setFontSize, theme, setTheme, appMode, setAppMode } = useSettings();
   const { signOut, user } = useAuth();
   const navigate = useNavigate();
   const t = useT();
