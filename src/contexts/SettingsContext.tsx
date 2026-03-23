@@ -103,6 +103,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   const [language, setLanguage] = useState<Language>(() => (localStorage.getItem("sp-lang") as Language) || "en");
   const [fontSize, setFontSize] = useState<FontSize>(() => (localStorage.getItem("sp-fontsize") as FontSize) || "medium");
   const [theme, setTheme] = useState<Theme>(() => (localStorage.getItem("sp-theme") as Theme) || "light");
+  const [appMode, setAppMode] = useState<AppMode>(() => (localStorage.getItem("sp-app-mode") as AppMode) || "advanced");
 
   useEffect(() => {
     localStorage.setItem("sp-lang", language);
