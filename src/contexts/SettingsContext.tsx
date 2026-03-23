@@ -3,6 +3,7 @@ import { createContext, useContext, useState, useEffect, ReactNode } from "react
 type Language = "en" | "ms" | "zh" | "ta";
 type FontSize = "small" | "medium" | "large";
 type Theme = "light" | "dark";
+type AppMode = "simple" | "advanced";
 
 type SettingsContextType = {
   language: Language;
@@ -11,6 +12,8 @@ type SettingsContextType = {
   setFontSize: (f: FontSize) => void;
   theme: Theme;
   setTheme: (t: Theme) => void;
+  appMode: AppMode;
+  setAppMode: (m: AppMode) => void;
 };
 
 const SettingsContext = createContext<SettingsContextType | null>(null);
@@ -100,6 +103,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   const [language, setLanguage] = useState<Language>(() => (localStorage.getItem("sp-lang") as Language) || "en");
   const [fontSize, setFontSize] = useState<FontSize>(() => (localStorage.getItem("sp-fontsize") as FontSize) || "medium");
   const [theme, setTheme] = useState<Theme>(() => (localStorage.getItem("sp-theme") as Theme) || "light");
+  const [appMode, setAppMode] = useState<AppMode>(() => (localStorage.getItem("sp-app-mode") as AppMode) || "advanced");
 
   useEffect(() => {
     localStorage.setItem("sp-lang", language);
@@ -115,8 +119,12 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     document.documentElement.classList.toggle("dark", theme === "dark");
   }, [theme]);
 
+  useEffect(() => {
+    localStorage.setItem("sp-app-mode", appMode);
+  }, [appMode]);
+
   return (
-    <SettingsContext.Provider value={{ language, setLanguage, fontSize, setFontSize, theme, setTheme }}>
+    <SettingsContext.Provider value={{ language, setLanguage, fontSize, setFontSize, theme, setTheme, appMode, setAppMode }}>
       {children}
     </SettingsContext.Provider>
   );

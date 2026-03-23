@@ -1,4 +1,4 @@
-import { Globe, Type, Moon, Sun, Users, ChevronRight, LogOut } from "lucide-react";
+import { Globe, Type, Moon, Sun, Users, ChevronRight, LogOut, Zap } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useSettings, useT, languages } from "@/contexts/SettingsContext";
 import { useAuth } from "@/contexts/AuthContext";
@@ -6,7 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 type FontSize = "small" | "medium" | "large";
 
 export default function Settings() {
-  const { language, setLanguage, fontSize, setFontSize, theme, setTheme } = useSettings();
+  const { language, setLanguage, fontSize, setFontSize, theme, setTheme, appMode, setAppMode } = useSettings();
   const { signOut, user } = useAuth();
   const navigate = useNavigate();
   const t = useT();
@@ -127,6 +127,34 @@ export default function Settings() {
               <div
                 className={`absolute top-0.5 w-6 h-6 rounded-full bg-white shadow-md transition-all duration-300 ${
                   theme === "dark" ? "left-[22px]" : "left-0.5"
+                }`}
+              />
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* App Mode */}
+      <section className="space-y-3 animate-fade-up" style={{ animationDelay: "200ms" }}>
+        <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Experience</h3>
+        <div className="bg-card border rounded-2xl p-4">
+          <div className="flex items-center gap-3">
+            <div className="bg-primary/10 rounded-xl p-2.5">
+              <Zap size={18} className="text-primary" />
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-semibold text-foreground">Simple Mode</p>
+              <p className="text-xs text-muted-foreground">Hide advanced analytics for a cleaner experience</p>
+            </div>
+            <button
+              onClick={() => setAppMode(appMode === "simple" ? "advanced" : "simple")}
+              className={`w-12 h-7 rounded-full transition-all duration-300 relative ${
+                appMode === "simple" ? "bg-primary" : "bg-muted"
+              }`}
+            >
+              <div
+                className={`absolute top-0.5 w-6 h-6 rounded-full bg-white shadow-md transition-all duration-300 ${
+                  appMode === "simple" ? "left-[22px]" : "left-0.5"
                 }`}
               />
             </button>

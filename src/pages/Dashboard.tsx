@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Flame, Leaf, TrendingDown, ChevronRight, Camera, Apple, Package, MapPin, ShoppingCart, Calculator, Trophy, Clock, BarChart3, Building2, BellRing } from "lucide-react";
 import { Link } from "react-router-dom";
 import { usePoints } from "@/contexts/PointsContext";
+import { useSettings } from "@/contexts/SettingsContext";
 
 const initialDailyTasks = [
   { id: 1, title: "Finish yesterday's rice", emoji: "🍚", done: false, pts: 10 },
@@ -59,7 +60,9 @@ function getDailyQuote() {
 
 export default function Dashboard() {
   const { streak } = usePoints();
+  const { appMode } = useSettings();
   const [todayTasks, setTodayTasks] = useState(getDailyChallenges);
+  const isSimple = appMode === "simple";
 
   // Re-sync when returning to this page (e.g. from challenges page)
   useEffect(() => {
@@ -96,16 +99,18 @@ export default function Dashboard() {
         </p>
       </div>
 
-      {/* Quick Stats */}
-      <div className="grid grid-cols-3 gap-3 animate-fade-up" style={{ animationDelay: "80ms" }}>
-        {quickStats.map(({ icon: Icon, label, value, color, bg }) => (
-          <div key={label} className={`${bg} rounded-2xl p-3 text-center`}>
-            <Icon className={`${color} mx-auto mb-1`} size={22} />
-            <p className="text-lg font-bold text-foreground">{value}</p>
-            <p className="text-xs text-muted-foreground">{label}</p>
-          </div>
-        ))}
-      </div>
+      {/* Quick Stats - hidden in simple mode */}
+      {!isSimple && (
+        <div className="grid grid-cols-3 gap-3 animate-fade-up" style={{ animationDelay: "80ms" }}>
+          {quickStats.map(({ icon: Icon, label, value, color, bg }) => (
+            <div key={label} className={`${bg} rounded-2xl p-3 text-center`}>
+              <Icon className={`${color} mx-auto mb-1`} size={22} />
+              <p className="text-lg font-bold text-foreground">{value}</p>
+              <p className="text-xs text-muted-foreground">{label}</p>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Scan CTA */}
       <Link
@@ -203,15 +208,17 @@ export default function Dashboard() {
         </div>
       </section>
 
-      {/* Daily Motivation */}
-      <section className="animate-fade-up" style={{ animationDelay: "320ms" }}>
-        <h3 className="text-base font-semibold text-foreground mb-3">🌍 Why It Matters</h3>
-        <div className="bg-primary/10 rounded-2xl p-4 border border-primary/20">
-          <p className="text-sm text-foreground leading-relaxed font-medium">
-            {getDailyQuote()}
-          </p>
-        </div>
-      </section>
+      {/* Daily Motivation - hidden in simple mode */}
+      {!isSimple && (
+        <section className="animate-fade-up" style={{ animationDelay: "320ms" }}>
+          <h3 className="text-base font-semibold text-foreground mb-3">🌍 Why It Matters</h3>
+          <div className="bg-primary/10 rounded-2xl p-4 border border-primary/20">
+            <p className="text-sm text-foreground leading-relaxed font-medium">
+              {getDailyQuote()}
+            </p>
+          </div>
+        </section>
+      )}
 
       {/* Daily Tip */}
       <section className="animate-fade-up" style={{ animationDelay: "400ms" }}>

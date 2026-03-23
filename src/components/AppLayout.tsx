@@ -1,6 +1,7 @@
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
-import { Home, Camera, BarChart3, MoreHorizontal, ArrowLeft, Settings, Sparkles, ChefHat, Flame } from "lucide-react";
+import { Home, Camera, MoreHorizontal, ArrowLeft, Settings, Sparkles, ChefHat, Flame } from "lucide-react";
 import { usePoints } from "@/contexts/PointsContext";
+import GlobalSearch from "@/components/GlobalSearch";
 
 const navItems = [
   { to: "/", icon: Home, label: "Home" },
@@ -48,6 +49,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             <span className="text-sm">⭐</span>
             <span className="text-sm font-semibold text-primary tabular-nums">{points} pts</span>
           </div>
+          <GlobalSearch />
           <button
             onClick={() => navigate("/ai-assistant")}
             className="p-2 rounded-lg hover:bg-purple-500/10 transition-colors"
