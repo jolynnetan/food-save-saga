@@ -28,6 +28,7 @@ import Foodbank from "@/pages/Foodbank";
 import Rewards from "@/pages/Rewards";
 import Reminders from "@/pages/Reminders";
 import AiAssistant from "@/pages/AiAssistant";
+import Store from "@/pages/Store";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -71,6 +72,7 @@ function ProtectedRoutes() {
         <Route path="/rewards" element={<Rewards />} />
         <Route path="/reminders" element={<Reminders />} />
         <Route path="/ai-assistant" element={<AiAssistant />} />
+        <Route path="/store" element={<Store />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </AppLayout>

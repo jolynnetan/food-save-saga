@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Gift, Check, Lock, Star, Heart, TreePine, Sparkles, ShoppingBag, X, FileText } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { addRedeemedItem } from "@/pages/Store";
 
 type Reward = {
   id: number;
@@ -80,10 +81,20 @@ export default function Rewards() {
     setUserPoints((p) => p - reward.cost);
     setRedeemedIds((prev) => [...prev, reward.id]);
     setShowTerms(null);
+    addRedeemedItem({
+      id: reward.id,
+      title: reward.title,
+      emoji: reward.emoji,
+      description: reward.description,
+      cost: reward.cost,
+      category: reward.category,
+      voucherCode: reward.voucherCode,
+      terms: reward.terms,
+    });
     if (reward.category === "voucher") {
       setShowVoucher(reward);
     } else {
-      toast({ title: "🎉 Reward Redeemed!", description: `You redeemed "${reward.title}" for ${reward.cost} pts.` });
+      toast({ title: "🎉 Reward Redeemed!", description: `You redeemed "${reward.title}". Check your Store in More to view it!` });
     }
   };
 
@@ -254,7 +265,7 @@ export default function Rewards() {
               <p className="text-[10px] text-muted-foreground mb-1">Your voucher code</p>
               <p className="text-xl font-bold text-primary tracking-widest tabular-nums">{showVoucher.voucherCode}</p>
             </div>
-            <p className="text-[10px] text-muted-foreground">Screenshot this code. Show it at participating stores to redeem.</p>
+            <p className="text-[10px] text-muted-foreground">You can find this voucher anytime in <strong>More → My Store</strong>.</p>
             <button
               onClick={() => setShowVoucher(null)}
               className="w-full bg-primary text-primary-foreground rounded-xl py-3 text-sm font-semibold transition-all active:scale-[0.97]"
