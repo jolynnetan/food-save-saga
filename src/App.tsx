@@ -29,6 +29,7 @@ import Rewards from "@/pages/Rewards";
 import Reminders from "@/pages/Reminders";
 import AiAssistant from "@/pages/AiAssistant";
 import Store from "@/pages/Store";
+import NationalImpact from "@/pages/NationalImpact";
 
 import NotFound from "@/pages/NotFound";
 
