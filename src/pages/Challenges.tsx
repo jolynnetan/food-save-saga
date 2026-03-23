@@ -195,7 +195,7 @@ export default function Challenges() {
       {topTab === "challenges" ? (
         <>
           {/* Challenge category tabs */}
-          <div className="flex gap-2 animate-fade-up" style={{ animationDelay: "120ms" }}>
+          <div className="flex items-center gap-2 animate-fade-up" style={{ animationDelay: "120ms" }}>
             {challengeTabs.map(({ key, label, icon: Icon }) => (
               <button
                 key={key}
@@ -210,6 +210,14 @@ export default function Challenges() {
                 {label}
               </button>
             ))}
+            <button
+              onClick={refreshChallenges}
+              className="ml-auto flex items-center gap-1 px-3 py-2 rounded-full text-xs font-medium bg-muted text-muted-foreground hover:bg-muted/80 transition-all duration-200 active:scale-[0.96]"
+              title="Reset all challenges"
+            >
+              <RefreshCw size={13} />
+              Reset
+            </button>
           </div>
 
           {/* Progress */}
