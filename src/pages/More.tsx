@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Package, MapPin, ShoppingCart, Calculator, Trophy, Clock, BarChart3, Building2, BellRing, ShoppingBag, CalendarDays } from "lucide-react";
+import { Package, MapPin, ShoppingCart, Calculator, Trophy, Clock, BarChart3, Building2, BellRing, ShoppingBag } from "lucide-react";
 
 const features = [
   { to: "/store", icon: ShoppingBag, title: "My Store", desc: "Redeemed rewards", color: "text-primary", bg: "bg-primary/10" },
