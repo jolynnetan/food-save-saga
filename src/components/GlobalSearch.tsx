@@ -12,7 +12,7 @@ const searchableFeatures = [
   { name: "Smart Pantry", path: "/pantry", keywords: ["expiry", "fridge", "storage", "ingredients"], emoji: "📦" },
   { name: "Foodbank", path: "/foodbank", keywords: ["donate", "ngo", "charity", "collect", "restock"], emoji: "🏛️" },
   { name: "Smart Shopping", path: "/shopping", keywords: ["list", "buy", "groceries", "shop"], emoji: "🛒" },
-  { name: "Meal Planner", path: "/meal-planner", keywords: ["plan", "weekly", "meal", "schedule", "breakfast", "lunch", "dinner"], emoji: "📅" },
+  
   { name: "Portions", path: "/portions", keywords: ["calculator", "serving", "size"], emoji: "🧮" },
   { name: "Leaderboard", path: "/leaderboard", keywords: ["rank", "score", "compete", "friends"], emoji: "🏆" },
   { name: "Reminders", path: "/reminders", keywords: ["notify", "alert", "weekly", "check"], emoji: "🔔" },
