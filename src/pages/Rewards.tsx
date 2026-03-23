@@ -59,7 +59,12 @@ const categories = [
 
 export default function Rewards() {
   const [userPoints, setUserPoints] = useState(1240);
-  const [redeemedIds, setRedeemedIds] = useState<number[]>([]);
+  const [redeemedIds, setRedeemedIds] = useState<number[]>(() => {
+    try {
+      const items = JSON.parse(localStorage.getItem("sp-redeemed-items") || "[]");
+      return items.map((i: { id: number }) => i.id);
+    } catch { return []; }
+  });
   const [activeCategory, setActiveCategory] = useState<"all" | "donate" | "personal" | "eco" | "voucher">("all");
   const [showTerms, setShowTerms] = useState<Reward | null>(null);
   const [showVoucher, setShowVoucher] = useState<Reward | null>(null);
