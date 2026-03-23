@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
-import { CalendarDays, Plus, Trash2, ShoppingCart, Sparkles, ChevronDown, ChevronUp, ChefHat, AlertTriangle, Check, X } from "lucide-react";
+import { CalendarDays, Plus, Trash2, ShoppingCart, Sparkles, ChevronDown, ChevronUp, ChefHat, AlertTriangle, Check, X, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 type Ingredient = { name: string; amount: string; cal: number };
 type PlannedMeal = {
@@ -73,6 +74,7 @@ export default function MealPlanner() {
   const [manualName, setManualName] = useState("");
   const [manualCalories, setManualCalories] = useState("");
   const [suggesting, setSuggesting] = useState(false);
+  const [analyzing, setAnalyzing] = useState(false);
   const [dragItem, setDragItem] = useState<PlannedMeal | null>(null);
 
   const pantry = getPantryItems();
@@ -102,23 +104,89 @@ export default function MealPlanner() {
     toast.success(`${recipe.emoji} ${recipe.name} added to ${DAYS[day]} ${slot}`);
   };
 
-  const addManualMeal = (day: number, slot: string) => {
+  const addManualMeal = async (day: number, slot: string) => {
     if (!manualName.trim()) return;
-    const meal: PlannedMeal = {
-      id: `${Date.now()}-${Math.random()}`,
-      name: manualName.trim(),
-      emoji: "🍽️",
-      slot: slot as any,
-      day,
-      ingredients: [],
-      calories: parseInt(manualCalories) || 0,
-      isFromRecipe: false,
-    };
-    setMeals(prev => [...prev.filter(m => !(m.day === day && m.slot === slot)), meal]);
-    setManualName("");
-    setManualCalories("");
-    setShowManualAdd(null);
-    toast.success(`Meal added to ${DAYS[day]} ${slot}`);
+    setAnalyzing(true);
+
+    try {
+      // Call AI to analyze the dish
+      const resp = await supabase.functions.invoke("food-assistant", {
+        body: {
+          mode: "meal-analyze",
+          messages: [{ role: "user", content: `Analyze this dish: ${manualName.trim()}` }],
+        },
+      });
+
+      let aiResult: any = null;
+      if (resp.data) {
+        // Parse SSE stream response
+        const text = typeof resp.data === "string" ? resp.data : await new Response(resp.data).text();
+        let fullContent = "";
+        for (const line of text.split("\n")) {
+          if (!line.startsWith("data: ") || line.includes("[DONE]")) continue;
+          try {
+            const parsed = JSON.parse(line.slice(6));
+            const c = parsed.choices?.[0]?.delta?.content;
+            if (c) fullContent += c;
+          } catch {}
+        }
+        // Extract JSON from response
+        const jsonMatch = fullContent.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          aiResult = JSON.parse(jsonMatch[0]);
+        }
+      }
+
+      const ingredients: Ingredient[] = aiResult?.ingredients || [];
+      const calories = aiResult?.calories || parseInt(manualCalories) || 0;
+      const emoji = aiResult?.emoji || "🍽️";
+
+      const meal: PlannedMeal = {
+        id: `${Date.now()}-${Math.random()}`,
+        name: aiResult?.name || manualName.trim(),
+        emoji,
+        slot: slot as any,
+        day,
+        ingredients,
+        calories,
+        isFromRecipe: false,
+      };
+
+      setMeals(prev => [...prev.filter(m => !(m.day === day && m.slot === slot)), meal]);
+
+      // Check pantry and add missing ingredients to shopping list
+      const missingIngredients = ingredients.filter(ing => !checkIngredientAvailability(ing.name, pantry));
+      if (missingIngredients.length > 0) {
+        try {
+          const existing = JSON.parse(localStorage.getItem("sp-shopping-extra") || "[]");
+          const newItems = missingIngredients.map(ing => ({ name: ing.name, amount: ing.amount }));
+          localStorage.setItem("sp-shopping-extra", JSON.stringify([...existing, ...newItems]));
+        } catch {}
+        toast.success(`${emoji} ${meal.name} added! ${missingIngredients.length} missing ingredients sent to Shopping List`);
+      } else {
+        toast.success(`${emoji} ${meal.name} added — all ingredients available! 🎉`);
+      }
+    } catch (err) {
+      console.error("AI analysis failed:", err);
+      // Fallback: add without AI
+      const meal: PlannedMeal = {
+        id: `${Date.now()}-${Math.random()}`,
+        name: manualName.trim(),
+        emoji: "🍽️",
+        slot: slot as any,
+        day,
+        ingredients: [],
+        calories: parseInt(manualCalories) || 0,
+        isFromRecipe: false,
+      };
+      setMeals(prev => [...prev.filter(m => !(m.day === day && m.slot === slot)), meal]);
+      toast.success(`Meal added to ${DAYS[day]} ${slot}`);
+    } finally {
+      setAnalyzing(false);
+      setManualName("");
+      setManualCalories("");
+      setShowManualAdd(null);
+    }
   };
 
   const removeMeal = (id: string) => {
@@ -380,21 +448,29 @@ export default function MealPlanner() {
               <input
                 value={manualName}
                 onChange={e => setManualName(e.target.value)}
-                placeholder="Meal name (e.g. Grilled Chicken)"
+                placeholder="Dish name (e.g. Nasi Lemak, Pasta Carbonara)"
                 className="w-full bg-muted rounded-xl px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
+                disabled={analyzing}
               />
-              <input
-                value={manualCalories}
-                onChange={e => setManualCalories(e.target.value)}
-                placeholder="Estimated calories"
-                type="number"
-                className="w-full bg-muted rounded-xl px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
-              />
+              <p className="text-[10px] text-muted-foreground">
+                🤖 AI will estimate calories & ingredients automatically. Missing ingredients will be added to your Shopping List.
+              </p>
               <button
                 onClick={() => addManualMeal(showManualAdd.day, showManualAdd.slot)}
-                className="w-full bg-primary text-primary-foreground rounded-xl py-2.5 text-sm font-semibold transition-all active:scale-[0.97]"
+                disabled={analyzing || !manualName.trim()}
+                className="w-full flex items-center justify-center gap-2 bg-primary text-primary-foreground rounded-xl py-2.5 text-sm font-semibold transition-all active:scale-[0.97] disabled:opacity-50"
               >
-                Add Meal
+                {analyzing ? (
+                  <>
+                    <Loader2 size={16} className="animate-spin" />
+                    Analyzing with AI...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles size={16} />
+                    Analyze & Add Meal
+                  </>
+                )}
               </button>
             </div>
           </div>

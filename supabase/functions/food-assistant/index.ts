@@ -31,6 +31,15 @@ Return your response as a JSON object with this structure:
 Only return the JSON, no other text.`;
     }
 
+    if (mode === "meal-analyze") {
+      systemPrompt = `You are a meal nutrition and ingredient analysis AI. The user will give you a dish name.
+Estimate the total calories and list the key ingredients with their amounts and individual calories.
+Also suggest an appropriate emoji for the dish.
+Return ONLY a JSON object with this exact structure, no other text:
+{"name": "Dish Name", "emoji": "🍛", "calories": 450, "ingredients": [{"name": "Ingredient", "amount": "200g", "cal": 150}]}
+Keep ingredients to 4-8 items. Use common household amounts.`;
+    }
+
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
