@@ -179,6 +179,33 @@ export default function Store() {
           </div>
         </div>
       )}
+
+      {/* Delete Confirmation Modal */}
+      {deleteIndex !== null && (
+        <div className="fixed inset-0 bg-foreground/50 z-50 flex items-end sm:items-center justify-center p-4">
+          <div className="bg-card rounded-2xl w-full max-w-sm p-5 space-y-4 animate-scale-in text-center">
+            <div className="bg-destructive/10 rounded-full w-14 h-14 flex items-center justify-center mx-auto">
+              <Trash2 size={24} className="text-destructive" />
+            </div>
+            <h3 className="text-base font-semibold text-foreground">Remove this item?</h3>
+            <p className="text-xs text-muted-foreground">This reward will be permanently removed from your store.</p>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setDeleteIndex(null)}
+                className="flex-1 bg-muted text-muted-foreground rounded-xl py-3 text-sm font-semibold transition-all active:scale-[0.97]"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDelete}
+                className="flex-1 bg-destructive text-destructive-foreground rounded-xl py-3 text-sm font-semibold transition-all active:scale-[0.97]"
+              >
+                Remove
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
