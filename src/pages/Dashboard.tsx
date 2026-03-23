@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Flame, Leaf, TrendingDown, ChevronRight, Camera, Apple, Package, MapPin, ShoppingCart, Calculator, Trophy, Clock, BarChart3, Building2, BellRing } from "lucide-react";
+import ImpactStory from "@/components/ImpactStory";
 import { Link } from "react-router-dom";
 import { usePoints } from "@/contexts/PointsContext";
 import { useSettings } from "@/contexts/SettingsContext";
