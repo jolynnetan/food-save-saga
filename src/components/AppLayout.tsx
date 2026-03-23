@@ -1,7 +1,9 @@
+import { useState } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { Home, Camera, MoreHorizontal, ArrowLeft, Settings, Sparkles, ChefHat, Flame } from "lucide-react";
 import { usePoints } from "@/contexts/PointsContext";
 import GlobalSearch from "@/components/GlobalSearch";
+import AiChatPopup from "@/components/AiChatPopup";
 
 const navItems = [
   { to: "/", icon: Home, label: "Home" },
@@ -17,6 +19,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const location = useLocation();
   const navigate = useNavigate();
   const { points, streak } = usePoints();
+  const [aiOpen, setAiOpen] = useState(false);
 
   const isSubPage = !mainRoutes.includes(location.pathname);
 
@@ -51,10 +54,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           </div>
           <GlobalSearch />
           <button
-            onClick={() => navigate("/ai-assistant")}
-            className="p-2 rounded-lg hover:bg-purple-500/10 transition-colors"
+            onClick={() => setAiOpen(prev => !prev)}
+            className={`p-2 rounded-lg transition-colors ${aiOpen ? "bg-primary/10 text-primary" : "hover:bg-purple-500/10 text-purple-500"}`}
           >
-            <Sparkles size={20} className="text-purple-500" />
+            <Sparkles size={20} />
           </button>
           <button
             onClick={() => navigate("/settings")}
@@ -64,6 +67,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           </button>
         </div>
       </header>
+
+      {/* AI Chat Popup */}
+      <AiChatPopup open={aiOpen} onClose={() => setAiOpen(false)} />
 
       {/* Main content */}
       <main className="flex-1 pb-20 overflow-y-auto">
