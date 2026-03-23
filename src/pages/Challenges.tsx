@@ -131,11 +131,38 @@ export default function Challenges() {
   const { toast } = useToast();
 
   const refreshChallenges = useCallback(() => {
-    const newChallenges = generateChallenges();
-    setChallenges(newChallenges);
-    localStorage.setItem("sp-challenges", JSON.stringify(newChallenges));
-    toast({ title: "New challenges! 🎲", description: "Fresh challenges have been generated for you." });
-  }, [toast]);
+    const allDone = challenges.every(c => c.done);
+    if (allDone) {
+      // All done — replace everything
+      const newChallenges = generateChallenges();
+      setChallenges(newChallenges);
+      localStorage.setItem("sp-challenges", JSON.stringify(newChallenges));
+      toast({ title: "New challenges! 🎲", description: "All challenges completed! Here's a fresh set." });
+    } else {
+      // Only replace challenges with zero progress (not done)
+      const hasUndone = challenges.some(c => !c.done);
+      if (!hasUndone) return;
+      const newPool = generateChallenges();
+      let poolIndex = 0;
+      const updated = challenges.map(c => {
+        if (!c.done) {
+          // Find a replacement from the pool with matching category
+          const replacement = newPool.find((n, idx) => idx >= poolIndex && n.category === c.category);
+          if (replacement) {
+            poolIndex = newPool.indexOf(replacement) + 1;
+            return { ...replacement, id: Date.now() + Math.random() };
+          }
+          // Fallback: pick any from pool
+          const fallback = newPool[poolIndex++] || c;
+          return { ...fallback, id: Date.now() + Math.random(), category: c.category };
+        }
+        return c;
+      });
+      setChallenges(updated);
+      localStorage.setItem("sp-challenges", JSON.stringify(updated));
+      toast({ title: "Challenges refreshed 🎲", description: "Incomplete challenges have been replaced with new ones." });
+    }
+  }, [challenges, toast]);
 
   const handleChallengeClick = (challenge: Challenge) => {
     if (challenge.done) {
