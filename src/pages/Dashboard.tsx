@@ -60,7 +60,9 @@ function getDailyQuote() {
 
 export default function Dashboard() {
   const { streak } = usePoints();
+  const { appMode } = useSettings();
   const [todayTasks, setTodayTasks] = useState(getDailyChallenges);
+  const isSimple = appMode === "simple";
 
   // Re-sync when returning to this page (e.g. from challenges page)
   useEffect(() => {
