@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Flame, Calendar, Star } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 type Challenge = {
   id: number;
@@ -32,10 +33,24 @@ const tabs = [
 export default function Challenges() {
   const [challenges, setChallenges] = useState(initialChallenges);
   const [activeTab, setActiveTab] = useState<"daily" | "weekly" | "monthly">("daily");
+  const [totalPoints, setTotalPoints] = useState(1240);
+  const { toast } = useToast();
 
   const toggleChallenge = (id: number) => {
     setChallenges((prev) =>
-      prev.map((c) => (c.id === id ? { ...c, done: !c.done } : c))
+      prev.map((c) => {
+        if (c.id === id) {
+          const newDone = !c.done;
+          if (newDone) {
+            setTotalPoints((p) => p + c.pts);
+            toast({ title: `+${c.pts} points earned! 🎉`, description: `Completed: ${c.title}` });
+          } else {
+            setTotalPoints((p) => p - c.pts);
+          }
+          return { ...c, done: newDone };
+        }
+        return c;
+      })
     );
   };
 
@@ -48,6 +63,12 @@ export default function Challenges() {
       <div className="animate-fade-up">
         <h2 className="text-2xl font-bold text-foreground text-balance">Challenges</h2>
         <p className="text-muted-foreground mt-1">Complete tasks to earn rewards & reduce waste</p>
+      </div>
+
+      {/* Total points banner */}
+      <div className="bg-primary/10 border border-primary/20 rounded-xl px-4 py-3 flex items-center justify-between animate-fade-up" style={{ animationDelay: "60ms" }}>
+        <span className="text-sm text-foreground">Total Points</span>
+        <span className="text-lg font-bold text-primary tabular-nums">{totalPoints.toLocaleString()} pts</span>
       </div>
 
       {/* Tabs */}
