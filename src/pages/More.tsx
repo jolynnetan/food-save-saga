@@ -1,21 +1,19 @@
 import { Link } from "react-router-dom";
-import { Package, MapPin, ShoppingCart, Calculator, Settings, Trophy, ChefHat, Flame, Clock, BarChart3, Building2, Gift, BellRing, Sparkles } from "lucide-react";
+import { Package, MapPin, ShoppingCart, Calculator, Trophy, Clock, BarChart3, Building2, Gift, BellRing, Target } from "lucide-react";
 
 const features = [
+  { to: "/challenges", icon: Target, title: "Challenges", desc: "Earn points daily", color: "text-primary", bg: "bg-primary/10" },
+  { to: "/tracker", icon: BarChart3, title: "Tracker", desc: "Waste analytics", color: "text-success", bg: "bg-success/10" },
   { to: "/pantry", icon: Package, title: "Smart Pantry", desc: "Track expiry dates", color: "text-primary", bg: "bg-primary/10" },
   { to: "/share", icon: MapPin, title: "Food Drop", desc: "Share with neighbors", color: "text-warning", bg: "bg-warning/10" },
-  { to: "/foodbank", icon: Building2, title: "Foodbank", desc: "NGO food donations", color: "text-earth", bg: "bg-earth/10" },
+  { to: "/foodbank", icon: Building2, title: "Foodbank", desc: "NGO donations", color: "text-earth", bg: "bg-earth/10" },
   { to: "/shopping", icon: ShoppingCart, title: "Smart Shopping", desc: "Waste-aware lists", color: "text-success", bg: "bg-success/10" },
   { to: "/portions", icon: Calculator, title: "Portions", desc: "Zero leftover calc", color: "text-earth", bg: "bg-earth/10" },
-  { to: "/calories", icon: Flame, title: "Calories", desc: "Log meals & macros", color: "text-streak", bg: "bg-streak/10" },
   { to: "/history", icon: Clock, title: "History", desc: "Past meals & recipes", color: "text-accent", bg: "bg-accent/10" },
   { to: "/reminders", icon: BellRing, title: "Reminders", desc: "Weekly food checks", color: "text-blue-500", bg: "bg-blue-500/10" },
   { to: "/rewards", icon: Gift, title: "Rewards", desc: "Redeem your points", color: "text-warning", bg: "bg-warning/10" },
   { to: "/leaderboard", icon: Trophy, title: "Leaderboard", desc: "Rank among savers", color: "text-streak", bg: "bg-streak/10" },
-  { to: "/recipes", icon: ChefHat, title: "Recipes", desc: "Step-by-step guides", color: "text-accent", bg: "bg-accent/10" },
   { to: "/weekly-report", icon: BarChart3, title: "Weekly Report", desc: "Nutrition & waste", color: "text-primary", bg: "bg-primary/10" },
-  { to: "/ai-assistant", icon: Sparkles, title: "AI Assistant", desc: "Ask about food & nutrition", color: "text-purple-500", bg: "bg-purple-500/10" },
-  { to: "/settings", icon: Settings, title: "Settings", desc: "Theme & preferences", color: "text-muted-foreground", bg: "bg-muted" },
 ];
 
 export default function More() {

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Flame, Calendar, Star } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { usePoints } from "@/contexts/PointsContext";
 
 type Challenge = {
   id: number;
@@ -13,7 +14,7 @@ type Challenge = {
 };
 
 const initialChallenges: Challenge[] = [
-  { id: 1, title: "Finish yesterday's rice", description: "Don't let cooked rice go to waste", emoji: "🍚", pts: 10, done: true, category: "daily" },
+  { id: 1, title: "Finish yesterday's rice", description: "Don't let cooked rice go to waste", emoji: "🍚", pts: 10, done: false, category: "daily" },
   { id: 2, title: "Plan meals for the week", description: "Create a meal plan to avoid over-buying", emoji: "📋", pts: 15, done: false, category: "daily" },
   { id: 3, title: "Use wilting vegetables", description: "Cook with veggies before they go bad", emoji: "🥬", pts: 20, done: false, category: "daily" },
   { id: 4, title: "Zero waste lunch", description: "Prepare a lunch with no food waste", emoji: "🥗", pts: 15, done: false, category: "daily" },
@@ -33,7 +34,7 @@ const tabs = [
 export default function Challenges() {
   const [challenges, setChallenges] = useState(initialChallenges);
   const [activeTab, setActiveTab] = useState<"daily" | "weekly" | "monthly">("daily");
-  const [totalPoints, setTotalPoints] = useState(1240);
+  const { points, addPoints, spendPoints } = usePoints();
   const { toast } = useToast();
 
   const toggleChallenge = (id: number) => {
@@ -42,10 +43,10 @@ export default function Challenges() {
         if (c.id === id) {
           const newDone = !c.done;
           if (newDone) {
-            setTotalPoints((p) => p + c.pts);
+            addPoints(c.pts);
             toast({ title: `+${c.pts} points earned! 🎉`, description: `Completed: ${c.title}` });
           } else {
-            setTotalPoints((p) => p - c.pts);
+            spendPoints(c.pts);
           }
           return { ...c, done: newDone };
         }
@@ -68,7 +69,7 @@ export default function Challenges() {
       {/* Total points banner */}
       <div className="bg-primary/10 border border-primary/20 rounded-xl px-4 py-3 flex items-center justify-between animate-fade-up" style={{ animationDelay: "60ms" }}>
         <span className="text-sm text-foreground">Total Points</span>
-        <span className="text-lg font-bold text-primary tabular-nums">{totalPoints.toLocaleString()} pts</span>
+        <span className="text-lg font-bold text-primary tabular-nums">{points.toLocaleString()} pts</span>
       </div>
 
       {/* Tabs */}
