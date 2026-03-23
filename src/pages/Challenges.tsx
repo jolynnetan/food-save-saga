@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { Flame, Calendar, Star, Gift, Check, Lock, Heart, TreePine, Sparkles, ShoppingBag, X, FileText, RefreshCw } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { usePoints } from "@/contexts/PointsContext";
+import { addRedeemedItem } from "@/pages/Store";
 
 type Challenge = {
   id: number;
