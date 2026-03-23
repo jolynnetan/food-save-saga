@@ -19,6 +19,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const location = useLocation();
   const navigate = useNavigate();
   const { points, streak } = usePoints();
+  const [aiOpen, setAiOpen] = useState(false);
 
   const isSubPage = !mainRoutes.includes(location.pathname);
 
