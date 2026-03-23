@@ -1,4 +1,4 @@
-import { Flame, Leaf, TrendingDown, ChevronRight, Camera } from "lucide-react";
+import { Flame, Leaf, TrendingDown, ChevronRight, Camera, Apple } from "lucide-react";
 import { Link } from "react-router-dom";
 import { usePoints } from "@/contexts/PointsContext";
 
