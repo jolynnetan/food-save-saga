@@ -58,9 +58,24 @@ function getDailyQuote() {
 }
 
 export default function Dashboard() {
-  const { streak } = usePoints();
+  const [todayTasks, setTodayTasks] = useState(getDailyChallenges);
 
-  const quickStats = [
+  // Re-sync when returning to this page (e.g. from challenges page)
+  useEffect(() => {
+    const handleFocus = () => setTodayTasks(getDailyChallenges());
+    window.addEventListener("focus", handleFocus);
+    const handleStorage = () => setTodayTasks(getDailyChallenges());
+    window.addEventListener("storage", handleStorage);
+    return () => {
+      window.removeEventListener("focus", handleFocus);
+      window.removeEventListener("storage", handleStorage);
+    };
+  }, []);
+
+  // Also re-sync on mount
+  useEffect(() => {
+    setTodayTasks(getDailyChallenges());
+  }, []);
     { icon: Flame, label: "Streak", value: `${streak} days`, color: "text-streak", bg: "bg-streak/10" },
     { icon: Leaf, label: "Saved", value: "3.2 kg", color: "text-leaf", bg: "bg-leaf/10" },
     { icon: TrendingDown, label: "Waste", value: "-24%", color: "text-success", bg: "bg-success/10" },
