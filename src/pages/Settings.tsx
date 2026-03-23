@@ -1,4 +1,4 @@
-import { Globe, Type, Moon, Sun, Users, ChevronRight, LogOut } from "lucide-react";
+import { Globe, Type, Moon, Sun, Users, ChevronRight, LogOut, Zap } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useSettings, useT, languages } from "@/contexts/SettingsContext";
 import { useAuth } from "@/contexts/AuthContext";
