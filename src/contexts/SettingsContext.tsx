@@ -119,8 +119,12 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     document.documentElement.classList.toggle("dark", theme === "dark");
   }, [theme]);
 
+  useEffect(() => {
+    localStorage.setItem("sp-app-mode", appMode);
+  }, [appMode]);
+
   return (
-    <SettingsContext.Provider value={{ language, setLanguage, fontSize, setFontSize, theme, setTheme }}>
+    <SettingsContext.Provider value={{ language, setLanguage, fontSize, setFontSize, theme, setTheme, appMode, setAppMode }}>
       {children}
     </SettingsContext.Provider>
   );

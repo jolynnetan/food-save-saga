@@ -49,6 +49,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             <span className="text-sm">⭐</span>
             <span className="text-sm font-semibold text-primary tabular-nums">{points} pts</span>
           </div>
+          <GlobalSearch />
           <button
             onClick={() => navigate("/ai-assistant")}
             className="p-2 rounded-lg hover:bg-purple-500/10 transition-colors"
