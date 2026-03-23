@@ -68,6 +68,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         </div>
       </header>
 
+      {/* AI Chat Popup */}
+      <AiChatPopup open={aiOpen} onClose={() => setAiOpen(false)} />
+
       {/* Main content */}
       <main className="flex-1 pb-20 overflow-y-auto">
         {children}
