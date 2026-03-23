@@ -6,6 +6,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { SettingsProvider } from "@/contexts/SettingsContext";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { PointsProvider } from "@/contexts/PointsContext";
+import { GamificationProvider } from "@/contexts/GamificationContext";
+import ConfettiOverlay from "@/components/ConfettiOverlay";
 import AppLayout from "@/components/AppLayout";
 import Auth from "@/pages/Auth";
 import Dashboard from "@/pages/Dashboard";
@@ -30,6 +32,8 @@ import Reminders from "@/pages/Reminders";
 import AiAssistant from "@/pages/AiAssistant";
 import Store from "@/pages/Store";
 import NationalImpact from "@/pages/NationalImpact";
+import Achievements from "@/pages/Achievements";
+import JourneyMap from "@/pages/JourneyMap";
 
 import NotFound from "@/pages/NotFound";
 
@@ -76,6 +80,8 @@ function ProtectedRoutes() {
         <Route path="/ai-assistant" element={<AiAssistant />} />
         <Route path="/store" element={<Store />} />
         <Route path="/national-impact" element={<NationalImpact />} />
+        <Route path="/achievements" element={<Achievements />} />
+        <Route path="/journey" element={<JourneyMap />} />
         
         <Route path="*" element={<NotFound />} />
       </Routes>
@@ -88,16 +94,19 @@ const App = () => (
     <AuthProvider>
       <SettingsProvider>
         <PointsProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <BrowserRouter>
-              <Routes>
-                <Route path="/auth" element={<Auth />} />
-                <Route path="/*" element={<ProtectedRoutes />} />
-              </Routes>
-            </BrowserRouter>
-          </TooltipProvider>
+          <GamificationProvider>
+            <TooltipProvider>
+              <Toaster />
+              <Sonner />
+              <ConfettiOverlay />
+              <BrowserRouter>
+                <Routes>
+                  <Route path="/auth" element={<Auth />} />
+                  <Route path="/*" element={<ProtectedRoutes />} />
+                </Routes>
+              </BrowserRouter>
+            </TooltipProvider>
+          </GamificationProvider>
         </PointsProvider>
       </SettingsProvider>
     </AuthProvider>

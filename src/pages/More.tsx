@@ -1,9 +1,10 @@
 import { Link } from "react-router-dom";
-import { Package, MapPin, ShoppingCart, Calculator, Trophy, Clock, BarChart3, Building2, BellRing, ShoppingBag, Globe } from "lucide-react";
+import { Package, MapPin, ShoppingCart, Calculator, Trophy, Clock, BarChart3, Building2, BellRing, ShoppingBag, Globe, Medal, Map } from "lucide-react";
 
 const features = [
   { to: "/store", icon: ShoppingBag, title: "My Store", desc: "Redeemed rewards", color: "text-primary", bg: "bg-primary/10" },
-  
+  { to: "/achievements", icon: Medal, title: "Achievements", desc: "Badges & milestones", color: "text-warning", bg: "bg-warning/10" },
+  { to: "/journey", icon: Map, title: "Journey Map", desc: "Your progress path", color: "text-streak", bg: "bg-streak/10" },
   { to: "/tracker", icon: BarChart3, title: "Tracker", desc: "Waste analytics", color: "text-success", bg: "bg-success/10" },
   { to: "/pantry", icon: Package, title: "Smart Pantry", desc: "Track expiry dates", color: "text-primary", bg: "bg-primary/10" },
   { to: "/share", icon: MapPin, title: "Food Drop", desc: "Share with neighbors", color: "text-warning", bg: "bg-warning/10" },
@@ -11,7 +12,7 @@ const features = [
   { to: "/shopping", icon: ShoppingCart, title: "Smart Shopping", desc: "Waste-aware lists", color: "text-success", bg: "bg-success/10" },
   { to: "/portions", icon: Calculator, title: "Portions", desc: "Zero leftover calc", color: "text-earth", bg: "bg-earth/10" },
   { to: "/history", icon: Clock, title: "History", desc: "Past meals & recipes", color: "text-accent", bg: "bg-accent/10" },
-  { to: "/reminders", icon: BellRing, title: "Reminders", desc: "Weekly food checks", color: "text-blue-500", bg: "bg-blue-500/10" },
+  { to: "/reminders", icon: BellRing, title: "Reminders", desc: "Weekly food checks", color: "text-primary", bg: "bg-primary/10" },
   { to: "/leaderboard", icon: Trophy, title: "Leaderboard", desc: "Rank among savers", color: "text-streak", bg: "bg-streak/10" },
   { to: "/weekly-report", icon: BarChart3, title: "Weekly Report", desc: "Nutrition & waste", color: "text-primary", bg: "bg-primary/10" },
   { to: "/national-impact", icon: Globe, title: "National Impact", desc: "Collective stats", color: "text-success", bg: "bg-success/10" },

@@ -23,7 +23,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   const isSubPage = !mainRoutes.includes(location.pathname);
 
-  const moreRoutes = ["/more", "/pantry", "/share", "/shopping", "/portions", "/leaderboard", "/settings", "/friends", "/history", "/weekly-report", "/tracker", "/calories", "/foodbank", "/rewards", "/reminders"];
+  const moreRoutes = ["/more", "/pantry", "/share", "/shopping", "/portions", "/leaderboard", "/settings", "/friends", "/history", "/weekly-report", "/tracker", "/calories", "/foodbank", "/rewards", "/reminders", "/achievements", "/journey"];
   const isMoreActive = moreRoutes.includes(location.pathname);
 
   return (
