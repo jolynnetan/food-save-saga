@@ -43,12 +43,12 @@ const motivationalQuotes = [
 ];
 
 const moreShortcuts = [
-  { to: "/tracker", icon: BarChart3, title: "Tracker", desc: "Waste analytics", color: "text-success", bg: "bg-success/10" },
-  { to: "/pantry", icon: Package, title: "Pantry", desc: "Track expiry", color: "text-primary", bg: "bg-primary/10" },
-  { to: "/foodbank", icon: Building2, title: "Foodbank", desc: "NGO donations", color: "text-earth", bg: "bg-earth/10" },
-  { to: "/shopping", icon: ShoppingCart, title: "Shopping", desc: "Smart lists", color: "text-success", bg: "bg-success/10" },
-  { to: "/leaderboard", icon: Trophy, title: "Leaderboard", desc: "Rank up", color: "text-streak", bg: "bg-streak/10" },
-  { to: "/reminders", icon: BellRing, title: "Reminders", desc: "Food checks", color: "text-blue-500", bg: "bg-blue-500/10" },
+  { to: "/tracker", icon: BarChart3, title: "Tracker", desc: "Waste analytics", color: "text-success", bg: "bg-success/10", border: "border-success/20" },
+  { to: "/pantry", icon: Package, title: "Pantry", desc: "Track expiry", color: "text-primary", bg: "bg-primary/10", border: "border-primary/20" },
+  { to: "/foodbank", icon: Building2, title: "Foodbank", desc: "NGO donations", color: "text-earth", bg: "bg-earth/10", border: "border-earth/20" },
+  { to: "/shopping", icon: ShoppingCart, title: "Shopping", desc: "Smart lists", color: "text-success", bg: "bg-success/10", border: "border-success/20" },
+  { to: "/leaderboard", icon: Trophy, title: "Leaderboard", desc: "Rank up", color: "text-streak", bg: "bg-streak/10", border: "border-streak/20" },
+  { to: "/reminders", icon: BellRing, title: "Reminders", desc: "Food checks", color: "text-primary", bg: "bg-primary/10", border: "border-primary/20" },
 ];
 
 function getDailyQuote() {
@@ -65,7 +65,6 @@ export default function Dashboard() {
   const [todayTasks, setTodayTasks] = useState(getDailyChallenges);
   const isSimple = appMode === "simple";
 
-  // Re-sync when returning to this page (e.g. from challenges page)
   useEffect(() => {
     const handleFocus = () => setTodayTasks(getDailyChallenges());
     window.addEventListener("focus", handleFocus);
@@ -77,37 +76,44 @@ export default function Dashboard() {
     };
   }, []);
 
-  // Also re-sync on mount
   useEffect(() => {
     setTodayTasks(getDailyChallenges());
   }, []);
 
   const quickStats = [
-    { icon: Flame, label: "Streak", value: `${streak} days`, color: "text-streak", bg: "bg-streak/10" },
-    { icon: Leaf, label: "Saved", value: "3.2 kg", color: "text-leaf", bg: "bg-leaf/10" },
-    { icon: TrendingDown, label: "Waste", value: "-24%", color: "text-success", bg: "bg-success/10" },
+    { icon: Flame, label: "Streak", value: `${streak}`, unit: "days", color: "text-streak", bg: "bg-streak/10", border: "border-streak/20" },
+    { icon: Leaf, label: "Saved", value: "3.2", unit: "kg", color: "text-primary", bg: "bg-primary/10", border: "border-primary/20" },
+    { icon: TrendingDown, label: "Waste", value: "-24", unit: "%", color: "text-success", bg: "bg-success/10", border: "border-success/20" },
   ];
 
   return (
-    <div className="px-4 py-5 max-w-lg mx-auto space-y-6">
-      {/* Greeting */}
-      <div className="animate-fade-up">
-        <h2 className="text-2xl font-bold text-foreground leading-tight text-balance">
-          Good morning! 👋
-        </h2>
-        <p className="text-muted-foreground mt-1">
-          You've saved <span className="font-semibold text-primary">3.2 kg</span> of food this week.
-        </p>
+    <div className="px-4 py-6 max-w-lg mx-auto space-y-5">
+      {/* Hero Greeting */}
+      <div className="animate-fade-up rounded-3xl gradient-hero p-5 text-primary-foreground shadow-primary-glow relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -translate-y-8 translate-x-8" />
+        <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-6 -translate-x-6" />
+        <div className="relative z-10">
+          <h2 className="text-2xl font-bold leading-tight text-balance">
+            Good morning! 👋
+          </h2>
+          <p className="text-primary-foreground/80 mt-1.5 text-sm">
+            You've saved <span className="font-bold text-primary-foreground">3.2 kg</span> of food this week. Keep going!
+          </p>
+        </div>
       </div>
 
-      {/* Quick Stats - hidden in simple mode */}
+      {/* Quick Stats */}
       {!isSimple && (
         <div className="grid grid-cols-3 gap-3 animate-fade-up" style={{ animationDelay: "80ms" }}>
-          {quickStats.map(({ icon: Icon, label, value, color, bg }) => (
-            <div key={label} className={`${bg} rounded-2xl p-3 text-center`}>
-              <Icon className={`${color} mx-auto mb-1`} size={22} />
-              <p className="text-lg font-bold text-foreground">{value}</p>
-              <p className="text-xs text-muted-foreground">{label}</p>
+          {quickStats.map(({ icon: Icon, label, value, unit, color, bg, border }) => (
+            <div key={label} className={`${bg} border ${border} rounded-2xl p-3.5 text-center hover-lift`}>
+              <div className={`${bg} w-9 h-9 rounded-xl flex items-center justify-center mx-auto mb-2`}>
+                <Icon className={color} size={18} strokeWidth={2.2} />
+              </div>
+              <p className="text-xl font-extrabold text-foreground tabular-nums">
+                {value}<span className="text-xs font-medium text-muted-foreground ml-0.5">{unit}</span>
+              </p>
+              <p className="text-[11px] text-muted-foreground font-medium mt-0.5">{label}</p>
             </div>
           ))}
         </div>
@@ -116,33 +122,33 @@ export default function Dashboard() {
       {/* Scan CTA */}
       <Link
         to="/scanner"
-        className="flex items-center gap-4 bg-primary text-primary-foreground rounded-2xl p-4 shadow-lg shadow-primary/20 transition-transform duration-200 active:scale-[0.97] animate-fade-up"
+        className="flex items-center gap-4 gradient-primary text-primary-foreground rounded-2xl p-4 shadow-primary-glow transition-all duration-300 btn-press animate-fade-up group"
         style={{ animationDelay: "160ms" }}
       >
-        <div className="bg-primary-foreground/20 rounded-xl p-3">
+        <div className="bg-primary-foreground/15 rounded-2xl p-3 group-hover:bg-primary-foreground/25 transition-colors duration-300">
           <Camera size={24} />
         </div>
         <div className="flex-1">
-          <p className="font-semibold text-base">Scan your leftovers</p>
-          <p className="text-sm opacity-80">Get recipe ideas & reduce waste</p>
+          <p className="font-bold text-[15px]">Scan your leftovers</p>
+          <p className="text-sm text-primary-foreground/75">Get recipe ideas & reduce waste</p>
         </div>
-        <ChevronRight size={20} className="opacity-60" />
+        <ChevronRight size={20} className="opacity-60 group-hover:translate-x-1 transition-transform duration-300" />
       </Link>
 
       {/* Calorie Summary */}
       <Link
         to="/calories"
-        className="flex items-center gap-4 bg-card border rounded-2xl p-4 transition-all duration-200 active:scale-[0.97] hover:shadow-md animate-fade-up"
+        className="flex items-center gap-4 bg-card border border-border rounded-2xl p-4 transition-all duration-300 hover-lift animate-fade-up group shadow-soft-sm"
         style={{ animationDelay: "200ms" }}
       >
-        <div className="bg-primary/10 rounded-xl p-3">
-          <Apple size={24} className="text-primary" />
+        <div className="bg-primary/10 rounded-2xl p-3 border border-primary/20">
+          <Apple size={22} className="text-primary" />
         </div>
         <div className="flex-1">
           <p className="font-semibold text-sm text-foreground">Today's Calories</p>
           <p className="text-xs text-muted-foreground mt-0.5">Track meals & stay on target</p>
         </div>
-        <ChevronRight size={18} className="text-muted-foreground" />
+        <ChevronRight size={18} className="text-muted-foreground group-hover:translate-x-1 transition-transform duration-300" />
       </Link>
 
       {/* Impact Story */}
@@ -151,30 +157,32 @@ export default function Dashboard() {
       {/* Today's Challenges */}
       <section className="animate-fade-up" style={{ animationDelay: "300ms" }}>
         <div className="flex items-center justify-between mb-3">
-          <h3 className="text-base font-semibold text-foreground">Today's Challenges</h3>
-          <Link to="/challenges" className="text-sm text-primary font-medium">See all</Link>
+          <h3 className="text-base font-bold text-foreground">Today's Challenges</h3>
+          <Link to="/challenges" className="text-sm text-primary font-semibold hover:underline">See all</Link>
         </div>
         <div className="space-y-2.5">
           {todayTasks.map((task) => (
             <div
               key={task.id}
-              className={`flex items-center gap-3 bg-card rounded-xl p-3 border transition-all duration-200 ${
-                task.done ? "opacity-60" : "shadow-sm"
+              className={`flex items-center gap-3 bg-card rounded-2xl p-3.5 border transition-all duration-300 hover-lift ${
+                task.done ? "opacity-60 border-success/20" : "border-border shadow-soft-sm"
               }`}
             >
-              <span className="text-xl">{task.emoji}</span>
+              <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center">
+                <span className="text-lg">{task.emoji}</span>
+              </div>
               <div className="flex-1 min-w-0">
-                <p className={`text-sm font-medium ${task.done ? "line-through text-muted-foreground" : "text-foreground"}`}>
+                <p className={`text-sm font-semibold ${task.done ? "line-through text-muted-foreground" : "text-foreground"}`}>
                   {task.title}
                 </p>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-xs font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded-full">
+                <span className="text-xs font-bold text-primary bg-primary/10 px-2.5 py-1 rounded-full border border-primary/20">
                   +{task.pts}
                 </span>
                 <div
-                  className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors ${
-                    task.done ? "bg-success border-success" : "border-muted-foreground/30"
+                  className={`w-5.5 h-5.5 rounded-full border-2 flex items-center justify-center transition-all duration-300 ${
+                    task.done ? "bg-success border-success shadow-glow" : "border-muted-foreground/25"
                   }`}
                 >
                   {task.done && (
@@ -189,34 +197,36 @@ export default function Dashboard() {
         </div>
       </section>
 
-      {/* More Tools Shortcuts */}
+      {/* Quick Tools */}
       <section className="animate-fade-up" style={{ animationDelay: "280ms" }}>
         <div className="flex items-center justify-between mb-3">
-          <h3 className="text-base font-semibold text-foreground">🧰 Quick Tools</h3>
-          <Link to="/more" className="text-sm text-primary font-medium">See all</Link>
+          <h3 className="text-base font-bold text-foreground">🧰 Quick Tools</h3>
+          <Link to="/more" className="text-sm text-primary font-semibold hover:underline">See all</Link>
         </div>
         <div className="grid grid-cols-3 gap-2.5">
           {moreShortcuts.map((f) => (
             <Link
               key={f.to}
               to={f.to}
-              className="flex flex-col items-center gap-1.5 bg-card border rounded-2xl p-3 transition-all duration-200 active:scale-[0.95] hover:shadow-md"
+              className="flex flex-col items-center gap-2 bg-card border border-border rounded-2xl p-3.5 transition-all duration-300 hover-lift shadow-soft-sm group"
             >
-              <div className={`${f.bg} rounded-xl p-2.5`}>
-                <f.icon className={f.color} size={20} />
+              <div className={`${f.bg} border ${f.border} rounded-2xl p-2.5 group-hover:scale-110 transition-transform duration-300`}>
+                <f.icon className={f.color} size={20} strokeWidth={2} />
               </div>
-              <span className="text-[11px] font-semibold text-foreground text-center leading-tight">{f.title}</span>
-              <span className="text-[9px] text-muted-foreground text-center leading-tight">{f.desc}</span>
+              <div className="text-center">
+                <span className="text-[11px] font-bold text-foreground block leading-tight">{f.title}</span>
+                <span className="text-[9px] text-muted-foreground block leading-tight mt-0.5">{f.desc}</span>
+              </div>
             </Link>
           ))}
         </div>
       </section>
 
-      {/* Daily Motivation - hidden in simple mode */}
+      {/* Daily Motivation */}
       {!isSimple && (
         <section className="animate-fade-up" style={{ animationDelay: "320ms" }}>
-          <h3 className="text-base font-semibold text-foreground mb-3">🌍 Why It Matters</h3>
-          <div className="bg-primary/10 rounded-2xl p-4 border border-primary/20">
+          <h3 className="text-base font-bold text-foreground mb-3">🌍 Why It Matters</h3>
+          <div className="bg-primary/8 border border-primary/15 rounded-2xl p-4 shadow-soft-sm">
             <p className="text-sm text-foreground leading-relaxed font-medium">
               {getDailyQuote()}
             </p>
@@ -226,8 +236,8 @@ export default function Dashboard() {
 
       {/* Daily Tip */}
       <section className="animate-fade-up" style={{ animationDelay: "400ms" }}>
-        <h3 className="text-base font-semibold text-foreground mb-3">💡 Daily Tip</h3>
-        <div className="bg-secondary rounded-2xl p-4">
+        <h3 className="text-base font-bold text-foreground mb-3">💡 Daily Tip</h3>
+        <div className="gradient-card border border-border rounded-2xl p-4 shadow-soft-sm">
           <p className="text-sm text-secondary-foreground leading-relaxed">
             {tips[Math.floor(Math.random() * tips.length)]}
           </p>
