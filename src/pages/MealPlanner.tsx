@@ -133,9 +133,10 @@ export default function MealPlanner() {
         let fullContent = "";
         let buf = "";
 
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
+        let done = false;
+        while (!done) {
+          const { done: readerDone, value } = await reader.read();
+          if (readerDone) break;
           buf += decoder.decode(value, { stream: true });
 
           let idx: number;
@@ -145,7 +146,10 @@ export default function MealPlanner() {
             if (line.endsWith("\r")) line = line.slice(0, -1);
             if (!line.startsWith("data: ")) continue;
             const json = line.slice(6).trim();
-            if (json === "[DONE]") break;
+            if (json === "[DONE]") {
+              done = true;
+              break;
+            }
             try {
               const parsed = JSON.parse(json);
               const c = parsed.choices?.[0]?.delta?.content;
