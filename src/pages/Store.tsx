@@ -142,7 +142,7 @@ export default function Store() {
                     <ChevronRight size={16} className="text-muted-foreground" />
                   )}
                   <button
-                    onClick={(e) => { e.stopPropagation(); removeItem(i); }}
+                    onClick={(e) => { e.stopPropagation(); setDeleteIndex(i); }}
                     className="shrink-0 text-muted-foreground hover:text-destructive transition-colors p-1"
                   >
                     <Trash2 size={16} />
