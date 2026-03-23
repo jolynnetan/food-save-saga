@@ -104,6 +104,25 @@ export default function MealPlanner() {
     toast.success(`${recipe.emoji} ${recipe.name} added to ${DAYS[day]} ${slot}`);
   };
 
+  const saveManualMeal = (day: number, slot: string) => {
+    if (!manualName.trim()) return;
+    const meal: PlannedMeal = {
+      id: `${Date.now()}-${Math.random()}`,
+      name: manualName.trim(),
+      emoji: "🍽️",
+      slot: slot as any,
+      day,
+      ingredients: [],
+      calories: 0,
+      isFromRecipe: false,
+    };
+    setMeals(prev => [...prev.filter(m => !(m.day === day && m.slot === slot)), meal]);
+    setManualName("");
+    setManualCalories("");
+    setShowManualAdd(null);
+    toast.success(`🍽️ ${meal.name} saved to ${DAYS[day]} ${SLOT_LABELS[slot].label}`);
+  };
+
   const addManualMeal = async (day: number, slot: string) => {
     if (!manualName.trim()) return;
     setAnalyzing(true);
