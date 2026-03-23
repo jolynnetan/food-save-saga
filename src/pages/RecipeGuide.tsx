@@ -324,6 +324,7 @@ Return JSON: {"calories":number,"protein":number,"carbs":number,"fat":number,"se
       toast.success("Recipe added! +25 pts 🎉");
       setUploadForm({ name: "", ingredients: "", steps: "" });
       setShowUpload(false);
+      setStep(2);
     } catch (err) {
       console.error(err);
       // Fallback: add without AI analysis
