@@ -4,13 +4,13 @@ import { usePoints } from "@/contexts/PointsContext";
 
 const navItems = [
   { to: "/", icon: Home, label: "Home" },
-  { to: "/calories", icon: Flame, label: "Calories" },
+  { to: "/challenges", icon: Flame, label: "Challenges" },
   { to: "/scanner", icon: Camera, label: "Scan" },
   { to: "/recipes", icon: ChefHat, label: "Recipes" },
   { to: "/more", icon: MoreHorizontal, label: "More" },
 ];
 
-const mainRoutes = ["/", "/calories", "/scanner", "/recipes", "/more"];
+const mainRoutes = ["/", "/challenges", "/scanner", "/recipes", "/more"];
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const location = useLocation();
@@ -19,7 +19,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   const isSubPage = !mainRoutes.includes(location.pathname);
 
-  const moreRoutes = ["/more", "/pantry", "/share", "/shopping", "/portions", "/leaderboard", "/settings", "/friends", "/history", "/weekly-report", "/tracker", "/challenges", "/foodbank", "/rewards", "/reminders"];
+  const moreRoutes = ["/more", "/pantry", "/share", "/shopping", "/portions", "/leaderboard", "/settings", "/friends", "/history", "/weekly-report", "/tracker", "/calories", "/foodbank", "/rewards", "/reminders"];
   const isMoreActive = moreRoutes.includes(location.pathname);
 
   return (
