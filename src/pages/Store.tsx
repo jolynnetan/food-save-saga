@@ -65,16 +65,19 @@ export default function Store() {
   const [items, setItems] = useState<RedeemedItem[]>([]);
   const [selectedItem, setSelectedItem] = useState<RedeemedItem | null>(null);
   const { toast } = useToast();
+  const [deleteIndex, setDeleteIndex] = useState<number | null>(null);
 
   useEffect(() => {
     setItems(getRedeemedItems());
   }, []);
 
-  const removeItem = (index: number) => {
-    const updated = items.filter((_, i) => i !== index);
+  const confirmDelete = () => {
+    if (deleteIndex === null) return;
+    const updated = items.filter((_, i) => i !== deleteIndex);
     setItems(updated);
     localStorage.setItem("sp-redeemed-items", JSON.stringify(updated));
     toast({ title: "Item removed", description: "Removed from your store." });
+    setDeleteIndex(null);
   };
 
   const isTrackable = (cat: string) => cat === "donate" || cat === "eco";
