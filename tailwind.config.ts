@@ -72,6 +72,14 @@ export default {
         leaf: "hsl(var(--leaf))",
         sand: "hsl(var(--sand))",
         earth: "hsl(var(--earth))",
+        gold: {
+          DEFAULT: "hsl(var(--gold))",
+          foreground: "hsl(var(--gold-foreground))",
+        },
+        reward: {
+          DEFAULT: "hsl(var(--reward))",
+          foreground: "hsl(var(--reward-foreground))",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",

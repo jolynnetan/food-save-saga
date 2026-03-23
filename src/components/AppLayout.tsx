@@ -2,6 +2,7 @@ import { useState } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { Home, Camera, MoreHorizontal, ArrowLeft, Settings, Sparkles, ChefHat, Flame } from "lucide-react";
 import { usePoints } from "@/contexts/PointsContext";
+import { useGamification } from "@/contexts/GamificationContext";
 import GlobalSearch from "@/components/GlobalSearch";
 import AiChatPopup from "@/components/AiChatPopup";
 
@@ -19,6 +20,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const location = useLocation();
   const navigate = useNavigate();
   const { points, streak } = usePoints();
+  const { level, xp, gamificationEnabled } = useGamification();
   const [aiOpen, setAiOpen] = useState(false);
 
   const isSubPage = !mainRoutes.includes(location.pathname);
@@ -29,7 +31,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen gradient-surface flex flex-col">
       {/* Header */}
-      <header className="sticky top-0 z-50 glass-strong px-4 py-3 flex items-center justify-between">
+      <header className="sticky top-0 z-50 glass-strong px-4 py-2.5 flex items-center justify-between">
         <div className="flex items-center gap-2.5">
           {isSubPage ? (
             <button
@@ -48,13 +50,18 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           <h1 className="text-lg font-bold text-foreground tracking-tight">SavePlate</h1>
         </div>
         <div className="flex items-center gap-1.5">
-          <div className="flex items-center gap-1 bg-streak/10 rounded-full px-3 py-1.5 border border-streak/20">
-            <span className="text-sm">🔥</span>
-            <span className="text-sm font-semibold text-streak tabular-nums">{streak}</span>
+          {gamificationEnabled && (
+            <div className="flex items-center gap-1 gradient-gold rounded-full px-2.5 py-1 shadow-sm">
+              <span className="text-[11px] font-bold text-gold-foreground tabular-nums">{level.emoji} Lv.{level.level}</span>
+            </div>
+          )}
+          <div className="flex items-center gap-1 bg-streak/10 rounded-full px-2.5 py-1 border border-streak/20">
+            <span className="text-xs">🔥</span>
+            <span className="text-xs font-semibold text-streak tabular-nums">{streak}</span>
           </div>
-          <div className="flex items-center gap-1 bg-primary/10 rounded-full px-3 py-1.5 border border-primary/20">
-            <span className="text-sm">⭐</span>
-            <span className="text-sm font-semibold text-primary tabular-nums">{points}</span>
+          <div className="flex items-center gap-1 bg-primary/10 rounded-full px-2.5 py-1 border border-primary/20">
+            <span className="text-xs">⭐</span>
+            <span className="text-xs font-semibold text-primary tabular-nums">{points}</span>
           </div>
           <GlobalSearch />
           <button
