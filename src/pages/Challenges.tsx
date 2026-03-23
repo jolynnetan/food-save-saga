@@ -81,8 +81,24 @@ const rewardCategories = [
 
 export default function Challenges() {
   const [topTab, setTopTab] = useState<"challenges" | "rewards">("challenges");
-  const [challenges, setChallenges] = useState(initialChallenges);
+  const [challenges, setChallenges] = useState<Challenge[]>(() => {
+    const saved = localStorage.getItem("sp-challenges");
+    if (saved) {
+      try { return JSON.parse(saved); } catch { /* ignore */ }
+    }
+    return initialChallenges;
+  });
   const [activeTab, setActiveTab] = useState<"daily" | "weekly" | "monthly">("daily");
+
+  useEffect(() => {
+    localStorage.setItem("sp-challenges", JSON.stringify(challenges));
+  }, [challenges]);
+
+  const refreshChallenges = useCallback(() => {
+    setChallenges(initialChallenges);
+    localStorage.removeItem("sp-challenges");
+    toast({ title: "Challenges refreshed! 🔄", description: "All challenges have been reset." });
+  }, [toast]);
   const [rewardCategory, setRewardCategory] = useState<"all" | "donate" | "personal" | "eco" | "voucher">("all");
   const [redeemedIds, setRedeemedIds] = useState<number[]>([]);
   const [showTerms, setShowTerms] = useState<Reward | null>(null);
