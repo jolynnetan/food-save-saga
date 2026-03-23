@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Gift, Check, Lock, Star, Heart, TreePine, Sparkles, ShoppingBag, X, FileText } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { addRedeemedItem } from "@/pages/Store";
 
 type Reward = {
   id: number;
