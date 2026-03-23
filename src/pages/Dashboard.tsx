@@ -99,16 +99,18 @@ export default function Dashboard() {
         </p>
       </div>
 
-      {/* Quick Stats */}
-      <div className="grid grid-cols-3 gap-3 animate-fade-up" style={{ animationDelay: "80ms" }}>
-        {quickStats.map(({ icon: Icon, label, value, color, bg }) => (
-          <div key={label} className={`${bg} rounded-2xl p-3 text-center`}>
-            <Icon className={`${color} mx-auto mb-1`} size={22} />
-            <p className="text-lg font-bold text-foreground">{value}</p>
-            <p className="text-xs text-muted-foreground">{label}</p>
-          </div>
-        ))}
-      </div>
+      {/* Quick Stats - hidden in simple mode */}
+      {!isSimple && (
+        <div className="grid grid-cols-3 gap-3 animate-fade-up" style={{ animationDelay: "80ms" }}>
+          {quickStats.map(({ icon: Icon, label, value, color, bg }) => (
+            <div key={label} className={`${bg} rounded-2xl p-3 text-center`}>
+              <Icon className={`${color} mx-auto mb-1`} size={22} />
+              <p className="text-lg font-bold text-foreground">{value}</p>
+              <p className="text-xs text-muted-foreground">{label}</p>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Scan CTA */}
       <Link
