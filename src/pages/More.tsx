@@ -14,6 +14,7 @@ const features = [
   { to: "/leaderboard", icon: Trophy, title: "Leaderboard", desc: "Rank among savers", color: "text-streak", bg: "bg-streak/10" },
   { to: "/recipes", icon: ChefHat, title: "Recipes", desc: "Step-by-step guides", color: "text-accent", bg: "bg-accent/10" },
   { to: "/weekly-report", icon: BarChart3, title: "Weekly Report", desc: "Nutrition & waste", color: "text-primary", bg: "bg-primary/10" },
+  { to: "/ai-assistant", icon: Sparkles, title: "AI Assistant", desc: "Ask about food & nutrition", color: "text-purple-500", bg: "bg-purple-500/10" },
   { to: "/settings", icon: Settings, title: "Settings", desc: "Theme & preferences", color: "text-muted-foreground", bg: "bg-muted" },
 ];
 
