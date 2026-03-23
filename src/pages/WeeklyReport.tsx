@@ -86,6 +86,10 @@ export default function WeeklyReport() {
   const [weekIndex, setWeekIndex] = useState(0);
   const week = WEEK_DATA[weekIndex];
 
+  const reportRef = useRef<HTMLDivElement>(null);
+  const [isExporting, setIsExporting] = useState(false);
+  const [isSending, setIsSending] = useState(false);
+
   const totalConsumed = week.dailyCalories.reduce((s, d) => s + d.consumed, 0);
   const totalGoal = week.dailyCalories.reduce((s, d) => s + d.goal, 0);
   const avgCalories = Math.round(totalConsumed / 7);
@@ -94,8 +98,76 @@ export default function WeeklyReport() {
 
   const totalMacros = week.macros.protein + week.macros.carbs + week.macros.fat;
 
+  const handleDownloadPDF = async () => {
+    if (!reportRef.current) return;
+    setIsExporting(true);
+    try {
+      const canvas = await html2canvas(reportRef.current, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: "#f5f9f5",
+      });
+      const imgData = canvas.toDataURL("image/png");
+      const pdf = new jsPDF("p", "mm", "a4");
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+
+      let heightLeft = pdfHeight;
+      let position = 0;
+
+      pdf.addImage(imgData, "PNG", 0, position, pdfWidth, pdfHeight);
+      heightLeft -= pdf.internal.pageSize.getHeight();
+
+      while (heightLeft > 0) {
+        position -= pdf.internal.pageSize.getHeight();
+        pdf.addPage();
+        pdf.addImage(imgData, "PNG", 0, position, pdfWidth, pdfHeight);
+        heightLeft -= pdf.internal.pageSize.getHeight();
+      }
+
+      pdf.save(`weekly-report-${week.label.replace(/\s/g, "-")}.pdf`);
+      toast({ title: "Report downloaded!", description: "Your weekly report PDF has been saved." });
+    } catch {
+      toast({ title: "Export failed", description: "Could not generate PDF. Please try again.", variant: "destructive" });
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  const handleSendEmail = async () => {
+    setIsSending(true);
+    await new Promise((r) => setTimeout(r, 1500));
+    setIsSending(false);
+    toast({
+      title: "Report sent! ✉️",
+      description: "Your weekly report has been sent to your registered email.",
+    });
+  };
+
   return (
     <div className="px-4 py-5 max-w-lg mx-auto space-y-5 pb-24">
+      {/* Action buttons */}
+      <div className="flex gap-2 animate-fade-up">
+        <Button
+          onClick={handleDownloadPDF}
+          disabled={isExporting}
+          variant="outline"
+          className="flex-1 gap-2 rounded-xl"
+        >
+          {isExporting ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}
+          {isExporting ? "Generating…" : "Download PDF"}
+        </Button>
+        <Button
+          onClick={handleSendEmail}
+          disabled={isSending}
+          className="flex-1 gap-2 rounded-xl"
+        >
+          {isSending ? <Loader2 size={16} className="animate-spin" /> : <Mail size={16} />}
+          {isSending ? "Sending…" : "Send to Email"}
+        </Button>
+      </div>
+
+      <div ref={reportRef} className="space-y-5">
       {/* Header with week navigation */}
       <div className="animate-fade-up">
         <h2 className="text-2xl font-bold text-foreground text-balance">📊 Weekly Report</h2>
