@@ -10,7 +10,7 @@ const navItems = [
   { to: "/more", icon: MoreHorizontal, label: "More" },
 ];
 
-const mainRoutes = ["/", "/calories", "/scanner", "/recipes", "/more"];
+const mainRoutes = ["/", "/challenges", "/scanner", "/recipes", "/more"];
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const location = useLocation();
