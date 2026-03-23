@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Package, MapPin, ShoppingCart, Calculator, Trophy, Clock, BarChart3, Building2, Gift, BellRing, Target } from "lucide-react";
+import { Package, MapPin, ShoppingCart, Calculator, Trophy, Clock, BarChart3, Building2, Gift, BellRing, Flame } from "lucide-react";
 
 const features = [
   { to: "/calories", icon: Flame, title: "Calories", desc: "Track daily intake", color: "text-primary", bg: "bg-primary/10" },

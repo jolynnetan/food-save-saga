@@ -83,6 +83,22 @@ export default function Dashboard() {
         <ChevronRight size={20} className="opacity-60" />
       </Link>
 
+      {/* Calorie Summary */}
+      <Link
+        to="/calories"
+        className="flex items-center gap-4 bg-card border rounded-2xl p-4 transition-all duration-200 active:scale-[0.97] hover:shadow-md animate-fade-up"
+        style={{ animationDelay: "200ms" }}
+      >
+        <div className="bg-primary/10 rounded-xl p-3">
+          <Apple size={24} className="text-primary" />
+        </div>
+        <div className="flex-1">
+          <p className="font-semibold text-sm text-foreground">Today's Calories</p>
+          <p className="text-xs text-muted-foreground mt-0.5">Track meals & stay on target</p>
+        </div>
+        <ChevronRight size={18} className="text-muted-foreground" />
+      </Link>
+
       {/* Today's Challenges */}
       <section className="animate-fade-up" style={{ animationDelay: "240ms" }}>
         <div className="flex items-center justify-between mb-3">
