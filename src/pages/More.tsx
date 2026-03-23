@@ -14,6 +14,7 @@ const features = [
   { to: "/reminders", icon: BellRing, title: "Reminders", desc: "Weekly food checks", color: "text-blue-500", bg: "bg-blue-500/10" },
   { to: "/leaderboard", icon: Trophy, title: "Leaderboard", desc: "Rank among savers", color: "text-streak", bg: "bg-streak/10" },
   { to: "/weekly-report", icon: BarChart3, title: "Weekly Report", desc: "Nutrition & waste", color: "text-primary", bg: "bg-primary/10" },
+  { to: "/national-impact", icon: Globe, title: "National Impact", desc: "Collective stats", color: "text-success", bg: "bg-success/10" },
 ];
 
 export default function More() {

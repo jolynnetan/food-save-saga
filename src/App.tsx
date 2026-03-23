@@ -75,6 +75,7 @@ function ProtectedRoutes() {
         <Route path="/reminders" element={<Reminders />} />
         <Route path="/ai-assistant" element={<AiAssistant />} />
         <Route path="/store" element={<Store />} />
+        <Route path="/national-impact" element={<NationalImpact />} />
         
         <Route path="*" element={<NotFound />} />
       </Routes>
