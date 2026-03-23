@@ -1,11 +1,6 @@
 import { Flame, Leaf, TrendingDown, ChevronRight, Camera } from "lucide-react";
 import { Link } from "react-router-dom";
-
-const quickStats = [
-  { icon: Flame, label: "Streak", value: "7 days", color: "text-streak", bg: "bg-streak/10" },
-  { icon: Leaf, label: "Saved", value: "3.2 kg", color: "text-leaf", bg: "bg-leaf/10" },
-  { icon: TrendingDown, label: "Waste", value: "-24%", color: "text-success", bg: "bg-success/10" },
-];
+import { usePoints } from "@/contexts/PointsContext";
 
 const todayTasks = [
   { id: 1, title: "Finish yesterday's rice", emoji: "🍚", done: true, pts: 10 },
@@ -41,6 +36,14 @@ function getDailyQuote() {
 }
 
 export default function Dashboard() {
+  const { streak } = usePoints();
+
+  const quickStats = [
+    { icon: Flame, label: "Streak", value: `${streak} days`, color: "text-streak", bg: "bg-streak/10" },
+    { icon: Leaf, label: "Saved", value: "3.2 kg", color: "text-leaf", bg: "bg-leaf/10" },
+    { icon: TrendingDown, label: "Waste", value: "-24%", color: "text-success", bg: "bg-success/10" },
+  ];
+
   return (
     <div className="px-4 py-5 max-w-lg mx-auto space-y-6">
       {/* Greeting */}

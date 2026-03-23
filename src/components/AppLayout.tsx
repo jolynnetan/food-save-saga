@@ -1,24 +1,25 @@
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
-import { Home, Target, Camera, BarChart3, MoreHorizontal, ArrowLeft, Settings } from "lucide-react";
+import { Home, Camera, BarChart3, MoreHorizontal, ArrowLeft, Settings, Sparkles, ChefHat, Flame } from "lucide-react";
+import { usePoints } from "@/contexts/PointsContext";
 
 const navItems = [
   { to: "/", icon: Home, label: "Home" },
-  { to: "/challenges", icon: Target, label: "Challenges" },
+  { to: "/calories", icon: Flame, label: "Calories" },
   { to: "/scanner", icon: Camera, label: "Scan" },
-  { to: "/tracker", icon: BarChart3, label: "Tracker" },
+  { to: "/recipes", icon: ChefHat, label: "Recipes" },
   { to: "/more", icon: MoreHorizontal, label: "More" },
 ];
 
-const mainRoutes = ["/", "/challenges", "/scanner", "/tracker", "/more"];
+const mainRoutes = ["/", "/calories", "/scanner", "/recipes", "/more"];
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const location = useLocation();
   const navigate = useNavigate();
+  const { points, streak } = usePoints();
 
   const isSubPage = !mainRoutes.includes(location.pathname);
 
-  // Highlight "More" tab when on sub-pages
-  const moreRoutes = ["/more", "/pantry", "/share", "/shopping", "/portions", "/leaderboard", "/settings", "/friends", "/calories", "/history", "/recipes", "/weekly-report"];
+  const moreRoutes = ["/more", "/pantry", "/share", "/shopping", "/portions", "/leaderboard", "/settings", "/friends", "/history", "/weekly-report", "/tracker", "/challenges", "/foodbank", "/rewards", "/reminders"];
   const isMoreActive = moreRoutes.includes(location.pathname);
 
   return (
@@ -41,12 +42,18 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         <div className="flex items-center gap-2">
           <div className="flex items-center gap-1 bg-secondary rounded-full px-3 py-1.5">
             <span className="text-sm">🔥</span>
-            <span className="text-sm font-semibold text-secondary-foreground">7 days</span>
+            <span className="text-sm font-semibold text-secondary-foreground tabular-nums">{streak} days</span>
           </div>
           <div className="flex items-center gap-1 bg-primary/10 rounded-full px-3 py-1.5">
             <span className="text-sm">⭐</span>
-            <span className="text-sm font-semibold text-primary">240 pts</span>
+            <span className="text-sm font-semibold text-primary tabular-nums">{points} pts</span>
           </div>
+          <button
+            onClick={() => navigate("/ai-assistant")}
+            className="p-2 rounded-lg hover:bg-purple-500/10 transition-colors"
+          >
+            <Sparkles size={20} className="text-purple-500" />
+          </button>
           <button
             onClick={() => navigate("/settings")}
             className="p-2 rounded-lg hover:bg-secondary transition-colors"
