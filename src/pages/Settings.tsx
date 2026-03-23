@@ -1,6 +1,7 @@
-import { Globe, Type, Moon, Sun, Users, ChevronRight, LogOut, Zap } from "lucide-react";
+import { Globe, Type, Moon, Sun, Users, ChevronRight, LogOut, Zap, Gamepad2 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useSettings, useT, languages } from "@/contexts/SettingsContext";
+import { useGamification } from "@/contexts/GamificationContext";
 import { useAuth } from "@/contexts/AuthContext";
 
 type FontSize = "small" | "medium" | "large";
