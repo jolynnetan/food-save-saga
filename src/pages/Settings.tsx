@@ -9,6 +9,7 @@ type FontSize = "small" | "medium" | "large";
 export default function Settings() {
   const { language, setLanguage, fontSize, setFontSize, theme, setTheme, appMode, setAppMode } = useSettings();
   const { signOut, user } = useAuth();
+  const { gamificationEnabled, setGamificationEnabled } = useGamification();
   const navigate = useNavigate();
   const t = useT();
 
