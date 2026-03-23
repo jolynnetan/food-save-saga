@@ -58,6 +58,7 @@ function getDailyQuote() {
 }
 
 export default function Dashboard() {
+  const { streak } = usePoints();
   const [todayTasks, setTodayTasks] = useState(getDailyChallenges);
 
   // Re-sync when returning to this page (e.g. from challenges page)
