@@ -1,4 +1,4 @@
-import { Flame, Leaf, TrendingDown, ChevronRight, Camera, Apple } from "lucide-react";
+import { Flame, Leaf, TrendingDown, ChevronRight, Camera, Apple, Package, MapPin, ShoppingCart, Calculator, Trophy, Clock, BarChart3, Building2, BellRing } from "lucide-react";
 import { Link } from "react-router-dom";
 import { usePoints } from "@/contexts/PointsContext";
 
@@ -25,6 +25,15 @@ const motivationalQuotes = [
   "Every grain of rice represents someone's labour under the sun. Honour it by wasting less. 🌾",
   "Sustainable eating isn't a sacrifice — it's a superpower. You're already a hero. 🦸",
   "The best time to fight food waste was yesterday. The second best time is right now. ⏰",
+];
+
+const moreShortcuts = [
+  { to: "/tracker", icon: BarChart3, title: "Tracker", desc: "Waste analytics", color: "text-success", bg: "bg-success/10" },
+  { to: "/pantry", icon: Package, title: "Pantry", desc: "Track expiry", color: "text-primary", bg: "bg-primary/10" },
+  { to: "/foodbank", icon: Building2, title: "Foodbank", desc: "NGO donations", color: "text-earth", bg: "bg-earth/10" },
+  { to: "/shopping", icon: ShoppingCart, title: "Shopping", desc: "Smart lists", color: "text-success", bg: "bg-success/10" },
+  { to: "/leaderboard", icon: Trophy, title: "Leaderboard", desc: "Rank up", color: "text-streak", bg: "bg-streak/10" },
+  { to: "/reminders", icon: BellRing, title: "Reminders", desc: "Food checks", color: "text-blue-500", bg: "bg-blue-500/10" },
 ];
 
 function getDailyQuote() {
@@ -125,9 +134,7 @@ export default function Dashboard() {
                 </span>
                 <div
                   className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors ${
-                    task.done
-                      ? "bg-success border-success"
-                      : "border-muted-foreground/30"
+                    task.done ? "bg-success border-success" : "border-muted-foreground/30"
                   }`}
                 >
                   {task.done && (
@@ -138,6 +145,29 @@ export default function Dashboard() {
                 </div>
               </div>
             </div>
+          ))}
+        </div>
+      </section>
+
+      {/* More Tools Shortcuts */}
+      <section className="animate-fade-up" style={{ animationDelay: "280ms" }}>
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-base font-semibold text-foreground">🧰 Quick Tools</h3>
+          <Link to="/more" className="text-sm text-primary font-medium">See all</Link>
+        </div>
+        <div className="grid grid-cols-3 gap-2.5">
+          {moreShortcuts.map((f) => (
+            <Link
+              key={f.to}
+              to={f.to}
+              className="flex flex-col items-center gap-1.5 bg-card border rounded-2xl p-3 transition-all duration-200 active:scale-[0.95] hover:shadow-md"
+            >
+              <div className={`${f.bg} rounded-xl p-2.5`}>
+                <f.icon className={f.color} size={20} />
+              </div>
+              <span className="text-[11px] font-semibold text-foreground text-center leading-tight">{f.title}</span>
+              <span className="text-[9px] text-muted-foreground text-center leading-tight">{f.desc}</span>
+            </Link>
           ))}
         </div>
       </section>
