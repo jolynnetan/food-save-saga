@@ -1,10 +1,10 @@
 import { Medal, TrendingUp } from "lucide-react";
+import { usePoints } from "@/contexts/PointsContext";
 
-const leaderboard = [
+const baseLeaderboard = [
   { rank: 1, name: "Aisyah Rahman", pts: 2340, saved: "12.4 kg", streak: 21, avatar: "🧕" },
   { rank: 2, name: "Wei Jie Tan", pts: 1980, saved: "10.1 kg", streak: 14, avatar: "👨" },
   { rank: 3, name: "Priya Nair", pts: 1750, saved: "8.7 kg", streak: 18, avatar: "👩" },
-  { rank: 4, name: "You", pts: 1240, saved: "5.2 kg", streak: 7, avatar: "🙋", isUser: true },
   { rank: 5, name: "Ahmad Faiz", pts: 1180, saved: "5.0 kg", streak: 9, avatar: "👦" },
   { rank: 6, name: "Mei Ling Chow", pts: 990, saved: "4.3 kg", streak: 5, avatar: "👧" },
   { rank: 7, name: "Ravi Kumar", pts: 870, saved: "3.8 kg", streak: 4, avatar: "👨‍🦱" },
@@ -14,6 +14,14 @@ const leaderboard = [
 const medalColors = ["", "text-yellow-500", "text-gray-400", "text-amber-600"];
 
 export default function Leaderboard() {
+  const { points, streak } = usePoints();
+
+  // Insert user into sorted leaderboard
+  const userEntry = { rank: 0, name: "You", pts: points, saved: `${(points / 238).toFixed(1)} kg`, streak, avatar: "🙋", isUser: true };
+  const allEntries = [...baseLeaderboard, userEntry]
+    .sort((a, b) => b.pts - a.pts)
+    .map((entry, i) => ({ ...entry, rank: i + 1 }));
+
   return (
     <div className="px-4 py-5 max-w-lg mx-auto space-y-5">
       <div className="animate-fade-up">
@@ -23,7 +31,7 @@ export default function Leaderboard() {
 
       {/* Top 3 podium */}
       <div className="flex items-end justify-center gap-3 pt-4 animate-fade-up" style={{ animationDelay: "80ms" }}>
-        {[leaderboard[1], leaderboard[0], leaderboard[2]].map((user, i) => {
+        {[allEntries[1], allEntries[0], allEntries[2]].map((user, i) => {
           const heights = ["h-20", "h-28", "h-16"];
           const sizes = ["text-3xl", "text-4xl", "text-3xl"];
           return (
@@ -45,7 +53,7 @@ export default function Leaderboard() {
 
       {/* Full list */}
       <div className="space-y-2">
-        {leaderboard.slice(3).map((user, i) => (
+        {allEntries.slice(3).map((user, i) => (
           <div
             key={user.rank}
             className={`flex items-center gap-3 rounded-xl p-3 border transition-all animate-fade-up ${

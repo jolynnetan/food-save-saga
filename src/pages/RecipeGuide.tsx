@@ -1,5 +1,7 @@
 import { useState } from "react";
-import { ChefHat, ArrowRight, ArrowLeft, Flame, Check, RotateCcw } from "lucide-react";
+import { ChefHat, ArrowRight, ArrowLeft, Flame, Check, RotateCcw, Upload, Loader2, Sparkles } from "lucide-react";
+import { usePoints } from "@/contexts/PointsContext";
+import { toast } from "sonner";
 
 type DietaryPref = "vegetarian" | "vegan" | "halal" | "gluten-free" | "dairy-free" | "none";
 type CuisinePref = "asian" | "western" | "mediterranean" | "indian" | "mexican" | "middle-eastern" | "japanese" | "korean" | "any";
@@ -17,6 +19,7 @@ type Recipe = {
   servings: number;
   ingredients: { name: string; amount: string; cal: number }[];
   steps: string[];
+  isUserRecipe?: boolean;
 };
 
 const allRecipes: Recipe[] = [
@@ -80,7 +83,6 @@ const allRecipes: Recipe[] = [
     ],
     steps: ["Cook sushi rice and season with rice vinegar.", "Cube tofu and marinate in soy sauce + sesame oil for 10 min.", "Pan-fry tofu cubes until golden, about 4 minutes per side.", "Slice cucumber into thin rounds.", "Arrange rice in bowls, top with tofu, edamame, cucumber.", "Drizzle with extra soy sauce and sprinkle sesame seeds."],
   },
-  // NEW RECIPES
   {
     name: "Lamb Shawarma Wrap", emoji: "🥙", cuisine: "middle-eastern", diet: ["halal", "dairy-free", "none"],
     time: "30 min", calories: 520, protein: 32, carbs: 42, fat: 22, servings: 2,
@@ -220,8 +222,15 @@ export default function RecipeGuide() {
   const [cuisine, setCuisine] = useState<CuisinePref>("any");
   const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
   const [currentStep, setCurrentStep] = useState(0);
+  const [userRecipes, setUserRecipes] = useState<Recipe[]>([]);
+  const [showUpload, setShowUpload] = useState(false);
+  const [uploadForm, setUploadForm] = useState({ name: "", ingredients: "", steps: "" });
+  const [analyzing, setAnalyzing] = useState(false);
+  const { addPoints } = usePoints();
 
-  const filteredRecipes = allRecipes.filter((r) => {
+  const combinedRecipes = [...allRecipes, ...userRecipes];
+
+  const filteredRecipes = combinedRecipes.filter((r) => {
     const dietMatch = diet === "none" || r.diet.includes(diet);
     const cuisineMatch = cuisine === "any" || r.cuisine === cuisine;
     return dietMatch && cuisineMatch;
@@ -233,10 +242,114 @@ export default function RecipeGuide() {
     setCuisine("any");
     setSelectedRecipe(null);
     setCurrentStep(0);
+    setShowUpload(false);
+  };
+
+  const analyzeAndAddRecipe = async () => {
+    if (!uploadForm.name.trim() || !uploadForm.ingredients.trim() || !uploadForm.steps.trim()) {
+      toast.error("Please fill in all fields");
+      return;
+    }
+    setAnalyzing(true);
+    try {
+      const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/food-assistant`;
+      const prompt = `Analyze this recipe and estimate the nutrition per serving. Return ONLY a JSON object (no markdown).
+Recipe: ${uploadForm.name}
+Ingredients: ${uploadForm.ingredients}
+Steps: ${uploadForm.steps}
+
+Return JSON: {"calories":number,"protein":number,"carbs":number,"fat":number,"servings":number,"time":"X min","ingredients":[{"name":"...","amount":"...","cal":number}]}`;
+
+      const resp = await fetch(CHAT_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+        },
+        body: JSON.stringify({
+          messages: [{ role: "user", content: prompt }],
+          mode: "scan-calories",
+        }),
+      });
+
+      if (!resp.ok) throw new Error("AI analysis failed");
+
+      const reader = resp.body?.getReader();
+      const decoder = new TextDecoder();
+      let fullText = "";
+      if (reader) {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          const chunk = decoder.decode(value, { stream: true });
+          for (const line of chunk.split("\n")) {
+            if (!line.startsWith("data: ") || line.includes("[DONE]")) continue;
+            try {
+              const parsed = JSON.parse(line.slice(6));
+              const content = parsed.choices?.[0]?.delta?.content;
+              if (content) fullText += content;
+            } catch { /* skip */ }
+          }
+        }
+      }
+
+      // Try to parse the AI response
+      const jsonMatch = fullText.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) throw new Error("Could not parse nutrition data");
+
+      const nutrition = JSON.parse(jsonMatch[0]);
+      const stepsArr = uploadForm.steps.split(/\n|\./).map(s => s.trim()).filter(Boolean);
+      const ingredientsList = nutrition.ingredients || uploadForm.ingredients.split(/\n|,/).map((ing: string) => ({
+        name: ing.trim(), amount: "", cal: 0,
+      }));
+
+      const newRecipe: Recipe = {
+        name: uploadForm.name,
+        emoji: "👨‍🍳",
+        cuisine: "any",
+        diet: ["none"],
+        time: nutrition.time || "30 min",
+        calories: nutrition.calories || 0,
+        protein: nutrition.protein || 0,
+        carbs: nutrition.carbs || 0,
+        fat: nutrition.fat || 0,
+        servings: nutrition.servings || 1,
+        ingredients: ingredientsList,
+        steps: stepsArr.length > 0 ? stepsArr : [uploadForm.steps],
+        isUserRecipe: true,
+      };
+
+      setUserRecipes(prev => [...prev, newRecipe]);
+      addPoints(25);
+      toast.success("Recipe added! +25 pts 🎉");
+      setUploadForm({ name: "", ingredients: "", steps: "" });
+      setShowUpload(false);
+    } catch (err) {
+      console.error(err);
+      // Fallback: add without AI analysis
+      const stepsArr = uploadForm.steps.split(/\n|\./).map(s => s.trim()).filter(Boolean);
+      const ingredientsList = uploadForm.ingredients.split(/\n|,/).map((ing) => ({
+        name: ing.trim(), amount: "", cal: 0,
+      }));
+
+      const newRecipe: Recipe = {
+        name: uploadForm.name, emoji: "👨‍🍳", cuisine: "any", diet: ["none"],
+        time: "30 min", calories: 0, protein: 0, carbs: 0, fat: 0, servings: 1,
+        ingredients: ingredientsList, steps: stepsArr.length > 0 ? stepsArr : [uploadForm.steps],
+        isUserRecipe: true,
+      };
+      setUserRecipes(prev => [...prev, newRecipe]);
+      addPoints(15);
+      toast.success("Recipe added (without analysis)! +15 pts");
+      setUploadForm({ name: "", ingredients: "", steps: "" });
+      setShowUpload(false);
+    } finally {
+      setAnalyzing(false);
+    }
   };
 
   return (
-    <div className="px-4 py-5 max-w-lg mx-auto space-y-5">
+    <div className="px-4 py-5 max-w-lg mx-auto space-y-5 pb-28">
       <div className="flex items-center justify-between animate-fade-up">
         <div>
           <h2 className="text-2xl font-bold text-foreground text-balance">Recipe Guide</h2>
@@ -247,11 +360,21 @@ export default function RecipeGuide() {
             {step === 3 && selectedRecipe?.name}
           </p>
         </div>
-        {step > 0 && (
-          <button onClick={reset} className="text-muted-foreground hover:text-foreground transition-colors">
-            <RotateCcw size={18} />
-          </button>
-        )}
+        <div className="flex items-center gap-2">
+          {step === 2 && (
+            <button
+              onClick={() => setShowUpload(!showUpload)}
+              className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-xl bg-primary/10 text-primary active:scale-95 transition-transform"
+            >
+              <Upload size={14} /> Upload
+            </button>
+          )}
+          {step > 0 && (
+            <button onClick={reset} className="text-muted-foreground hover:text-foreground transition-colors">
+              <RotateCcw size={18} />
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Progress */}
@@ -263,6 +386,44 @@ export default function RecipeGuide() {
           </div>
         ))}
       </div>
+
+      {/* Upload Recipe Form */}
+      {showUpload && step === 2 && (
+        <div className="bg-card border rounded-2xl p-4 space-y-3 animate-fade-up">
+          <div className="flex items-center gap-2 mb-1">
+            <Sparkles size={16} className="text-primary" />
+            <h3 className="text-sm font-semibold text-foreground">Upload Your Recipe</h3>
+            <span className="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium">+25 pts</span>
+          </div>
+          <input
+            value={uploadForm.name}
+            onChange={(e) => setUploadForm(f => ({ ...f, name: e.target.value }))}
+            placeholder="Recipe name"
+            className="w-full bg-muted rounded-xl px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:ring-2 focus:ring-primary/30"
+          />
+          <textarea
+            value={uploadForm.ingredients}
+            onChange={(e) => setUploadForm(f => ({ ...f, ingredients: e.target.value }))}
+            placeholder="Ingredients (one per line or comma-separated)"
+            rows={3}
+            className="w-full bg-muted rounded-xl px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:ring-2 focus:ring-primary/30 resize-none"
+          />
+          <textarea
+            value={uploadForm.steps}
+            onChange={(e) => setUploadForm(f => ({ ...f, steps: e.target.value }))}
+            placeholder="Steps (one per line or separated by periods)"
+            rows={3}
+            className="w-full bg-muted rounded-xl px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:ring-2 focus:ring-primary/30 resize-none"
+          />
+          <button
+            onClick={analyzeAndAddRecipe}
+            disabled={analyzing}
+            className="w-full bg-primary text-primary-foreground rounded-xl py-2.5 text-sm font-semibold flex items-center justify-center gap-2 transition-all active:scale-[0.97] disabled:opacity-60"
+          >
+            {analyzing ? <><Loader2 size={16} className="animate-spin" /> Analyzing…</> : <><Sparkles size={16} /> Analyze & Add Recipe</>}
+          </button>
+        </div>
+      )}
 
       {/* Step 0: Diet */}
       {step === 0 && (
@@ -334,7 +495,12 @@ export default function RecipeGuide() {
               >
                 <span className="text-2xl">{recipe.emoji}</span>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-foreground">{recipe.name}</p>
+                  <div className="flex items-center gap-2">
+                    <p className="text-sm font-semibold text-foreground">{recipe.name}</p>
+                    {recipe.isUserRecipe && (
+                      <span className="text-[9px] bg-primary/10 text-primary px-1.5 py-0.5 rounded-full font-medium">yours</span>
+                    )}
+                  </div>
                   <div className="flex items-center gap-3 mt-1 text-[10px] text-muted-foreground">
                     <span>⏱ {recipe.time}</span>
                     <span className="flex items-center gap-1"><Flame size={10} className="text-streak" /> {recipe.calories} cal</span>
@@ -372,16 +538,20 @@ export default function RecipeGuide() {
                 </div>
               ))}
             </div>
-            <div className="mt-3 flex h-2 rounded-full overflow-hidden bg-muted">
-              <div className="bg-primary" style={{ width: `${(selectedRecipe.protein * 4 / selectedRecipe.calories) * 100}%` }} />
-              <div className="bg-warning" style={{ width: `${(selectedRecipe.carbs * 4 / selectedRecipe.calories) * 100}%` }} />
-              <div className="bg-destructive" style={{ width: `${(selectedRecipe.fat * 9 / selectedRecipe.calories) * 100}%` }} />
-            </div>
-            <div className="flex justify-between mt-1.5 text-[9px] text-muted-foreground">
-              <span>Protein {Math.round((selectedRecipe.protein * 4 / selectedRecipe.calories) * 100)}%</span>
-              <span>Carbs {Math.round((selectedRecipe.carbs * 4 / selectedRecipe.calories) * 100)}%</span>
-              <span>Fat {Math.round((selectedRecipe.fat * 9 / selectedRecipe.calories) * 100)}%</span>
-            </div>
+            {selectedRecipe.calories > 0 && (
+              <>
+                <div className="mt-3 flex h-2 rounded-full overflow-hidden bg-muted">
+                  <div className="bg-primary" style={{ width: `${(selectedRecipe.protein * 4 / selectedRecipe.calories) * 100}%` }} />
+                  <div className="bg-warning" style={{ width: `${(selectedRecipe.carbs * 4 / selectedRecipe.calories) * 100}%` }} />
+                  <div className="bg-destructive" style={{ width: `${(selectedRecipe.fat * 9 / selectedRecipe.calories) * 100}%` }} />
+                </div>
+                <div className="flex justify-between mt-1.5 text-[9px] text-muted-foreground">
+                  <span>Protein {Math.round((selectedRecipe.protein * 4 / selectedRecipe.calories) * 100)}%</span>
+                  <span>Carbs {Math.round((selectedRecipe.carbs * 4 / selectedRecipe.calories) * 100)}%</span>
+                  <span>Fat {Math.round((selectedRecipe.fat * 9 / selectedRecipe.calories) * 100)}%</span>
+                </div>
+              </>
+            )}
           </div>
 
           <div className="bg-card border rounded-2xl p-4">
@@ -391,7 +561,7 @@ export default function RecipeGuide() {
                 <div key={ing.name} className="flex items-center justify-between text-sm">
                   <span className="text-foreground">{ing.name}</span>
                   <div className="flex items-center gap-3">
-                    <span className="text-xs text-muted-foreground">{ing.cal} cal</span>
+                    {ing.cal > 0 && <span className="text-xs text-muted-foreground">{ing.cal} cal</span>}
                     <span className="font-medium text-foreground tabular-nums">{ing.amount}</span>
                   </div>
                 </div>
