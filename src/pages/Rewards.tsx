@@ -265,7 +265,7 @@ export default function Rewards() {
               <p className="text-[10px] text-muted-foreground mb-1">Your voucher code</p>
               <p className="text-xl font-bold text-primary tracking-widest tabular-nums">{showVoucher.voucherCode}</p>
             </div>
-            <p className="text-[10px] text-muted-foreground">Screenshot this code. Show it at participating stores to redeem.</p>
+            <p className="text-[10px] text-muted-foreground">You can find this voucher anytime in <strong>More → My Store</strong>.</p>
             <button
               onClick={() => setShowVoucher(null)}
               className="w-full bg-primary text-primary-foreground rounded-xl py-3 text-sm font-semibold transition-all active:scale-[0.97]"
