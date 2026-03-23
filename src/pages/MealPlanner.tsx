@@ -75,6 +75,7 @@ export default function MealPlanner() {
   const [manualCalories, setManualCalories] = useState("");
   const [suggesting, setSuggesting] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
+  const [dragItem, setDragItem] = useState<PlannedMeal | null>(null);
 
   const pantry = getPantryItems();
 
