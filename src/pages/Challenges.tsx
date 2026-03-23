@@ -142,10 +142,20 @@ export default function Challenges() {
     spendPoints(reward.cost);
     setRedeemedIds((prev) => [...prev, reward.id]);
     setShowTerms(null);
+    addRedeemedItem({
+      id: reward.id,
+      title: reward.title,
+      emoji: reward.emoji,
+      description: reward.description,
+      cost: reward.cost,
+      category: reward.category,
+      voucherCode: reward.voucherCode,
+      terms: reward.terms,
+    });
     if (reward.category === "voucher") {
       setShowVoucher(reward);
     } else {
-      toast({ title: "🎉 Reward Redeemed!", description: `You redeemed "${reward.title}" for ${reward.cost} pts.` });
+      toast({ title: "🎉 Reward Redeemed!", description: `You redeemed "${reward.title}". Check your Store in More!` });
     }
   };
 
