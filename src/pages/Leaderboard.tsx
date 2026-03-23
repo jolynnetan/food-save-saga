@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Medal, TrendingUp, Calendar, RefreshCw } from "lucide-react";
+import { Medal, TrendingUp, Calendar, RefreshCw, Trophy } from "lucide-react";
 import { usePoints } from "@/contexts/PointsContext";
 import { useGamification, LEVELS } from "@/contexts/GamificationContext";
 
