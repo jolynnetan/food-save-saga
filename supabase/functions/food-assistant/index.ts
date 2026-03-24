@@ -10,7 +10,7 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { messages, mode } = await req.json();
+    const { messages, mode, imageBase64 } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
@@ -41,14 +41,16 @@ Keep ingredients to 4-8 items. Use common household amounts.`;
     }
 
     if (mode === "scan-leftovers") {
-      systemPrompt = `You are a food identification and waste reduction AI. The user will describe food items they see (leftovers or any food).
-Identify each item, estimate its calories and macros, and provide waste reduction tips.
+      systemPrompt = `You are a food identification and waste reduction AI. Analyze the image provided and identify ALL food items visible.
+For each item, estimate its calories and macros. Determine if it's a leftover (cooked, partially eaten, stored in container) or fresh.
 Return ONLY a JSON object with this exact structure, no other text:
 {
   "items": [
     {"name": "Food name", "emoji": "🍚", "calories": 200, "protein": 5, "carbs": 40, "fat": 1, "quantity": "1 bowl (~200g)", "isLeftover": true}
   ],
   "totalCalories": 500,
+  "leftoversCount": 2,
+  "freshCount": 1,
   "wasteReductionTips": [
     {"tip": "Practical tip to reduce or reuse this leftover", "icon": "recycle"},
     {"tip": "Storage advice", "icon": "fridge"}
@@ -57,7 +59,38 @@ Return ONLY a JSON object with this exact structure, no other text:
     {"name": "Recipe Name", "emoji": "🍳", "time": "15 min", "description": "Brief description using detected items"}
   ]
 }
-Set isLeftover to true if the item appears to be a leftover (cooked food, partially eaten, etc). Provide 3-5 waste reduction tips and 2-3 recipe suggestions using the detected items.`;
+Set isLeftover to true if the item appears to be a leftover (cooked food, partially eaten, stored in containers, etc). Provide 3-5 waste reduction tips and 2-3 recipe suggestions using the detected items. Be accurate with calorie estimates.`;
+    }
+
+    // Build messages array with vision support
+    let aiMessages: any[];
+    if (imageBase64 && (mode === "scan-leftovers" || mode === "scan-calories")) {
+      // Extract mime type and base64 data from data URL
+      const mimeMatch = imageBase64.match(/^data:(image\/[^;]+);base64,(.+)$/);
+      if (mimeMatch) {
+        const mimeType = mimeMatch[1];
+        const base64Data = mimeMatch[2];
+        aiMessages = [
+          { role: "system", content: systemPrompt },
+          {
+            role: "user",
+            content: [
+              { type: "image_url", image_url: { url: `data:${mimeType};base64,${base64Data}` } },
+              { type: "text", text: "Analyze this food image. Identify all visible food items, estimate calories, determine which are fresh and which are leftovers." },
+            ],
+          },
+        ];
+      } else {
+        aiMessages = [
+          { role: "system", content: systemPrompt },
+          ...(messages || [{ role: "user", content: "Analyze common household food items." }]),
+        ];
+      }
+    } else {
+      aiMessages = [
+        { role: "system", content: systemPrompt },
+        ...(messages || []),
+      ];
     }
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
@@ -67,12 +100,10 @@ Set isLeftover to true if the item appears to be a leftover (cooked food, partia
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
-        messages: [
-          { role: "system", content: systemPrompt },
-          ...messages,
-        ],
+        model: "google/gemini-2.5-flash",
+        messages: aiMessages,
         stream: true,
+        max_tokens: 4096,
       }),
     });
 
