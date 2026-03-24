@@ -86,8 +86,13 @@ export default function Scanner() {
 
       const jsonMatch = raw.match(/\{[\s\S]*\}/);
       if (!jsonMatch) throw new Error("No JSON found");
-      const parsed: ScanResult = JSON.parse(jsonMatch[0]);
-      setResult(parsed);
+      const parsed = JSON.parse(jsonMatch[0]);
+      setResult({
+        items: parsed.items || [],
+        totalCalories: parsed.totalCalories || 0,
+        wasteReductionTips: parsed.wasteReductionTips || [],
+        recipeSuggestions: parsed.recipeSuggestions || [],
+      });
     } catch (err) {
       console.error("Scan error:", err);
       toast.error("Failed to analyze. Please try again.");
