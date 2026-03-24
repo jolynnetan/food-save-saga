@@ -114,7 +114,13 @@ export default function Scanner() {
 
       const jsonMatch = raw.match(/\{[\s\S]*\}/);
       if (!jsonMatch) throw new Error("No JSON found");
-      const parsed: ScanResult = JSON.parse(jsonMatch[0]);
+      const rawParsed = JSON.parse(jsonMatch[0]);
+      const parsed: ScanResult = {
+        items: rawParsed.items || [],
+        totalCalories: rawParsed.totalCalories || 0,
+        wasteReductionTips: rawParsed.wasteReductionTips || [],
+        recipeSuggestions: rawParsed.recipeSuggestions || [],
+      };
       setResult(parsed);
 
       // Save to history
