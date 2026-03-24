@@ -307,8 +307,8 @@ export default function Scanner() {
             </div>
             <p className="text-xs text-muted-foreground mt-1">
               {tab === "leftover"
-                ? `${result.items.filter(i => i.isLeftover).length} leftover(s) · ${result.items.filter(i => !i.isLeftover).length} fresh`
-                : `${result.items.length} item(s) detected`}
+                ? `${(result.items || []).filter(i => i.isLeftover).length} leftover(s) · ${(result.items || []).filter(i => !i.isLeftover).length} fresh`
+                : `${(result.items || []).length} item(s) detected`}
             </p>
           </div>
 
