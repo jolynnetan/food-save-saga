@@ -219,7 +219,7 @@ export default function Scanner() {
               <span className="text-2xl font-bold text-primary">{result.totalCalories} kcal</span>
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              {result.items.filter(i => i.isLeftover).length} leftover(s) · {result.items.filter(i => !i.isLeftover).length} fresh item(s)
+              {(result.items || []).filter(i => i.isLeftover).length} leftover(s) · {(result.items || []).filter(i => !i.isLeftover).length} fresh item(s)
             </p>
           </div>
 
