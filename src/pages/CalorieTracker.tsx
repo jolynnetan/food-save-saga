@@ -63,6 +63,33 @@ export default function CalorieTracker() {
   const fileRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
+  // Pick up items sent from Scanner page
+  useEffect(() => {
+    const scannedRaw = localStorage.getItem("sp-scanned-calories");
+    if (scannedRaw) {
+      try {
+        const scannedItems = JSON.parse(scannedRaw);
+        if (scannedItems.length > 0) {
+          const now = new Date();
+          const time = now.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+          const newMeals = scannedItems.map((item: any, i: number) => ({
+            id: Date.now() + i,
+            name: item.name,
+            emoji: item.emoji || "📸",
+            calories: item.calories || 0,
+            protein: item.protein || 0,
+            carbs: item.carbs || 0,
+            fat: item.fat || 0,
+            time,
+          }));
+          setMeals(prev => [...prev, ...newMeals]);
+          toast({ title: "📸 Scanned items added!", description: `${scannedItems.length} item(s) from Scanner.` });
+        }
+      } catch {}
+      localStorage.removeItem("sp-scanned-calories");
+    }
+  }, []);
+
   const totalCalories = meals.reduce((s, m) => s + m.calories, 0);
   const totalProtein = meals.reduce((s, m) => s + m.protein, 0);
   const totalCarbs = meals.reduce((s, m) => s + m.carbs, 0);

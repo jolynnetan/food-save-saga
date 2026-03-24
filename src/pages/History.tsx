@@ -68,6 +68,12 @@ const filterMap: Record<FilterType, HistoryEntry["type"] | "all"> = {
 
 export default function History() {
   const [filter, setFilter] = useState<FilterType>("All");
+  const [historyData, setHistoryData] = useState<HistoryEntry[]>(staticHistory);
+
+  useEffect(() => {
+    const scanEntries = scanReportsToEntries(getScanHistory());
+    setHistoryData([...scanEntries, ...staticHistory]);
+  }, []);
 
   const filtered = filter === "All"
     ? historyData
