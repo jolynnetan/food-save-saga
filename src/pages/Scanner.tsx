@@ -65,6 +65,20 @@ export default function Scanner() {
     return full;
   };
 
+  const extractAndParseJson = (raw: string) => {
+    let cleaned = raw.replace(/```json\s*/gi, "").replace(/```\s*/g, "").trim();
+    const jsonStart = cleaned.search(/[\{\[]/);
+    const jsonEnd = cleaned.lastIndexOf("}");
+    if (jsonStart === -1 || jsonEnd === -1) throw new Error("No JSON found");
+    cleaned = cleaned.substring(jsonStart, jsonEnd + 1);
+    try {
+      return JSON.parse(cleaned);
+    } catch {
+      cleaned = cleaned.replace(/,\s*}/g, "}").replace(/,\s*]/g, "]").replace(/[\x00-\x1F\x7F]/g, "");
+      return JSON.parse(cleaned);
+    }
+  };
+
   const handleScan = async () => {
     if (!image) return;
     setScanning(true);
@@ -72,7 +86,7 @@ export default function Scanner() {
       const response = await supabase.functions.invoke("food-assistant", {
         body: {
           mode: "scan-leftovers",
-          messages: [{ role: "user", content: "I have these food items/leftovers in the photo. Please identify them, estimate calories, and suggest how to reduce waste. The items appear to be common household leftovers." }],
+          imageBase64: image,
         },
       });
 
@@ -84,12 +98,12 @@ export default function Scanner() {
           ? await parseSSE(new Response(response.data))
           : JSON.stringify(response.data);
 
-      const jsonMatch = raw.match(/\{[\s\S]*\}/);
-      if (!jsonMatch) throw new Error("No JSON found");
-      const parsed = JSON.parse(jsonMatch[0]);
+      const parsed = extractAndParseJson(raw);
+      const items = parsed.items || [];
+      const totalCalories = items.reduce((s: number, i: ScannedItem) => s + (i.calories || 0), 0);
       setResult({
-        items: parsed.items || [],
-        totalCalories: parsed.totalCalories || 0,
+        items,
+        totalCalories: parsed.totalCalories || totalCalories,
         wasteReductionTips: parsed.wasteReductionTips || [],
         recipeSuggestions: parsed.recipeSuggestions || [],
       });
