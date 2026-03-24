@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Calendar, ChevronRight, RotateCcw, Filter } from "lucide-react";
 import { Link } from "react-router-dom";
+import { getScanHistory, type ScanReport } from "./Scanner";
 
 type HistoryEntry = {
-  id: number;
+  id: number | string;
   date: string;
   dateLabel: string;
   type: "meal" | "recipe" | "scan" | "challenge";
@@ -14,7 +15,7 @@ type HistoryEntry = {
   canRepeat?: boolean;
 };
 
-const historyData: HistoryEntry[] = [
+const staticHistory: HistoryEntry[] = [
   { id: 1, date: "2026-03-22", dateLabel: "Today", type: "meal", title: "Salmon with rice", emoji: "🍣", detail: "620 cal · Dinner", calories: 620 },
   { id: 2, date: "2026-03-22", dateLabel: "Today", type: "recipe", title: "Stir-fried vegetables", emoji: "🥘", detail: "Used leftover bell peppers", calories: 340, canRepeat: true },
   { id: 3, date: "2026-03-22", dateLabel: "Today", type: "challenge", title: "Finished yesterday's rice", emoji: "🍚", detail: "+10 pts earned", },
@@ -28,6 +29,28 @@ const historyData: HistoryEntry[] = [
   { id: 11, date: "2026-03-18", dateLabel: "Mar 18", type: "recipe", title: "Egg fried rice", emoji: "🍳", detail: "Used day-old rice", calories: 380, canRepeat: true },
   { id: 12, date: "2026-03-18", dateLabel: "Mar 18", type: "meal", title: "Tuna sandwich", emoji: "🥪", detail: "290 cal · Lunch", calories: 290 },
 ];
+
+function scanReportsToEntries(reports: ScanReport[]): HistoryEntry[] {
+  return reports.map(r => {
+    const d = new Date(r.date);
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+    const isToday = d.toDateString() === today.toDateString();
+    const isYesterday = d.toDateString() === yesterday.toDateString();
+    const dateLabel = isToday ? "Today" : isYesterday ? "Yesterday" : d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+    return {
+      id: r.id,
+      date: r.date,
+      dateLabel,
+      type: "scan" as const,
+      title: r.mode === "leftover" ? "Leftover Scan" : "Calorie Scan",
+      emoji: r.mode === "leftover" ? "♻️" : "🔥",
+      detail: `${r.items.length} items · ${r.totalCalories} kcal`,
+      calories: r.totalCalories,
+    };
+  });
+}
 
 const typeConfig = {
   meal: { label: "Meal", bg: "bg-muted", color: "text-foreground" },
