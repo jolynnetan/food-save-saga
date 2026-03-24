@@ -1,8 +1,9 @@
 import { useState, useRef } from "react";
-import { Camera, Upload, X, Lightbulb, ChefHat, Recycle, Plus, Trash2, Flame, Loader2, Refrigerator, Leaf } from "lucide-react";
+import { Camera, Upload, X, Lightbulb, ChefHat, Recycle, Plus, Trash2, Flame, Loader2, Refrigerator, Leaf, UtensilsCrossed, ArrowRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
+import { useNavigate } from "react-router-dom";
 
 type ScannedItem = {
   name: string;
@@ -22,19 +23,44 @@ type ScanResult = {
   recipeSuggestions: { name: string; emoji: string; time: string; description: string }[];
 };
 
+export type ScanReport = {
+  id: string;
+  date: string;
+  mode: "leftover" | "calorie";
+  items: ScannedItem[];
+  totalCalories: number;
+  imagePreview?: string;
+};
+
+const HISTORY_KEY = "sp-scan-history";
+
+function saveScanReport(report: ScanReport) {
+  const existing: ScanReport[] = JSON.parse(localStorage.getItem(HISTORY_KEY) || "[]");
+  existing.unshift(report);
+  localStorage.setItem(HISTORY_KEY, JSON.stringify(existing.slice(0, 50)));
+}
+
+export function getScanHistory(): ScanReport[] {
+  return JSON.parse(localStorage.getItem(HISTORY_KEY) || "[]");
+}
+
 const tipIcons: Record<string, React.ReactNode> = {
   recycle: <Recycle size={14} className="text-success" />,
   fridge: <Refrigerator size={14} className="text-primary" />,
   leaf: <Leaf size={14} className="text-success" />,
 };
 
+type TabMode = "leftover" | "calorie";
+
 export default function Scanner() {
+  const [tab, setTab] = useState<TabMode>("leftover");
   const [image, setImage] = useState<string | null>(null);
   const [scanning, setScanning] = useState(false);
   const [result, setResult] = useState<ScanResult | null>(null);
   const [newItem, setNewItem] = useState("");
   const [addingItem, setAddingItem] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+  const navigate = useNavigate();
 
   const handleFile = (file: File) => {
     const reader = new FileReader();
@@ -69,11 +95,13 @@ export default function Scanner() {
     if (!image) return;
     setScanning(true);
     try {
+      const mode = tab === "leftover" ? "scan-leftovers" : "scan-leftovers";
+      const prompt = tab === "leftover"
+        ? "I have these food items/leftovers in the photo. Please identify them, estimate calories, and suggest how to reduce waste. Mark cooked/leftover items appropriately."
+        : "I have these food items in the photo. Please identify each item and provide detailed calorie and macronutrient estimates. Focus on accurate nutritional data.";
+
       const response = await supabase.functions.invoke("food-assistant", {
-        body: {
-          mode: "scan-leftovers",
-          messages: [{ role: "user", content: "I have these food items/leftovers in the photo. Please identify them, estimate calories, and suggest how to reduce waste. The items appear to be common household leftovers." }],
-        },
+        body: { mode, messages: [{ role: "user", content: prompt }] },
       });
 
       if (response.error) throw response.error;
@@ -88,6 +116,16 @@ export default function Scanner() {
       if (!jsonMatch) throw new Error("No JSON found");
       const parsed: ScanResult = JSON.parse(jsonMatch[0]);
       setResult(parsed);
+
+      // Save to history
+      saveScanReport({
+        id: Date.now().toString(),
+        date: new Date().toISOString(),
+        mode: tab,
+        items: parsed.items,
+        totalCalories: parsed.totalCalories,
+        imagePreview: image?.slice(0, 200),
+      });
     } catch (err) {
       console.error("Scan error:", err);
       toast.error("Failed to analyze. Please try again.");
@@ -103,7 +141,7 @@ export default function Scanner() {
       const response = await supabase.functions.invoke("food-assistant", {
         body: {
           mode: "scan-leftovers",
-          messages: [{ role: "user", content: `Analyze this single food item: "${newItem.trim()}". Estimate its calories and macros. Treat it as a leftover if it sounds cooked.` }],
+          messages: [{ role: "user", content: `Analyze this single food item: "${newItem.trim()}". Estimate its calories and macros.` }],
         },
       });
 
@@ -120,13 +158,14 @@ export default function Scanner() {
       const parsed = JSON.parse(jsonMatch[0]);
       const newItems = parsed.items || [];
       if (newItems.length > 0) {
-        setResult({
+        const updated = {
           ...result,
           items: [...result.items, ...newItems],
           totalCalories: result.totalCalories + newItems.reduce((s: number, i: ScannedItem) => s + i.calories, 0),
           wasteReductionTips: [...result.wasteReductionTips, ...(parsed.wasteReductionTips || [])].slice(0, 6),
           recipeSuggestions: [...result.recipeSuggestions, ...(parsed.recipeSuggestions || [])].slice(0, 4),
-        });
+        };
+        setResult(updated);
         toast.success(`Added "${newItems[0].name}" to report`);
       }
       setNewItem("");
@@ -144,13 +183,56 @@ export default function Scanner() {
     setResult({ ...result, items, totalCalories: result.totalCalories - removed.calories });
   };
 
+  const sendToCalorieTracker = () => {
+    if (!result) return;
+    // Save items to localStorage for CalorieTracker to pick up
+    const existing = JSON.parse(localStorage.getItem("sp-scanned-calories") || "[]");
+    const newEntries = result.items.map(item => ({
+      name: item.name,
+      emoji: item.emoji,
+      calories: item.calories,
+      protein: item.protein,
+      carbs: item.carbs,
+      fat: item.fat,
+    }));
+    localStorage.setItem("sp-scanned-calories", JSON.stringify([...existing, ...newEntries]));
+    toast.success(`${result.items.length} item(s) sent to Calorie Tracker`);
+    navigate("/calories");
+  };
+
   const clear = () => { setImage(null); setResult(null); };
+
+  const switchTab = (t: TabMode) => {
+    setTab(t);
+    setImage(null);
+    setResult(null);
+  };
 
   return (
     <div className="px-4 py-5 max-w-lg mx-auto space-y-5 pb-28">
       <div className="animate-fade-up">
-        <h2 className="text-2xl font-bold text-foreground">Food & Leftover Scanner</h2>
-        <p className="text-muted-foreground mt-1">Scan food to get calorie reports & waste reduction tips</p>
+        <h2 className="text-2xl font-bold text-foreground">Food Scanner</h2>
+        <p className="text-muted-foreground mt-1">Analyze leftovers or track calories from photos</p>
+      </div>
+
+      {/* Tabs */}
+      <div className="flex gap-2 animate-fade-up" style={{ animationDelay: "60ms" }}>
+        <button
+          onClick={() => switchTab("leftover")}
+          className={`flex-1 flex items-center justify-center gap-2 rounded-xl py-3 text-sm font-semibold transition-all active:scale-[0.97] ${
+            tab === "leftover" ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20" : "bg-muted text-muted-foreground"
+          }`}
+        >
+          <Recycle size={16} /> Leftover Scanner
+        </button>
+        <button
+          onClick={() => switchTab("calorie")}
+          className={`flex-1 flex items-center justify-center gap-2 rounded-xl py-3 text-sm font-semibold transition-all active:scale-[0.97] ${
+            tab === "calorie" ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20" : "bg-muted text-muted-foreground"
+          }`}
+        >
+          <Flame size={16} /> Calorie Scanner
+        </button>
       </div>
 
       {/* Upload area */}
@@ -158,14 +240,18 @@ export default function Scanner() {
         <div
           onClick={() => fileRef.current?.click()}
           className="border-2 border-dashed border-primary/30 rounded-2xl p-8 flex flex-col items-center gap-4 cursor-pointer hover:border-primary/50 hover:bg-primary/5 transition-all duration-200 active:scale-[0.98] animate-fade-up"
-          style={{ animationDelay: "80ms" }}
+          style={{ animationDelay: "120ms" }}
         >
           <div className="bg-primary/10 rounded-2xl p-4">
             <Camera className="text-primary" size={32} />
           </div>
           <div className="text-center">
-            <p className="font-semibold text-foreground">Take a photo or upload</p>
-            <p className="text-sm text-muted-foreground mt-1">Snap your food or leftovers for analysis</p>
+            <p className="font-semibold text-foreground">
+              {tab === "leftover" ? "Snap your leftovers" : "Snap your food"}
+            </p>
+            <p className="text-sm text-muted-foreground mt-1">
+              {tab === "leftover" ? "Get tips to reduce waste & reuse food" : "Get detailed calorie & macro estimates"}
+            </p>
           </div>
           <div className="flex gap-3">
             <span className="flex items-center gap-1.5 text-xs text-muted-foreground bg-muted px-3 py-1.5 rounded-full">
@@ -196,7 +282,7 @@ export default function Scanner() {
                 <span className="flex items-center justify-center gap-2">
                   <Loader2 className="animate-spin" size={16} /> Analyzing with AI...
                 </span>
-              ) : "🔍 Analyze Food"}
+              ) : tab === "leftover" ? "🔍 Analyze Leftovers" : "🔥 Analyze Calories"}
             </button>
           )}
         </div>
@@ -214,7 +300,9 @@ export default function Scanner() {
               <span className="text-2xl font-bold text-primary">{result.totalCalories} kcal</span>
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              {result.items.filter(i => i.isLeftover).length} leftover(s) · {result.items.filter(i => !i.isLeftover).length} fresh item(s)
+              {tab === "leftover"
+                ? `${result.items.filter(i => i.isLeftover).length} leftover(s) · ${result.items.filter(i => !i.isLeftover).length} fresh`
+                : `${result.items.length} item(s) detected`}
             </p>
           </div>
 
@@ -230,7 +318,7 @@ export default function Scanner() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
                       <p className="text-sm font-medium text-foreground truncate">{item.name}</p>
-                      {item.isLeftover && (
+                      {item.isLeftover && tab === "leftover" && (
                         <span className="text-[10px] font-medium bg-warning/20 text-warning px-1.5 py-0.5 rounded-full shrink-0">Leftover</span>
                       )}
                     </div>
@@ -260,8 +348,18 @@ export default function Scanner() {
             </div>
           </div>
 
-          {/* Waste Reduction Tips (for leftovers) */}
-          {result.wasteReductionTips.length > 0 && (
+          {/* Calorie tab: Send to Calorie Tracker */}
+          {tab === "calorie" && (
+            <button
+              onClick={sendToCalorieTracker}
+              className="w-full flex items-center justify-center gap-2 bg-primary text-primary-foreground rounded-xl py-3 font-semibold text-sm transition-all active:scale-[0.97] shadow-lg shadow-primary/20 animate-fade-up"
+            >
+              <UtensilsCrossed size={16} /> Send to Calorie Tracker <ArrowRight size={16} />
+            </button>
+          )}
+
+          {/* Leftover tab: Waste Reduction Tips */}
+          {tab === "leftover" && result.wasteReductionTips.length > 0 && (
             <div className="bg-card border rounded-2xl p-4 animate-fade-up" style={{ animationDelay: "160ms" }}>
               <h3 className="text-sm font-semibold text-foreground flex items-center gap-2 mb-3">
                 <Recycle size={16} className="text-success" /> Reduce Your Leftovers
@@ -277,8 +375,8 @@ export default function Scanner() {
             </div>
           )}
 
-          {/* Recipe Suggestions */}
-          {result.recipeSuggestions.length > 0 && (
+          {/* Recipe Suggestions (leftover tab) */}
+          {tab === "leftover" && result.recipeSuggestions.length > 0 && (
             <div className="bg-card border rounded-2xl p-4 animate-fade-up" style={{ animationDelay: "240ms" }}>
               <h3 className="text-sm font-semibold text-foreground flex items-center gap-2 mb-3">
                 <ChefHat size={16} className="text-primary" /> Use It Up — Recipes
