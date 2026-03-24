@@ -114,14 +114,8 @@ export default function Scanner() {
 
       const jsonMatch = raw.match(/\{[\s\S]*\}/);
       if (!jsonMatch) throw new Error("No JSON found");
-      const parsed = JSON.parse(jsonMatch[0]);
-      const safeResult: ScanResult = {
-        items: Array.isArray(parsed.items) ? parsed.items : [],
-        totalCalories: parsed.totalCalories || 0,
-        wasteReductionTips: Array.isArray(parsed.wasteReductionTips) ? parsed.wasteReductionTips : [],
-        recipeSuggestions: Array.isArray(parsed.recipeSuggestions) ? parsed.recipeSuggestions : [],
-      };
-      setResult(safeResult);
+      const parsed: ScanResult = JSON.parse(jsonMatch[0]);
+      setResult(parsed);
 
       // Save to history
       saveScanReport({
@@ -166,10 +160,10 @@ export default function Scanner() {
       if (newItems.length > 0) {
         const updated = {
           ...result,
-          items: [...(result.items || []), ...newItems],
-          totalCalories: (result.totalCalories || 0) + newItems.reduce((s: number, i: ScannedItem) => s + (i.calories || 0), 0),
-          wasteReductionTips: [...(result.wasteReductionTips || []), ...(parsed.wasteReductionTips || [])].slice(0, 6),
-          recipeSuggestions: [...(result.recipeSuggestions || []), ...(parsed.recipeSuggestions || [])].slice(0, 4),
+          items: [...result.items, ...newItems],
+          totalCalories: result.totalCalories + newItems.reduce((s: number, i: ScannedItem) => s + i.calories, 0),
+          wasteReductionTips: [...result.wasteReductionTips, ...(parsed.wasteReductionTips || [])].slice(0, 6),
+          recipeSuggestions: [...result.recipeSuggestions, ...(parsed.recipeSuggestions || [])].slice(0, 4),
         };
         setResult(updated);
         toast.success(`Added "${newItems[0].name}" to report`);
@@ -307,8 +301,8 @@ export default function Scanner() {
             </div>
             <p className="text-xs text-muted-foreground mt-1">
               {tab === "leftover"
-                ? `${(result.items || []).filter(i => i.isLeftover).length} leftover(s) · ${(result.items || []).filter(i => !i.isLeftover).length} fresh`
-                : `${(result.items || []).length} item(s) detected`}
+                ? `${result.items.filter(i => i.isLeftover).length} leftover(s) · ${result.items.filter(i => !i.isLeftover).length} fresh`
+                : `${result.items.length} item(s) detected`}
             </p>
           </div>
 
