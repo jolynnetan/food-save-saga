@@ -93,6 +93,8 @@ Set isLeftover to true if the item appears to be a leftover (cooked food, partia
       ];
     }
 
+    const isStructuredMode = mode === "scan-leftovers" || mode === "scan-calories" || mode === "meal-analyze";
+
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -102,7 +104,7 @@ Set isLeftover to true if the item appears to be a leftover (cooked food, partia
       body: JSON.stringify({
         model: "google/gemini-2.5-flash",
         messages: aiMessages,
-        stream: true,
+        stream: !isStructuredMode,
         max_tokens: 4096,
       }),
     });
@@ -128,6 +130,44 @@ Set isLeftover to true if the item appears to be a leftover (cooked food, partia
       });
     }
 
+    if (isStructuredMode) {
+      // Non-streaming: parse the full response and extract JSON content
+      const fullResponse = await response.json();
+      const content = fullResponse?.choices?.[0]?.message?.content || "";
+
+      // Extract JSON from content (may be wrapped in ```json blocks)
+      let cleaned = content.replace(/```json\s*/gi, "").replace(/```\s*/g, "").trim();
+      const jsonStart = cleaned.search(/[\{\[]/);
+      const jsonEnd = cleaned.lastIndexOf("}");
+
+      if (jsonStart !== -1 && jsonEnd !== -1) {
+        cleaned = cleaned.substring(jsonStart, jsonEnd + 1);
+        try {
+          const parsed = JSON.parse(cleaned);
+          return new Response(JSON.stringify(parsed), {
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        } catch {
+          // Try repairing common JSON issues
+          cleaned = cleaned.replace(/,\s*}/g, "}").replace(/,\s*]/g, "]").replace(/[\x00-\x1F\x7F]/g, "");
+          try {
+            const parsed = JSON.parse(cleaned);
+            return new Response(JSON.stringify(parsed), {
+              headers: { ...corsHeaders, "Content-Type": "application/json" },
+            });
+          } catch (parseErr) {
+            console.error("JSON parse error:", parseErr, "Raw content:", content);
+          }
+        }
+      }
+
+      // Fallback: return the raw content
+      return new Response(JSON.stringify({ raw: content }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Streaming mode for chat
     return new Response(response.body, {
       headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
     });
