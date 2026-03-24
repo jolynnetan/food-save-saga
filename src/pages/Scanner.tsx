@@ -166,10 +166,10 @@ export default function Scanner() {
       if (newItems.length > 0) {
         const updated = {
           ...result,
-          items: [...result.items, ...newItems],
-          totalCalories: result.totalCalories + newItems.reduce((s: number, i: ScannedItem) => s + i.calories, 0),
-          wasteReductionTips: [...result.wasteReductionTips, ...(parsed.wasteReductionTips || [])].slice(0, 6),
-          recipeSuggestions: [...result.recipeSuggestions, ...(parsed.recipeSuggestions || [])].slice(0, 4),
+          items: [...(result.items || []), ...newItems],
+          totalCalories: (result.totalCalories || 0) + newItems.reduce((s: number, i: ScannedItem) => s + (i.calories || 0), 0),
+          wasteReductionTips: [...(result.wasteReductionTips || []), ...(parsed.wasteReductionTips || [])].slice(0, 6),
+          recipeSuggestions: [...(result.recipeSuggestions || []), ...(parsed.recipeSuggestions || [])].slice(0, 4),
         };
         setResult(updated);
         toast.success(`Added "${newItems[0].name}" to report`);
