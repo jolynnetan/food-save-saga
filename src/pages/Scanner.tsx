@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { Camera, Upload, X, Lightbulb, ChefHat, Recycle, Plus, Trash2, Flame, Loader2, Refrigerator, Leaf, UtensilsCrossed, ArrowRight, Eye } from "lucide-react";
+import { Camera, Upload, X, Lightbulb, ChefHat, Recycle, Plus, Trash2, Flame, Loader2, Refrigerator, Leaf, UtensilsCrossed, ArrowRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
@@ -19,8 +19,6 @@ type ScannedItem = {
 type ScanResult = {
   items: ScannedItem[];
   totalCalories: number;
-  leftoversCount: number;
-  freshCount: number;
   wasteReductionTips: { tip: string; icon: string }[];
   recipeSuggestions: { name: string; emoji: string; time: string; description: string }[];
 };
@@ -51,64 +49,6 @@ const tipIcons: Record<string, React.ReactNode> = {
   fridge: <Refrigerator size={14} className="text-primary" />,
   leaf: <Leaf size={14} className="text-success" />,
 };
-
-function extractJson(raw: string): unknown {
-  let cleaned = raw
-    .replace(/```json\s*/gi, "")
-    .replace(/```\s*/g, "")
-    .trim();
-
-  const jsonStart = cleaned.search(/[{[]/);
-  const jsonEnd = cleaned.lastIndexOf(jsonStart !== -1 && cleaned[jsonStart] === "[" ? "]" : "}");
-
-  if (jsonStart === -1 || jsonEnd === -1) throw new Error("No JSON found in response");
-
-  cleaned = cleaned.substring(jsonStart, jsonEnd + 1);
-
-  try {
-    return JSON.parse(cleaned);
-  } catch {
-    cleaned = cleaned
-      .replace(/,\s*}/g, "}")
-      .replace(/,\s*]/g, "]")
-      .replace(/[\x00-\x1F\x7F]/g, "");
-    return JSON.parse(cleaned);
-  }
-}
-
-function mapToScanResult(raw: any): ScanResult {
-  const items: ScannedItem[] = (raw.items || []).map((item: any) => ({
-    name: item.name || "Unknown item",
-    emoji: item.emoji || "🍽️",
-    calories: item.calories || 0,
-    protein: item.protein || 0,
-    carbs: item.carbs || 0,
-    fat: item.fat || 0,
-    quantity: item.quantity || "1 serving",
-    isLeftover: item.isLeftover ?? false,
-  }));
-
-  const leftoversCount = raw.leftoversCount ?? items.filter(i => i.isLeftover).length;
-  const freshCount = raw.freshCount ?? items.filter(i => !i.isLeftover).length;
-  const totalCalories = raw.totalCalories ?? items.reduce((s: number, i: ScannedItem) => s + i.calories, 0);
-
-  return {
-    items,
-    totalCalories,
-    leftoversCount,
-    freshCount,
-    wasteReductionTips: (raw.wasteReductionTips || []).map((t: any) => ({
-      tip: t.tip || "",
-      icon: t.icon || "leaf",
-    })),
-    recipeSuggestions: (raw.recipeSuggestions || []).map((r: any) => ({
-      name: r.name || "Recipe",
-      emoji: r.emoji || "🍳",
-      time: r.time || "15 min",
-      description: r.description || "",
-    })),
-  };
-}
 
 type TabMode = "leftover" | "calorie";
 
@@ -155,16 +95,13 @@ export default function Scanner() {
     if (!image) return;
     setScanning(true);
     try {
+      const mode = tab === "leftover" ? "scan-leftovers" : "scan-leftovers";
       const prompt = tab === "leftover"
-        ? "Look at this image carefully. Identify every food item visible. For each item, determine if it's a leftover (cooked, stored, partially eaten) or fresh. Estimate calories and macros for each. Provide waste reduction tips and recipe suggestions."
-        : "Look at this image carefully. Identify every food item visible. Provide detailed calorie and macronutrient estimates for each item. Be as accurate as possible with portions.";
+        ? "I have these food items/leftovers in the photo. Please identify them, estimate calories, and suggest how to reduce waste. Mark cooked/leftover items appropriately."
+        : "I have these food items in the photo. Please identify each item and provide detailed calorie and macronutrient estimates. Focus on accurate nutritional data.";
 
       const response = await supabase.functions.invoke("food-assistant", {
-        body: {
-          mode: "scan-leftovers",
-          imageBase64: image,
-          messages: [{ role: "user", content: prompt }],
-        },
+        body: { mode, messages: [{ role: "user", content: prompt }] },
       });
 
       if (response.error) throw response.error;
@@ -175,16 +112,18 @@ export default function Scanner() {
           ? await parseSSE(new Response(response.data))
           : JSON.stringify(response.data);
 
-      const parsed = extractJson(raw);
-      const mapped = mapToScanResult(parsed);
-      setResult(mapped);
+      const jsonMatch = raw.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) throw new Error("No JSON found");
+      const parsed: ScanResult = JSON.parse(jsonMatch[0]);
+      setResult(parsed);
 
+      // Save to history
       saveScanReport({
         id: Date.now().toString(),
         date: new Date().toISOString(),
         mode: tab,
-        items: mapped.items,
-        totalCalories: mapped.totalCalories,
+        items: parsed.items,
+        totalCalories: parsed.totalCalories,
         imagePreview: image?.slice(0, 200),
       });
     } catch (err) {
@@ -202,7 +141,7 @@ export default function Scanner() {
       const response = await supabase.functions.invoke("food-assistant", {
         body: {
           mode: "scan-leftovers",
-          messages: [{ role: "user", content: `Analyze this single food item: "${newItem.trim()}". Estimate its calories and macros. Return it as a single item in the items array.` }],
+          messages: [{ role: "user", content: `Analyze this single food item: "${newItem.trim()}". Estimate its calories and macros.` }],
         },
       });
 
@@ -214,25 +153,15 @@ export default function Scanner() {
           ? await parseSSE(new Response(response.data))
           : JSON.stringify(response.data);
 
-      const parsed: any = extractJson(raw);
-      const newItems = (parsed.items || []).map((item: any) => ({
-        name: item.name || newItem.trim(),
-        emoji: item.emoji || "🍽️",
-        calories: item.calories || 0,
-        protein: item.protein || 0,
-        carbs: item.carbs || 0,
-        fat: item.fat || 0,
-        quantity: item.quantity || "1 serving",
-        isLeftover: item.isLeftover ?? false,
-      }));
-
+      const jsonMatch = raw.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) throw new Error("No JSON");
+      const parsed = JSON.parse(jsonMatch[0]);
+      const newItems = parsed.items || [];
       if (newItems.length > 0) {
-        const updatedItems = [...result.items, ...newItems];
-        const updated: ScanResult = {
-          items: updatedItems,
-          totalCalories: updatedItems.reduce((s, i) => s + i.calories, 0),
-          leftoversCount: updatedItems.filter(i => i.isLeftover).length,
-          freshCount: updatedItems.filter(i => !i.isLeftover).length,
+        const updated = {
+          ...result,
+          items: [...result.items, ...newItems],
+          totalCalories: result.totalCalories + newItems.reduce((s: number, i: ScannedItem) => s + i.calories, 0),
           wasteReductionTips: [...result.wasteReductionTips, ...(parsed.wasteReductionTips || [])].slice(0, 6),
           recipeSuggestions: [...result.recipeSuggestions, ...(parsed.recipeSuggestions || [])].slice(0, 4),
         };
@@ -251,17 +180,12 @@ export default function Scanner() {
     if (!result) return;
     const removed = result.items[index];
     const items = result.items.filter((_, i) => i !== index);
-    setResult({
-      ...result,
-      items,
-      totalCalories: result.totalCalories - removed.calories,
-      leftoversCount: items.filter(i => i.isLeftover).length,
-      freshCount: items.filter(i => !i.isLeftover).length,
-    });
+    setResult({ ...result, items, totalCalories: result.totalCalories - removed.calories });
   };
 
   const sendToCalorieTracker = () => {
     if (!result) return;
+    // Save items to localStorage for CalorieTracker to pick up
     const existing = JSON.parse(localStorage.getItem("sp-scanned-calories") || "[]");
     const newEntries = result.items.map(item => ({
       name: item.name,
@@ -326,7 +250,7 @@ export default function Scanner() {
               {tab === "leftover" ? "Snap your leftovers" : "Snap your food"}
             </p>
             <p className="text-sm text-muted-foreground mt-1">
-              {tab === "leftover" ? "AI will identify items & suggest how to reduce waste" : "AI will identify items & estimate calories"}
+              {tab === "leftover" ? "Get tips to reduce waste & reuse food" : "Get detailed calorie & macro estimates"}
             </p>
           </div>
           <div className="flex gap-3">
@@ -356,7 +280,7 @@ export default function Scanner() {
             <button onClick={handleScan} disabled={scanning} className="w-full mt-4 bg-primary text-primary-foreground rounded-xl py-3 font-semibold text-sm transition-all duration-200 active:scale-[0.97] disabled:opacity-60 shadow-lg shadow-primary/20">
               {scanning ? (
                 <span className="flex items-center justify-center gap-2">
-                  <Loader2 className="animate-spin" size={16} /> Analyzing image with AI...
+                  <Loader2 className="animate-spin" size={16} /> Analyzing with AI...
                 </span>
               ) : tab === "leftover" ? "🔍 Analyze Leftovers" : "🔥 Analyze Calories"}
             </button>
@@ -367,37 +291,26 @@ export default function Scanner() {
       {/* Report */}
       {result && (
         <div className="space-y-4">
-          {/* Summary Stats */}
-          <div className="grid grid-cols-3 gap-2 animate-fade-up">
-            <div className="bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20 rounded-2xl p-3 text-center">
-              <p className="text-2xl font-bold text-primary">{result.totalCalories}</p>
-              <p className="text-[10px] text-muted-foreground font-medium mt-0.5">Total kcal</p>
+          {/* Calorie Summary */}
+          <div className="bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20 rounded-2xl p-4 animate-fade-up">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
+                <Flame size={16} className="text-destructive" /> Calorie Report
+              </h3>
+              <span className="text-2xl font-bold text-primary">{result.totalCalories} kcal</span>
             </div>
-            <div className="bg-gradient-to-br from-warning/10 to-warning/5 border border-warning/20 rounded-2xl p-3 text-center">
-              <p className="text-2xl font-bold text-warning">{result.leftoversCount}</p>
-              <p className="text-[10px] text-muted-foreground font-medium mt-0.5">Leftovers</p>
-            </div>
-            <div className="bg-gradient-to-br from-success/10 to-success/5 border border-success/20 rounded-2xl p-3 text-center">
-              <p className="text-2xl font-bold text-success">{result.freshCount}</p>
-              <p className="text-[10px] text-muted-foreground font-medium mt-0.5">Fresh Items</p>
-            </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              {tab === "leftover"
+                ? `${result.items.filter(i => i.isLeftover).length} leftover(s) · ${result.items.filter(i => !i.isLeftover).length} fresh`
+                : `${result.items.length} item(s) detected`}
+            </p>
           </div>
 
-          {/* Detected Items List */}
+          {/* Detected Items */}
           <div className="bg-card border rounded-2xl p-4 animate-fade-up" style={{ animationDelay: "80ms" }}>
-            <h3 className="text-sm font-semibold text-foreground flex items-center gap-2 mb-2">
-              <Eye size={16} className="text-primary" /> Detected Food Items
+            <h3 className="text-sm font-semibold text-foreground flex items-center gap-2 mb-3">
+              <Lightbulb size={16} className="text-warning" /> Detected Items
             </h3>
-            {/* Quick item list for transparency */}
-            <div className="flex flex-wrap gap-1.5 mb-3">
-              {result.items.map((item, i) => (
-                <span key={i} className="inline-flex items-center gap-1 text-xs bg-muted px-2.5 py-1 rounded-full text-foreground font-medium">
-                  {item.emoji} {item.name}
-                </span>
-              ))}
-            </div>
-
-            {/* Detailed items */}
             <div className="space-y-2">
               {result.items.map((item, i) => (
                 <div key={i} className="flex items-center gap-3 bg-muted/50 rounded-xl p-3 group">
@@ -405,10 +318,8 @@ export default function Scanner() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
                       <p className="text-sm font-medium text-foreground truncate">{item.name}</p>
-                      {item.isLeftover ? (
+                      {item.isLeftover && tab === "leftover" && (
                         <span className="text-[10px] font-medium bg-warning/20 text-warning px-1.5 py-0.5 rounded-full shrink-0">Leftover</span>
-                      ) : (
-                        <span className="text-[10px] font-medium bg-success/20 text-success px-1.5 py-0.5 rounded-full shrink-0">Fresh</span>
                       )}
                     </div>
                     <p className="text-xs text-muted-foreground">{item.quantity} · {item.calories} kcal</p>

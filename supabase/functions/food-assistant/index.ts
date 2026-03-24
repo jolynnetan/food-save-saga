@@ -10,7 +10,7 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { messages, mode, imageBase64 } = await req.json();
+    const { messages, mode } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
@@ -41,18 +41,14 @@ Keep ingredients to 4-8 items. Use common household amounts.`;
     }
 
     if (mode === "scan-leftovers") {
-      systemPrompt = `You are a food identification and waste reduction AI. Analyze the provided image (or description) of food items.
-Identify EVERY visible food item individually. For each item estimate calories, protein, carbs, fat, and quantity.
-Mark items as leftover (cooked, partially eaten, stored in containers) or fresh.
-
-Return ONLY a JSON object with this EXACT structure, no other text:
+      systemPrompt = `You are a food identification and waste reduction AI. The user will describe food items they see (leftovers or any food).
+Identify each item, estimate its calories and macros, and provide waste reduction tips.
+Return ONLY a JSON object with this exact structure, no other text:
 {
   "items": [
     {"name": "Food name", "emoji": "🍚", "calories": 200, "protein": 5, "carbs": 40, "fat": 1, "quantity": "1 bowl (~200g)", "isLeftover": true}
   ],
   "totalCalories": 500,
-  "leftoversCount": 2,
-  "freshCount": 1,
   "wasteReductionTips": [
     {"tip": "Practical tip to reduce or reuse this leftover", "icon": "recycle"},
     {"tip": "Storage advice", "icon": "fridge"}
@@ -61,31 +57,8 @@ Return ONLY a JSON object with this EXACT structure, no other text:
     {"name": "Recipe Name", "emoji": "🍳", "time": "15 min", "description": "Brief description using detected items"}
   ]
 }
-Provide 3-5 waste reduction tips and 2-3 recipe suggestions using the detected items. Be specific about each food item you see.`;
+Set isLeftover to true if the item appears to be a leftover (cooked food, partially eaten, etc). Provide 3-5 waste reduction tips and 2-3 recipe suggestions using the detected items.`;
     }
-
-    // Build the user message with image if provided
-    const processedMessages = messages.map((msg: { role: string; content: string }) => {
-      if (msg.role === "user" && imageBase64) {
-        // Multimodal message with image
-        return {
-          role: "user",
-          content: [
-            {
-              type: "image_url",
-              image_url: {
-                url: imageBase64.startsWith("data:") ? imageBase64 : `data:image/jpeg;base64,${imageBase64}`,
-              },
-            },
-            {
-              type: "text",
-              text: msg.content,
-            },
-          ],
-        };
-      }
-      return msg;
-    });
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -94,10 +67,10 @@ Provide 3-5 waste reduction tips and 2-3 recipe suggestions using the detected i
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
+        model: "google/gemini-3-flash-preview",
         messages: [
           { role: "system", content: systemPrompt },
-          ...processedMessages,
+          ...messages,
         ],
         stream: true,
       }),
