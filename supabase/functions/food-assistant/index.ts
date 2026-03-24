@@ -40,6 +40,26 @@ Return ONLY a JSON object with this exact structure, no other text:
 Keep ingredients to 4-8 items. Use common household amounts.`;
     }
 
+    if (mode === "scan-leftovers") {
+      systemPrompt = `You are a food identification and waste reduction AI. The user will describe food items they see (leftovers or any food).
+Identify each item, estimate its calories and macros, and provide waste reduction tips.
+Return ONLY a JSON object with this exact structure, no other text:
+{
+  "items": [
+    {"name": "Food name", "emoji": "🍚", "calories": 200, "protein": 5, "carbs": 40, "fat": 1, "quantity": "1 bowl (~200g)", "isLeftover": true}
+  ],
+  "totalCalories": 500,
+  "wasteReductionTips": [
+    {"tip": "Practical tip to reduce or reuse this leftover", "icon": "recycle"},
+    {"tip": "Storage advice", "icon": "fridge"}
+  ],
+  "recipeSuggestions": [
+    {"name": "Recipe Name", "emoji": "🍳", "time": "15 min", "description": "Brief description using detected items"}
+  ]
+}
+Set isLeftover to true if the item appears to be a leftover (cooked food, partially eaten, etc). Provide 3-5 waste reduction tips and 2-3 recipe suggestions using the detected items.`;
+    }
+
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
