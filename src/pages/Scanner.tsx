@@ -45,23 +45,45 @@ export default function Scanner() {
     reader.readAsDataURL(file);
   };
 
+  const extractDeltaFromSSELine = (line: string) => {
+    if (!line.startsWith("data:")) return "";
+    const payload = line.slice(5).trim();
+    if (!payload || payload === "[DONE]") return "";
+    try {
+      const parsed = JSON.parse(payload);
+      return parsed?.choices?.[0]?.delta?.content || parsed?.choices?.[0]?.message?.content || "";
+    } catch {
+      return "";
+    }
+  };
+
   const parseSSE = async (response: Response): Promise<string> => {
     const reader = response.body?.getReader();
     if (!reader) return "";
+
     const decoder = new TextDecoder();
+    let textBuffer = "";
     let full = "";
+
     while (true) {
       const { done, value } = await reader.read();
       if (done) break;
-      const chunk = decoder.decode(value, { stream: true });
-      for (const line of chunk.split("\n")) {
-        if (!line.startsWith("data: ") || line.includes("[DONE]")) continue;
-        try {
-          const j = JSON.parse(line.slice(6));
-          full += j.choices?.[0]?.delta?.content || "";
-        } catch {}
+
+      textBuffer += decoder.decode(value, { stream: true });
+
+      let newlineIndex: number;
+      while ((newlineIndex = textBuffer.indexOf("\n")) !== -1) {
+        let line = textBuffer.slice(0, newlineIndex);
+        textBuffer = textBuffer.slice(newlineIndex + 1);
+        if (line.endsWith("\r")) line = line.slice(0, -1);
+        full += extractDeltaFromSSELine(line);
       }
     }
+
+    if (textBuffer.trim()) {
+      full += extractDeltaFromSSELine(textBuffer.trim());
+    }
+
     return full;
   };
 
@@ -71,12 +93,99 @@ export default function Scanner() {
     const jsonEnd = cleaned.lastIndexOf("}");
     if (jsonStart === -1 || jsonEnd === -1) throw new Error("No JSON found");
     cleaned = cleaned.substring(jsonStart, jsonEnd + 1);
+
     try {
       return JSON.parse(cleaned);
     } catch {
-      cleaned = cleaned.replace(/,\s*}/g, "}").replace(/,\s*]/g, "]").replace(/[\x00-\x1F\x7F]/g, "");
+      cleaned = cleaned
+        .replace(/,\s*}/g, "}")
+        .replace(/,\s*]/g, "]")
+        .replace(/[\x00-\x1F\x7F]/g, "");
       return JSON.parse(cleaned);
     }
+  };
+
+  const extractAiText = async (data: unknown): Promise<string> => {
+    if (typeof data === "string") {
+      if (!data.includes("data:")) return data;
+      const reconstructed = data
+        .split("\n")
+        .map((line) => extractDeltaFromSSELine(line.trim()))
+        .join("");
+      return reconstructed || data;
+    }
+
+    if (data instanceof ReadableStream) {
+      return parseSSE(new Response(data));
+    }
+
+    if (data && typeof data === "object") {
+      const payload = data as {
+        items?: unknown[];
+        choices?: Array<{ message?: { content?: string | Array<{ text?: string }> } }>;
+      };
+
+      if (Array.isArray(payload.items)) {
+        return JSON.stringify(payload);
+      }
+
+      const messageContent = payload.choices?.[0]?.message?.content;
+      if (typeof messageContent === "string") {
+        return messageContent;
+      }
+      if (Array.isArray(messageContent)) {
+        return messageContent.map((part) => part?.text || "").join("");
+      }
+    }
+
+    return JSON.stringify(data ?? "");
+  };
+
+  const normalizeScanResult = (parsed: any): ScanResult => {
+    const items: ScannedItem[] = Array.isArray(parsed?.items)
+      ? parsed.items.map((item: any) => ({
+          name: String(item?.name ?? "Unknown item"),
+          emoji: String(item?.emoji ?? "🍽️"),
+          calories: Number(item?.calories ?? 0),
+          protein: Number(item?.protein ?? 0),
+          carbs: Number(item?.carbs ?? 0),
+          fat: Number(item?.fat ?? 0),
+          quantity: String(item?.quantity ?? "1 serving"),
+          isLeftover: Boolean(item?.isLeftover),
+        }))
+      : [];
+
+    const computedCalories = items.reduce((sum, item) => sum + (Number.isFinite(item.calories) ? item.calories : 0), 0);
+    const payloadCalories = Number(parsed?.totalCalories ?? parsed?.total?.calories ?? 0);
+
+    return {
+      items,
+      totalCalories: Number.isFinite(payloadCalories) && payloadCalories > 0 ? payloadCalories : computedCalories,
+      wasteReductionTips: Array.isArray(parsed?.wasteReductionTips)
+        ? parsed.wasteReductionTips
+            .filter((tip: any) => typeof tip?.tip === "string")
+            .map((tip: any) => ({ tip: tip.tip, icon: String(tip?.icon ?? "leaf") }))
+        : [],
+      recipeSuggestions: Array.isArray(parsed?.recipeSuggestions)
+        ? parsed.recipeSuggestions
+            .filter((recipe: any) => typeof recipe?.name === "string")
+            .map((recipe: any) => ({
+              name: recipe.name,
+              emoji: String(recipe?.emoji ?? "🍳"),
+              time: String(recipe?.time ?? "15 min"),
+              description: String(recipe?.description ?? "Use your detected items in a quick meal."),
+            }))
+        : [],
+    };
+  };
+
+  const parseScanPayload = async (data: unknown) => {
+    if (data && typeof data === "object" && Array.isArray((data as { items?: unknown[] }).items)) {
+      return data;
+    }
+
+    const rawText = await extractAiText(data);
+    return extractAndParseJson(rawText);
   };
 
   const handleScan = async () => {
@@ -92,21 +201,13 @@ export default function Scanner() {
 
       if (response.error) throw response.error;
 
-      const raw = typeof response.data === "string"
-        ? response.data
-        : response.data instanceof ReadableStream
-          ? await parseSSE(new Response(response.data))
-          : JSON.stringify(response.data);
+      const parsed = await parseScanPayload(response.data);
+      const normalized = normalizeScanResult(parsed);
+      setResult(normalized);
 
-      const parsed = extractAndParseJson(raw);
-      const items = parsed.items || [];
-      const totalCalories = items.reduce((s: number, i: ScannedItem) => s + (i.calories || 0), 0);
-      setResult({
-        items,
-        totalCalories: parsed.totalCalories || totalCalories,
-        wasteReductionTips: parsed.wasteReductionTips || [],
-        recipeSuggestions: parsed.recipeSuggestions || [],
-      });
+      if (!normalized.items.length) {
+        toast.warning("No food detected from the image. Try another angle or add items manually.");
+      }
     } catch (err) {
       console.error("Scan error:", err);
       toast.error("Failed to analyze. Please try again.");
@@ -128,26 +229,21 @@ export default function Scanner() {
 
       if (response.error) throw response.error;
 
-      const raw = typeof response.data === "string"
-        ? response.data
-        : response.data instanceof ReadableStream
-          ? await parseSSE(new Response(response.data))
-          : JSON.stringify(response.data);
+      const parsed = await parseScanPayload(response.data);
+      const normalized = normalizeScanResult(parsed);
+      const newItems = normalized.items;
 
-      const jsonMatch = raw.match(/\{[\s\S]*\}/);
-      if (!jsonMatch) throw new Error("No JSON");
-      const parsed = JSON.parse(jsonMatch[0]);
-      const newItems = parsed.items || [];
       if (newItems.length > 0) {
         setResult({
           ...result,
           items: [...result.items, ...newItems],
-          totalCalories: result.totalCalories + newItems.reduce((s: number, i: ScannedItem) => s + i.calories, 0),
-          wasteReductionTips: [...result.wasteReductionTips, ...(parsed.wasteReductionTips || [])].slice(0, 6),
-          recipeSuggestions: [...result.recipeSuggestions, ...(parsed.recipeSuggestions || [])].slice(0, 4),
+          totalCalories: result.totalCalories + newItems.reduce((s, i) => s + i.calories, 0),
+          wasteReductionTips: [...result.wasteReductionTips, ...normalized.wasteReductionTips].slice(0, 6),
+          recipeSuggestions: [...result.recipeSuggestions, ...normalized.recipeSuggestions].slice(0, 4),
         });
         toast.success(`Added "${newItems[0].name}" to report`);
       }
+
       setNewItem("");
     } catch {
       toast.error("Failed to analyze item");
