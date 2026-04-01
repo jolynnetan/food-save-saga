@@ -62,6 +62,15 @@ Return ONLY a JSON object with this exact structure, no other text:
 Set isLeftover to true if the item appears to be a leftover (cooked food, partially eaten, stored in containers, etc). Provide 3-5 waste reduction tips and 2-3 recipe suggestions using the detected items. Be accurate with calorie estimates.`;
     }
 
+    if (mode === "recipe-analyze") {
+      systemPrompt = `You are a recipe nutrition analysis AI. The user will give you a recipe with ingredients and steps.
+Estimate the total nutrition per serving including calories, protein, carbs, fat, servings count, and cooking time.
+Also list each ingredient with its amount and estimated calories.
+Return ONLY a JSON object with this exact structure, no other text:
+{"calories": 450, "protein": 28, "carbs": 52, "fat": 16, "servings": 2, "time": "25 min", "emoji": "🍳", "ingredients": [{"name": "Ingredient", "amount": "200g", "cal": 150}]}
+Keep ingredients matching the user's input. Use realistic calorie estimates.`;
+    }
+
     // Build messages array with vision support
     let aiMessages: any[];
     if (imageBase64 && (mode === "scan-leftovers" || mode === "scan-calories")) {
