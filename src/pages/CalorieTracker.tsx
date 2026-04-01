@@ -1,15 +1,13 @@
-import { useState, useRef, useEffect } from "react";
-import { Plus, Flame, Beef, Wheat, Droplets, X, Camera, ScanBarcode, Loader2 } from "lucide-react";
+import { useState, useRef } from "react";
+import { Plus, Flame, Beef, Wheat, Droplets, X, Camera, ScanBarcode } from "lucide-react";
 import {
   BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, Cell,
   LineChart, Line, CartesianGrid,
 } from "recharts";
 import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
 
 type Meal = {
-  id: string;
+  id: number;
   name: string;
   emoji: string;
   calories: number;
@@ -18,6 +16,23 @@ type Meal = {
   fat: number;
   time: string;
 };
+
+const todayMeals: Meal[] = [
+  { id: 1, name: "Oatmeal with berries", emoji: "🥣", calories: 320, protein: 12, carbs: 48, fat: 8, time: "8:00 AM" },
+  { id: 2, name: "Grilled chicken salad", emoji: "🥗", calories: 480, protein: 38, carbs: 18, fat: 22, time: "12:30 PM" },
+  { id: 3, name: "Greek yogurt", emoji: "🥛", calories: 150, protein: 14, carbs: 12, fat: 4, time: "3:00 PM" },
+  { id: 4, name: "Salmon with rice", emoji: "🍣", calories: 620, protein: 42, carbs: 55, fat: 18, time: "7:00 PM" },
+];
+
+const weeklyData = [
+  { day: "Mon", calories: 1850, protein: 95, carbs: 210, fat: 62 },
+  { day: "Tue", calories: 2100, protein: 110, carbs: 240, fat: 70 },
+  { day: "Wed", calories: 1720, protein: 88, carbs: 195, fat: 58 },
+  { day: "Thu", calories: 1950, protein: 102, carbs: 220, fat: 65 },
+  { day: "Fri", calories: 2200, protein: 115, carbs: 250, fat: 73 },
+  { day: "Sat", calories: 1680, protein: 82, carbs: 188, fat: 56 },
+  { day: "Sun", calories: 1570, protein: 78, carbs: 175, fat: 52 },
+];
 
 const goalCalories = 2000;
 
@@ -30,6 +45,7 @@ const commonFoods = [
   { name: "Banana", emoji: "🍌", calories: 105, protein: 1.3, carbs: 27, fat: 0.4 },
 ];
 
+// Mock barcode database
 const barcodeDb: Record<string, { name: string; emoji: string; calories: number; protein: number; carbs: number; fat: number }> = {
   "4901234567890": { name: "Instant Noodles", emoji: "🍜", calories: 380, protein: 8, carbs: 52, fat: 14 },
   "8888888888888": { name: "Coconut Milk", emoji: "🥥", calories: 190, protein: 2, carbs: 3, fat: 19 },
@@ -39,78 +55,13 @@ const barcodeDb: Record<string, { name: string; emoji: string; calories: number;
 const SCAN_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/food-assistant`;
 
 export default function CalorieTracker() {
-  const [meals, setMeals] = useState<Meal[]>([]);
-  const [weeklyData, setWeeklyData] = useState<{ day: string; calories: number; protein: number; carbs: number; fat: number }[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [meals, setMeals] = useState(todayMeals);
   const [showAdd, setShowAdd] = useState(false);
   const [scanMode, setScanMode] = useState<"none" | "photo" | "barcode">("none");
   const [scanning, setScanning] = useState(false);
   const [barcodeInput, setBarcodeInput] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
-  const { user } = useAuth();
-
-  // Load today's meals from database
-  useEffect(() => {
-    if (!user) { setLoading(false); return; }
-    const fetchMeals = async () => {
-      const today = new Date().toISOString().split("T")[0];
-      const { data } = await supabase
-        .from("calorie_entries")
-        .select("*")
-        .eq("user_id", user.id)
-        .eq("logged_date", today)
-        .order("created_at", { ascending: true });
-      if (data) {
-        setMeals(data.map((m: any) => ({
-          id: m.id,
-          name: m.name,
-          emoji: m.emoji,
-          calories: m.calories,
-          protein: m.protein,
-          carbs: m.carbs,
-          fat: m.fat,
-          time: m.meal_time,
-        })));
-      }
-
-      // Load last 7 days for weekly chart
-      const weekAgo = new Date();
-      weekAgo.setDate(weekAgo.getDate() - 6);
-      const { data: weekData } = await supabase
-        .from("calorie_entries")
-        .select("*")
-        .eq("user_id", user.id)
-        .gte("logged_date", weekAgo.toISOString().split("T")[0])
-        .order("logged_date", { ascending: true });
-
-      if (weekData) {
-        const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-        const grouped: Record<string, { calories: number; protein: number; carbs: number; fat: number }> = {};
-        for (let i = 0; i < 7; i++) {
-          const d = new Date();
-          d.setDate(d.getDate() - 6 + i);
-          const key = d.toISOString().split("T")[0];
-          grouped[key] = { calories: 0, protein: 0, carbs: 0, fat: 0 };
-        }
-        for (const entry of weekData) {
-          const key = entry.logged_date;
-          if (grouped[key]) {
-            grouped[key].calories += entry.calories;
-            grouped[key].protein += entry.protein;
-            grouped[key].carbs += entry.carbs;
-            grouped[key].fat += entry.fat;
-          }
-        }
-        setWeeklyData(Object.entries(grouped).map(([date, vals]) => ({
-          day: dayNames[new Date(date + "T12:00:00").getDay()],
-          ...vals,
-        })));
-      }
-      setLoading(false);
-    };
-    fetchMeals();
-  }, [user]);
 
   const totalCalories = meals.reduce((s, m) => s + m.calories, 0);
   const totalProtein = meals.reduce((s, m) => s + m.protein, 0);
@@ -118,79 +69,81 @@ export default function CalorieTracker() {
   const totalFat = meals.reduce((s, m) => s + m.fat, 0);
   const caloriePercent = Math.min((totalCalories / goalCalories) * 100, 100);
 
-  const addMeal = async (food: { name: string; emoji: string; calories: number; protein: number; carbs: number; fat: number }) => {
+  const addMeal = (food: { name: string; emoji: string; calories: number; protein: number; carbs: number; fat: number }) => {
     const now = new Date();
     const time = now.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
-    const today = now.toISOString().split("T")[0];
-
-    if (user) {
-      const { data } = await supabase.from("calorie_entries").insert({
-        user_id: user.id,
-        name: food.name,
-        emoji: food.emoji,
-        calories: food.calories,
-        protein: food.protein,
-        carbs: food.carbs,
-        fat: food.fat,
-        meal_time: time,
-        logged_date: today,
-      }).select().single();
-
-      if (data) {
-        setMeals(prev => [...prev, { id: data.id, ...food, time }]);
-      }
-    } else {
-      setMeals(prev => [...prev, { id: crypto.randomUUID(), ...food, time }]);
-    }
-
-    // Log activity
-    if (user) {
-      await supabase.from("user_activities").insert({
-        user_id: user.id,
-        type: "meal",
-        title: food.name,
-        emoji: food.emoji,
-        detail: `${food.calories} cal`,
-        calories: food.calories,
-      });
-    }
-
+    setMeals([...meals, { id: Date.now(), ...food, time }]);
     setShowAdd(false);
     setScanMode("none");
   };
 
   const handlePhotoScan = async (file: File) => {
     setScanning(true);
-    const description = `I took a photo of food. The file is named "${file.name}". Please estimate the calories for a typical serving of this type of food.`;
+    // Describe file to AI for calorie estimation
+    const description = `I took a photo of food. The file is named "${file.name}". Please estimate the calories for a typical serving of this type of food. If you can't determine the food from the filename, estimate a common lunch meal.`;
 
     try {
-      const { data, error } = await supabase.functions.invoke("food-assistant", {
-        body: {
+      const resp = await fetch(SCAN_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+        },
+        body: JSON.stringify({
           mode: "scan-calories",
           messages: [{ role: "user", content: description }],
-        },
+        }),
       });
 
-      if (error) throw error;
+      if (!resp.ok) throw new Error("Scan failed");
 
-      if (data?.items && data.items.length > 0) {
-        for (const item of data.items) {
-          await addMeal({
-            name: item.name,
-            emoji: item.emoji || "📸",
-            calories: item.calories || 0,
-            protein: item.protein || 0,
-            carbs: item.carbs || 0,
-            fat: item.fat || 0,
-          });
+      const reader = resp.body?.getReader();
+      const decoder = new TextDecoder();
+      let full = "";
+
+      if (reader) {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          const chunk = decoder.decode(value, { stream: true });
+          const lines = chunk.split("\n");
+          for (const line of lines) {
+            if (!line.startsWith("data: ")) continue;
+            const json = line.slice(6).trim();
+            if (json === "[DONE]") continue;
+            try {
+              const p = JSON.parse(json);
+              const c = p.choices?.[0]?.delta?.content;
+              if (c) full += c;
+            } catch {}
+          }
         }
-        toast({ title: "📸 Food scanned!", description: `Added ${data.items.length} item(s) from photo.` });
+      }
+
+      // Try to parse JSON response
+      const jsonMatch = full.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        const data = JSON.parse(jsonMatch[0]);
+        if (data.items && data.items.length > 0) {
+          for (const item of data.items) {
+            addMeal({
+              name: item.name,
+              emoji: item.emoji || "📸",
+              calories: item.calories || 0,
+              protein: item.protein || 0,
+              carbs: item.carbs || 0,
+              fat: item.fat || 0,
+            });
+          }
+          toast({ title: "📸 Food scanned!", description: `Added ${data.items.length} item(s) from photo.` });
+        }
       } else {
-        await addMeal({ name: "Scanned meal", emoji: "📸", calories: 350, protein: 18, carbs: 40, fat: 12 });
+        // Fallback with mock data
+        addMeal({ name: "Scanned meal", emoji: "📸", calories: 350, protein: 18, carbs: 40, fat: 12 });
         toast({ title: "📸 Estimated!", description: "Added approximate calories for your meal." });
       }
     } catch {
-      await addMeal({ name: "Scanned meal", emoji: "📸", calories: 350, protein: 18, carbs: 40, fat: 12 });
+      addMeal({ name: "Scanned meal", emoji: "📸", calories: 350, protein: 18, carbs: 40, fat: 12 });
       toast({ title: "📸 Estimated!", description: "Added approximate calories." });
     }
     setScanning(false);
@@ -208,14 +161,6 @@ export default function CalorieTracker() {
     setBarcodeInput("");
     setScanMode("none");
   };
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <Loader2 className="animate-spin text-primary" size={32} />
-      </div>
-    );
-  }
 
   return (
     <div className="px-4 py-5 max-w-lg mx-auto space-y-5">
@@ -256,6 +201,7 @@ export default function CalorieTracker() {
       {/* Add food panel */}
       {showAdd && (
         <div className="bg-card border rounded-2xl p-4 animate-scale-in space-y-4">
+          {/* Scan buttons */}
           <div className="flex gap-2">
             <button
               onClick={() => setScanMode("photo")}
@@ -275,6 +221,7 @@ export default function CalorieTracker() {
             </button>
           </div>
 
+          {/* Photo scan */}
           {scanMode === "photo" && (
             <div className="space-y-3">
               <div
@@ -305,6 +252,7 @@ export default function CalorieTracker() {
             </div>
           )}
 
+          {/* Barcode scan */}
           {scanMode === "barcode" && (
             <div className="space-y-3">
               <div className="flex gap-2">
@@ -326,6 +274,7 @@ export default function CalorieTracker() {
             </div>
           )}
 
+          {/* Quick add */}
           {scanMode === "none" && (
             <>
               <h3 className="text-sm font-semibold text-foreground">Quick Add Food</h3>
@@ -350,80 +299,69 @@ export default function CalorieTracker() {
       )}
 
       {/* Weekly trend */}
-      {weeklyData.length > 0 && (
-        <div className="bg-card border rounded-2xl p-4 animate-fade-up" style={{ animationDelay: "160ms" }}>
-          <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
-            <Flame size={16} className="text-streak" /> Weekly Calorie Trend
-          </h3>
-          <ResponsiveContainer width="100%" height={140}>
-            <LineChart data={weeklyData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-              <XAxis dataKey="day" tickLine={false} axisLine={false} tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} />
-              <YAxis hide />
-              <Tooltip contentStyle={{ borderRadius: 12, border: "none", boxShadow: "0 4px 20px rgba(0,0,0,0.08)", fontSize: 12 }} formatter={(value: number) => [`${value} cal`, "Calories"]} />
-              <Line type="monotone" dataKey="calories" stroke="hsl(var(--primary))" strokeWidth={2.5} dot={{ r: 4, fill: "hsl(var(--primary))" }} activeDot={{ r: 6 }} />
-            </LineChart>
-          </ResponsiveContainer>
-          <div className="flex items-center gap-2 mt-2 text-xs text-muted-foreground">
-            <span className="w-4 border-t-2 border-dashed border-primary" />
-            <span>Goal: {goalCalories} cal/day</span>
-          </div>
+      <div className="bg-card border rounded-2xl p-4 animate-fade-up" style={{ animationDelay: "160ms" }}>
+        <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+          <Flame size={16} className="text-streak" /> Weekly Calorie Trend
+        </h3>
+        <ResponsiveContainer width="100%" height={140}>
+          <LineChart data={weeklyData}>
+            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+            <XAxis dataKey="day" tickLine={false} axisLine={false} tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} />
+            <YAxis hide />
+            <Tooltip contentStyle={{ borderRadius: 12, border: "none", boxShadow: "0 4px 20px rgba(0,0,0,0.08)", fontSize: 12 }} formatter={(value: number) => [`${value} cal`, "Calories"]} />
+            <Line type="monotone" dataKey="calories" stroke="hsl(var(--primary))" strokeWidth={2.5} dot={{ r: 4, fill: "hsl(var(--primary))" }} activeDot={{ r: 6 }} />
+          </LineChart>
+        </ResponsiveContainer>
+        <div className="flex items-center gap-2 mt-2 text-xs text-muted-foreground">
+          <span className="w-4 border-t-2 border-dashed border-primary" />
+          <span>Goal: {goalCalories} cal/day</span>
         </div>
-      )}
+      </div>
 
       {/* Macro breakdown */}
-      {weeklyData.length > 0 && (
-        <div className="bg-card border rounded-2xl p-4 animate-fade-up" style={{ animationDelay: "240ms" }}>
-          <h3 className="text-sm font-semibold text-foreground mb-3">Weekly Macros</h3>
-          <ResponsiveContainer width="100%" height={140}>
-            <BarChart data={weeklyData} barGap={1}>
-              <XAxis dataKey="day" tickLine={false} axisLine={false} tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} />
-              <YAxis hide />
-              <Tooltip contentStyle={{ borderRadius: 12, border: "none", boxShadow: "0 4px 20px rgba(0,0,0,0.08)", fontSize: 12 }} />
-              <Bar dataKey="protein" stackId="a" radius={[0, 0, 0, 0]} maxBarSize={20}>
-                {weeklyData.map((_, i) => <Cell key={i} fill="hsl(var(--primary))" />)}
-              </Bar>
-              <Bar dataKey="carbs" stackId="a" radius={[0, 0, 0, 0]} maxBarSize={20}>
-                {weeklyData.map((_, i) => <Cell key={i} fill="hsl(var(--warning))" />)}
-              </Bar>
-              <Bar dataKey="fat" stackId="a" radius={[6, 6, 0, 0]} maxBarSize={20}>
-                {weeklyData.map((_, i) => <Cell key={i} fill="hsl(var(--streak))" />)}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
-          <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
-            <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-primary" /> Protein</span>
-            <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-warning" /> Carbs</span>
-            <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-streak" /> Fat</span>
-          </div>
+      <div className="bg-card border rounded-2xl p-4 animate-fade-up" style={{ animationDelay: "240ms" }}>
+        <h3 className="text-sm font-semibold text-foreground mb-3">Weekly Macros</h3>
+        <ResponsiveContainer width="100%" height={140}>
+          <BarChart data={weeklyData} barGap={1}>
+            <XAxis dataKey="day" tickLine={false} axisLine={false} tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} />
+            <YAxis hide />
+            <Tooltip contentStyle={{ borderRadius: 12, border: "none", boxShadow: "0 4px 20px rgba(0,0,0,0.08)", fontSize: 12 }} />
+            <Bar dataKey="protein" stackId="a" radius={[0, 0, 0, 0]} maxBarSize={20}>
+              {weeklyData.map((_, i) => <Cell key={i} fill="hsl(var(--primary))" />)}
+            </Bar>
+            <Bar dataKey="carbs" stackId="a" radius={[0, 0, 0, 0]} maxBarSize={20}>
+              {weeklyData.map((_, i) => <Cell key={i} fill="hsl(var(--warning))" />)}
+            </Bar>
+            <Bar dataKey="fat" stackId="a" radius={[6, 6, 0, 0]} maxBarSize={20}>
+              {weeklyData.map((_, i) => <Cell key={i} fill="hsl(var(--streak))" />)}
+            </Bar>
+          </BarChart>
+        </ResponsiveContainer>
+        <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
+          <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-primary" /> Protein</span>
+          <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-warning" /> Carbs</span>
+          <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-streak" /> Fat</span>
         </div>
-      )}
+      </div>
 
       {/* Today's meals */}
       <section className="animate-fade-up" style={{ animationDelay: "320ms" }}>
         <h3 className="text-sm font-semibold text-foreground mb-3">Today's Meals</h3>
-        {meals.length === 0 ? (
-          <div className="text-center py-8">
-            <span className="text-4xl">🍽️</span>
-            <p className="text-muted-foreground text-sm mt-3">No meals logged today. Tap + to add your first meal!</p>
-          </div>
-        ) : (
-          <div className="space-y-2">
-            {meals.map((meal) => (
-              <div key={meal.id} className="flex items-center gap-3 bg-card border rounded-xl p-3">
-                <span className="text-xl">{meal.emoji}</span>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-foreground">{meal.name}</p>
-                  <p className="text-xs text-muted-foreground">{meal.time}</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-sm font-semibold text-foreground tabular-nums">{meal.calories}</p>
-                  <p className="text-[10px] text-muted-foreground">cal</p>
-                </div>
+        <div className="space-y-2">
+          {meals.map((meal) => (
+            <div key={meal.id} className="flex items-center gap-3 bg-card border rounded-xl p-3">
+              <span className="text-xl">{meal.emoji}</span>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-foreground">{meal.name}</p>
+                <p className="text-xs text-muted-foreground">{meal.time}</p>
               </div>
-            ))}
-          </div>
-        )}
+              <div className="text-right">
+                <p className="text-sm font-semibold text-foreground tabular-nums">{meal.calories}</p>
+                <p className="text-[10px] text-muted-foreground">cal</p>
+              </div>
+            </div>
+          ))}
+        </div>
       </section>
     </div>
   );
@@ -438,10 +376,10 @@ function MacroBar({ label, value, unit, max, color, icon }: {
     <div className="space-y-1">
       <div className="flex items-center justify-between text-xs">
         <span className="flex items-center gap-1 text-muted-foreground">{icon} {label}</span>
-        <span className="font-semibold text-foreground tabular-nums">{Math.round(value)}{unit}</span>
+        <span className="font-semibold text-foreground tabular-nums">{value}{unit}</span>
       </div>
       <div className="h-1.5 bg-muted rounded-full overflow-hidden">
-        <div className={`h-full rounded-full ${color} transition-all duration-700`} style={{ width: `${pct}%` }} />
+        <div className={`h-full ${color} rounded-full transition-all duration-500`} style={{ width: `${pct}%` }} />
       </div>
     </div>
   );
