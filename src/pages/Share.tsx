@@ -1,31 +1,27 @@
-import { useState } from "react";
-import { MapPin, Plus, Clock, User, ChevronRight } from "lucide-react";
+import { useState, useEffect } from "react";
+import { MapPin, Plus, Clock, User } from "lucide-react";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
 
 type FoodDrop = {
-  id: number;
+  id: string;
   title: string;
   emoji: string;
   description: string;
-  postedBy: string;
-  distance: string;
-  timeLeft: string;
+  posted_by_name: string;
   lat: number;
   lng: number;
-  status: "available" | "reserved";
+  expires_at: string;
+  status: string;
+  user_id: string;
+  claimed_by: string | null;
+  created_at: string;
 };
 
-const mockDrops: FoodDrop[] = [
-  { id: 1, title: "Sealed bag of apples", emoji: "🍎", description: "6 organic apples, leaving for a trip tomorrow", postedBy: "Sarah M.", distance: "0.3 km", timeLeft: "18h left", lat: 3.152, lng: 101.714, status: "available" },
-  { id: 2, title: "Unopened Greek yogurt", emoji: "🍦", description: "2 tubs, exp in 5 days. Moving out this weekend", postedBy: "Amir K.", distance: "0.7 km", timeLeft: "2d left", lat: 3.148, lng: 101.71, status: "available" },
-  { id: 3, title: "Fresh bread loaf", emoji: "🍞", description: "Homemade sourdough, baked today. Too much for us!", postedBy: "Lin T.", distance: "1.2 km", timeLeft: "12h left", lat: 3.155, lng: 101.72, status: "available" },
-  { id: 4, title: "Leftover curry (sealed)", emoji: "🍛", description: "Chicken curry for 3 servings, cooked today", postedBy: "Ravi P.", distance: "0.5 km", timeLeft: "6h left", lat: 3.145, lng: 101.718, status: "reserved" },
-  { id: 5, title: "Mixed vegetables", emoji: "🥦", description: "Broccoli, carrots, bell peppers — still fresh", postedBy: "Mei W.", distance: "1.5 km", timeLeft: "1d left", lat: 3.158, lng: 101.706, status: "available" },
-];
-
-// Custom marker icon to avoid Leaflet's broken default icon in bundlers
 const markerIcon = new L.DivIcon({
   html: `<div style="background:hsl(153 47% 30%);width:28px;height:28px;border-radius:50%;border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.2);display:flex;align-items:center;justify-content:center;font-size:14px;">📍</div>`,
   className: "",
@@ -33,16 +29,115 @@ const markerIcon = new L.DivIcon({
   iconAnchor: [14, 14],
 });
 
-const reservedIcon = new L.DivIcon({
+const claimedIcon = new L.DivIcon({
   html: `<div style="background:hsl(0 0% 70%);width:28px;height:28px;border-radius:50%;border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.15);display:flex;align-items:center;justify-content:center;font-size:14px;">✋</div>`,
   className: "",
   iconSize: [28, 28],
   iconAnchor: [14, 14],
 });
 
+function getTimeLeft(expiresAt: string) {
+  const diff = new Date(expiresAt).getTime() - Date.now();
+  if (diff <= 0) return "Expired";
+  const hours = Math.floor(diff / 3600000);
+  if (hours < 24) return `${hours}h left`;
+  return `${Math.floor(hours / 24)}d left`;
+}
+
 export default function Share() {
+  const { user } = useAuth();
   const [showAdd, setShowAdd] = useState(false);
   const [view, setView] = useState<"map" | "list">("map");
+  const [drops, setDrops] = useState<FoodDrop[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [posting, setPosting] = useState(false);
+  const [claiming, setClaiming] = useState<string | null>(null);
+
+  // Form state
+  const [title, setTitle] = useState("");
+  const [emoji, setEmoji] = useState("🍽️");
+  const [description, setDescription] = useState("");
+  const [hoursValid, setHoursValid] = useState("24");
+
+  const fetchDrops = async () => {
+    const { data, error } = await supabase
+      .from("food_drops")
+      .select("*")
+      .order("created_at", { ascending: false });
+    if (!error && data) setDrops(data as FoodDrop[]);
+    setLoading(false);
+  };
+
+  useEffect(() => { fetchDrops(); }, []);
+
+  const handlePost = async () => {
+    if (!user) return toast.error("Please sign in to post a food drop");
+    if (!title.trim()) return toast.error("Please enter a food title");
+
+    setPosting(true);
+    try {
+      // Get user display name
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("display_name")
+        .eq("user_id", user.id)
+        .single();
+
+      const displayName = profile?.display_name || user.email?.split("@")[0] || "Anonymous";
+      const expiresAt = new Date(Date.now() + parseInt(hoursValid) * 3600000).toISOString();
+
+      // Default location (KL center) with small random offset
+      const lat = 3.152 + (Math.random() - 0.5) * 0.02;
+      const lng = 101.714 + (Math.random() - 0.5) * 0.02;
+
+      const { error } = await supabase.from("food_drops").insert({
+        user_id: user.id,
+        title: title.trim(),
+        emoji,
+        description: description.trim(),
+        posted_by_name: displayName,
+        lat,
+        lng,
+        expires_at: expiresAt,
+        status: "available",
+      });
+
+      if (error) throw error;
+      toast.success("Food drop posted! 🎉");
+      setTitle("");
+      setEmoji("🍽️");
+      setDescription("");
+      setHoursValid("24");
+      setShowAdd(false);
+      fetchDrops();
+    } catch (e: any) {
+      toast.error(e.message || "Failed to post drop");
+    } finally {
+      setPosting(false);
+    }
+  };
+
+  const handleClaim = async (dropId: string) => {
+    if (!user) return toast.error("Please sign in to claim food");
+    setClaiming(dropId);
+    try {
+      const { error } = await supabase
+        .from("food_drops")
+        .update({ status: "claimed", claimed_by: user.id })
+        .eq("id", dropId)
+        .eq("status", "available");
+
+      if (error) throw error;
+      toast.success("Food claimed! Contact the poster for pickup 🙌");
+      fetchDrops();
+    } catch (e: any) {
+      toast.error(e.message || "Failed to claim");
+    } finally {
+      setClaiming(null);
+    }
+  };
+
+  const emojiOptions = ["🍽️", "🍎", "🍞", "🍛", "🥦", "🍦", "🥗", "🍰", "🧁", "🥚"];
 
   return (
     <div className="flex flex-col h-[calc(100vh-8rem)]">
@@ -61,7 +156,6 @@ export default function Share() {
           </button>
         </div>
 
-        {/* View toggle */}
         <div className="flex bg-muted rounded-xl p-1 gap-1">
           {(["map", "list"] as const).map((v) => (
             <button
@@ -81,17 +175,46 @@ export default function Share() {
       {showAdd && (
         <div className="mx-4 mb-3 bg-card border rounded-2xl p-4 animate-scale-in space-y-3">
           <h3 className="text-sm font-semibold text-foreground">List a food drop</h3>
+          <div className="flex gap-2 flex-wrap">
+            {emojiOptions.map((e) => (
+              <button
+                key={e}
+                onClick={() => setEmoji(e)}
+                className={`text-xl p-1.5 rounded-lg transition-all ${emoji === e ? "bg-primary/20 ring-2 ring-primary" : "bg-muted"}`}
+              >
+                {e}
+              </button>
+            ))}
+          </div>
           <input
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
             placeholder="What food are you sharing?"
             className="w-full bg-muted rounded-xl px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
           />
           <textarea
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
             placeholder="Describe condition, quantity, pickup instructions…"
             rows={2}
             className="w-full bg-muted rounded-xl px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 resize-none"
           />
-          <button className="w-full bg-primary text-primary-foreground rounded-xl py-2.5 text-sm font-semibold transition-all active:scale-[0.97]">
-            Post Drop
+          <select
+            value={hoursValid}
+            onChange={(e) => setHoursValid(e.target.value)}
+            className="w-full bg-muted rounded-xl px-4 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
+          >
+            <option value="6">Available for 6 hours</option>
+            <option value="12">Available for 12 hours</option>
+            <option value="24">Available for 24 hours</option>
+            <option value="48">Available for 2 days</option>
+          </select>
+          <button
+            onClick={handlePost}
+            disabled={posting}
+            className="w-full bg-primary text-primary-foreground rounded-xl py-2.5 text-sm font-semibold transition-all active:scale-[0.97] disabled:opacity-50"
+          >
+            {posting ? "Posting…" : "Post Drop"}
           </button>
         </div>
       )}
@@ -107,17 +230,28 @@ export default function Share() {
             attributionControl={false}
           >
             <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-            {mockDrops.map((drop) => (
+            {drops.map((drop) => (
               <Marker
                 key={drop.id}
                 position={[drop.lat, drop.lng]}
-                icon={drop.status === "reserved" ? reservedIcon : markerIcon}
+                icon={drop.status !== "available" ? claimedIcon : markerIcon}
               >
                 <Popup>
                   <div className="text-xs space-y-1 min-w-[140px]">
                     <p className="font-semibold">{drop.emoji} {drop.title}</p>
                     <p className="text-muted-foreground">{drop.description}</p>
-                    <p className="text-primary font-medium">{drop.distance} away · {drop.timeLeft}</p>
+                    <p className="font-medium">{drop.posted_by_name} · {getTimeLeft(drop.expires_at)}</p>
+                    {drop.status === "available" && (
+                      <button
+                        onClick={() => handleClaim(drop.id)}
+                        className="mt-1 bg-green-600 text-white text-[10px] font-semibold px-3 py-1 rounded-lg"
+                      >
+                        Claim
+                      </button>
+                    )}
+                    {drop.status === "claimed" && (
+                      <span className="text-[10px] font-semibold text-muted-foreground">Claimed</span>
+                    )}
                   </div>
                 </Popup>
               </Marker>
@@ -129,11 +263,18 @@ export default function Share() {
       {/* List view */}
       {view === "list" && (
         <div className="flex-1 overflow-y-auto px-4 pb-4 space-y-2 animate-fade-up" style={{ animationDelay: "80ms" }}>
-          {mockDrops.map((drop) => (
+          {loading && <p className="text-center text-muted-foreground text-sm py-8">Loading…</p>}
+          {!loading && drops.length === 0 && (
+            <div className="text-center py-12 text-muted-foreground">
+              <p className="text-3xl mb-2">🍽️</p>
+              <p className="text-sm">No food drops yet. Be the first to share!</p>
+            </div>
+          )}
+          {drops.map((drop) => (
             <div
               key={drop.id}
               className={`flex items-center gap-3 bg-card border rounded-xl p-3 transition-all ${
-                drop.status === "reserved" ? "opacity-50" : ""
+                drop.status !== "available" ? "opacity-50" : ""
               }`}
             >
               <span className="text-2xl">{drop.emoji}</span>
@@ -141,17 +282,20 @@ export default function Share() {
                 <p className="text-sm font-medium text-foreground">{drop.title}</p>
                 <p className="text-xs text-muted-foreground">{drop.description}</p>
                 <div className="flex items-center gap-3 mt-1 text-[10px] text-muted-foreground">
-                  <span className="flex items-center gap-1"><User size={10} /> {drop.postedBy}</span>
-                  <span className="flex items-center gap-1"><MapPin size={10} /> {drop.distance}</span>
-                  <span className="flex items-center gap-1"><Clock size={10} /> {drop.timeLeft}</span>
+                  <span className="flex items-center gap-1"><User size={10} /> {drop.posted_by_name}</span>
+                  <span className="flex items-center gap-1"><Clock size={10} /> {getTimeLeft(drop.expires_at)}</span>
                 </div>
               </div>
               {drop.status === "available" ? (
-                <button className="bg-primary text-primary-foreground text-[10px] font-semibold px-3 py-1.5 rounded-lg transition-all active:scale-[0.95]">
-                  Claim
+                <button
+                  onClick={() => handleClaim(drop.id)}
+                  disabled={claiming === drop.id}
+                  className="bg-primary text-primary-foreground text-[10px] font-semibold px-3 py-1.5 rounded-lg transition-all active:scale-[0.95] disabled:opacity-50"
+                >
+                  {claiming === drop.id ? "…" : "Claim"}
                 </button>
               ) : (
-                <span className="text-[10px] font-semibold px-2 py-1 rounded-full bg-muted text-muted-foreground">Reserved</span>
+                <span className="text-[10px] font-semibold px-2 py-1 rounded-full bg-muted text-muted-foreground">Claimed</span>
               )}
             </div>
           ))}
