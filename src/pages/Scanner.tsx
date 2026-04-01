@@ -207,6 +207,30 @@ export default function Scanner() {
       const normalized = normalizeScanResult(parsed);
       setResult(normalized);
 
+      // Save scan result to database
+      if (user && normalized.items.length > 0) {
+        const leftoversCount = normalized.items.filter(i => i.isLeftover).length;
+        const freshCount = normalized.items.filter(i => !i.isLeftover).length;
+        await supabase.from("scan_results").insert({
+          user_id: user.id,
+          items: normalized.items as any,
+          total_calories: normalized.totalCalories,
+          leftovers_count: leftoversCount,
+          fresh_count: freshCount,
+          waste_reduction_tips: normalized.wasteReductionTips as any,
+          recipe_suggestions: normalized.recipeSuggestions as any,
+        });
+        // Log activity
+        await supabase.from("user_activities").insert({
+          user_id: user.id,
+          type: "scan",
+          title: `Scanned ${normalized.items.length} food items`,
+          emoji: "📸",
+          detail: `${normalized.totalCalories} kcal · ${leftoversCount} leftover(s) · ${freshCount} fresh`,
+          calories: normalized.totalCalories,
+        });
+      }
+
       if (!normalized.items.length) {
         toast.warning("No food detected from the image. Try another angle or add items manually.");
       }
