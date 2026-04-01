@@ -1,12 +1,14 @@
 import { useState } from "react";
-import { Users, Minus, Plus, ChefHat, Scale, Utensils } from "lucide-react";
+import { Users, Minus, Plus, ChefHat, Scale, Utensils, Sparkles, Loader2, PenLine } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 type HungerLevel = "light" | "moderate" | "hungry";
 
 type Ingredient = {
   name: string;
   emoji: string;
-  baseGrams: number; // per person at "moderate"
+  baseGrams: number;
   unit: string;
 };
 
@@ -53,17 +55,65 @@ export default function PortionCalc() {
   const [guests, setGuests] = useState(4);
   const [hunger, setHunger] = useState<HungerLevel>("moderate");
   const [selectedMeal, setSelectedMeal] = useState("Pasta Bolognese");
+  const [showCustom, setShowCustom] = useState(false);
+  const [customInput, setCustomInput] = useState("");
+  const [analyzing, setAnalyzing] = useState(false);
+  const [customMealName, setCustomMealName] = useState("");
+  const [customIngredients, setCustomIngredients] = useState<Ingredient[] | null>(null);
 
   const multiplier = hungerMultiplier[hunger].factor;
-  const ingredients = mealPresets[selectedMeal];
+  const isCustomActive = showCustom && customIngredients;
+  const ingredients = isCustomActive ? customIngredients : mealPresets[selectedMeal];
+  const displayMealName = isCustomActive ? customMealName : selectedMeal;
 
-  const calcAmount = (base: number) => {
-    const amount = Math.round(base * guests * multiplier);
-    return amount;
+  const calcAmount = (base: number) => Math.round(base * guests * multiplier);
+
+  const handleCustomAnalyze = async () => {
+    if (!customInput.trim()) return toast.error("Please enter a meal name or describe your ingredients");
+    setAnalyzing(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("food-assistant", {
+        body: {
+          mode: "portion-analyze",
+          messages: [{
+            role: "user",
+            content: customInput.trim(),
+          }],
+        },
+      });
+
+      if (error) throw error;
+      if (!data || data.error) throw new Error(data?.error || "Failed to analyze");
+
+      if (data.name && Array.isArray(data.ingredients) && data.ingredients.length > 0) {
+        const parsed: Ingredient[] = data.ingredients.map((ing: any) => ({
+          name: String(ing.name || ""),
+          emoji: String(ing.emoji || "🍽️"),
+          baseGrams: Number(ing.baseGrams || ing.base_grams || 0),
+          unit: String(ing.unit || "g"),
+        }));
+        setCustomMealName(data.name);
+        setCustomIngredients(parsed);
+        toast.success(`Portions calculated for "${data.name}"!`);
+      } else {
+        throw new Error("Invalid response format");
+      }
+    } catch (err: any) {
+      console.error("Portion analysis error:", err);
+      toast.error("Failed to analyze. Try again or describe your meal differently.");
+    } finally {
+      setAnalyzing(false);
+    }
+  };
+
+  const selectPreset = (meal: string) => {
+    setSelectedMeal(meal);
+    setCustomIngredients(null);
+    setShowCustom(false);
   };
 
   return (
-    <div className="px-4 py-5 max-w-lg mx-auto space-y-5">
+    <div className="px-4 py-5 max-w-lg mx-auto space-y-5 pb-28">
       {/* Header */}
       <div className="animate-fade-up">
         <h2 className="text-2xl font-bold text-foreground text-balance">Portion Calculator</h2>
@@ -127,9 +177,9 @@ export default function PortionCalc() {
           {Object.keys(mealPresets).map((meal) => (
             <button
               key={meal}
-              onClick={() => setSelectedMeal(meal)}
+              onClick={() => selectPreset(meal)}
               className={`text-left px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 active:scale-[0.95] ${
-                selectedMeal === meal
+                selectedMeal === meal && !isCustomActive
                   ? "bg-primary text-primary-foreground shadow-md shadow-primary/20"
                   : "bg-card border text-foreground"
               }`}
@@ -138,39 +188,79 @@ export default function PortionCalc() {
             </button>
           ))}
         </div>
+
+        {/* Custom meal input */}
+        <button
+          onClick={() => setShowCustom(!showCustom)}
+          className={`w-full mt-2 flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 active:scale-[0.95] ${
+            showCustom
+              ? "bg-primary/10 text-primary border border-primary/30"
+              : "bg-card border text-foreground"
+          }`}
+        >
+          <PenLine size={14} />
+          Enter your own meal
+        </button>
+
+        {showCustom && (
+          <div className="mt-3 bg-card border rounded-2xl p-4 space-y-3 animate-fade-up">
+            <p className="text-xs text-muted-foreground">
+              Enter a meal name or describe the ingredients you have
+            </p>
+            <textarea
+              value={customInput}
+              onChange={(e) => setCustomInput(e.target.value)}
+              placeholder={"e.g. \"Nasi Goreng\" or \"I have chicken, rice, garlic, soy sauce, and eggs\""}
+              rows={3}
+              className="w-full bg-muted rounded-xl px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 resize-none"
+            />
+            <button
+              onClick={handleCustomAnalyze}
+              disabled={analyzing || !customInput.trim()}
+              className="w-full bg-primary text-primary-foreground rounded-xl py-2.5 text-sm font-semibold flex items-center justify-center gap-2 transition-all active:scale-[0.97] disabled:opacity-50"
+            >
+              {analyzing ? (
+                <><Loader2 size={16} className="animate-spin" /> Analyzing…</>
+              ) : (
+                <><Sparkles size={16} /> Calculate Portions</>
+              )}
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Results */}
-      <div className="bg-card border rounded-2xl p-4 animate-fade-up" style={{ animationDelay: "240ms" }}>
-        <h3 className="text-sm font-semibold text-foreground mb-1 flex items-center gap-2">
-          <ChefHat size={16} className="text-primary" /> {selectedMeal}
-        </h3>
-        <p className="text-xs text-muted-foreground mb-4">
-          For {guests} {guests === 1 ? "person" : "people"} · {hungerMultiplier[hunger].emoji} {hungerMultiplier[hunger].label} appetite
-        </p>
-        <div className="space-y-2.5">
-          {ingredients.map((ing) => {
-            const amount = calcAmount(ing.baseGrams);
-            return (
-              <div key={ing.name} className="flex items-center gap-3">
-                <span className="text-lg">{ing.emoji}</span>
-                <span className="flex-1 text-sm text-foreground">{ing.name}</span>
-                <span className="text-sm font-bold text-foreground tabular-nums">
-                  {amount} {ing.unit}
-                </span>
-              </div>
-            );
-          })}
-        </div>
-
-        {/* Zero waste badge */}
-        <div className="mt-4 pt-3 border-t flex items-center justify-center gap-2">
-          <span className="text-base">🎯</span>
-          <p className="text-xs font-medium text-success">
-            Calculated for zero leftovers
+      {ingredients && ingredients.length > 0 && (
+        <div className="bg-card border rounded-2xl p-4 animate-fade-up" style={{ animationDelay: "240ms" }}>
+          <h3 className="text-sm font-semibold text-foreground mb-1 flex items-center gap-2">
+            <ChefHat size={16} className="text-primary" /> {displayMealName}
+          </h3>
+          <p className="text-xs text-muted-foreground mb-4">
+            For {guests} {guests === 1 ? "person" : "people"} · {hungerMultiplier[hunger].emoji} {hungerMultiplier[hunger].label} appetite
           </p>
+          <div className="space-y-2.5">
+            {ingredients.map((ing) => {
+              const amount = calcAmount(ing.baseGrams);
+              return (
+                <div key={ing.name} className="flex items-center gap-3">
+                  <span className="text-lg">{ing.emoji}</span>
+                  <span className="flex-1 text-sm text-foreground">{ing.name}</span>
+                  <span className="text-sm font-bold text-foreground tabular-nums">
+                    {amount} {ing.unit}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="mt-4 pt-3 border-t flex items-center justify-center gap-2">
+            <span className="text-base">🎯</span>
+            <p className="text-xs font-medium text-success">
+              Calculated for zero leftovers
+            </p>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Tip */}
       <div className="bg-secondary rounded-2xl p-4 animate-fade-up" style={{ animationDelay: "320ms" }}>

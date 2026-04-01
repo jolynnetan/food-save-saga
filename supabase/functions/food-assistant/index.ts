@@ -72,6 +72,15 @@ Return ONLY a JSON object with this exact structure, no other text:
 Keep ingredients matching the user's input. Use realistic calorie estimates. Steps should be clear, numbered, and actionable.`;
     }
 
+    if (mode === "portion-analyze") {
+      systemPrompt = `You are a portion calculator AI. The user will give you a meal name OR describe ingredients they have.
+Determine the meal name and list each ingredient with the recommended amount per person at a moderate appetite.
+Use baseGrams as the amount PER PERSON (not total). For countable items like eggs or tortillas, use "pcs" as unit with baseGrams as count per person.
+Return ONLY a JSON object with this exact structure, no other text:
+{"name": "Meal Name", "ingredients": [{"name": "Ingredient", "emoji": "🍚", "baseGrams": 100, "unit": "g"}]}
+Units should be "g", "ml", or "pcs". Use realistic portion sizes. Include 4-8 ingredients.`;
+    }
+
     // Build messages array with vision support
     let aiMessages: any[];
     if (imageBase64 && (mode === "scan-leftovers" || mode === "scan-calories")) {
@@ -103,7 +112,7 @@ Keep ingredients matching the user's input. Use realistic calorie estimates. Ste
       ];
     }
 
-    const isStructuredMode = mode === "scan-leftovers" || mode === "scan-calories" || mode === "meal-analyze" || mode === "recipe-analyze";
+    const isStructuredMode = mode === "scan-leftovers" || mode === "scan-calories" || mode === "meal-analyze" || mode === "recipe-analyze" || mode === "portion-analyze";
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
