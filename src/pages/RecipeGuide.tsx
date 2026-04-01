@@ -317,6 +317,24 @@ Steps: ${uploadForm.steps}` }],
         isUserRecipe: true,
       };
 
+      // Save to database
+      if (user) {
+        await supabase.from("user_recipes").insert({
+          user_id: user.id,
+          name: newRecipe.name,
+          emoji: newRecipe.emoji,
+          cuisine: newRecipe.cuisine,
+          diet: newRecipe.diet,
+          time: newRecipe.time,
+          calories: newRecipe.calories,
+          protein: newRecipe.protein,
+          carbs: newRecipe.carbs,
+          fat: newRecipe.fat,
+          servings: newRecipe.servings,
+          ingredients: newRecipe.ingredients as any,
+          steps: newRecipe.steps,
+        });
+      }
       setUserRecipes(prev => [...prev, newRecipe]);
       addPoints(25);
       toast.success("Recipe added! +25 pts 🎉");
