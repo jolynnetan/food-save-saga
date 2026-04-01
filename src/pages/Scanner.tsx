@@ -313,17 +313,29 @@ export default function Scanner() {
           {result.recipeSuggestions.length > 0 && (
             <div className="bg-card border rounded-2xl p-4 animate-fade-up" style={{ animationDelay: "240ms" }}>
               <h3 className="text-sm font-semibold text-foreground flex items-center gap-2 mb-3"><ChefHat size={16} className="text-primary" /> Use It Up — Recipes</h3>
+              <p className="text-xs text-muted-foreground mb-2">Saved to your Recipe Guide! Tap to view.</p>
               <div className="space-y-2">
                 {result.recipeSuggestions.map((r, i) => (
-                  <div key={i} className="flex items-center gap-3 bg-muted/50 rounded-xl p-3">
+                  <div
+                    key={i}
+                    onClick={() => navigate("/recipes")}
+                    className="flex items-center gap-3 bg-muted/50 rounded-xl p-3 cursor-pointer hover:bg-primary/10 transition-colors active:scale-[0.98]"
+                  >
                     <span className="text-2xl">{r.emoji}</span>
                     <div className="flex-1">
                       <p className="text-sm font-medium text-foreground">{r.name}</p>
                       <p className="text-xs text-muted-foreground">{r.description} · ⏱ {r.time}</p>
                     </div>
+                    <ArrowRight size={16} className="text-primary shrink-0" />
                   </div>
                 ))}
               </div>
+              <button
+                onClick={() => navigate("/recipes")}
+                className="w-full mt-3 bg-primary/10 text-primary rounded-xl py-2.5 text-sm font-semibold transition-all active:scale-[0.97] flex items-center justify-center gap-2"
+              >
+                <ChefHat size={16} /> View All in Recipe Guide <ArrowRight size={14} />
+              </button>
             </div>
           )}
         </div>
