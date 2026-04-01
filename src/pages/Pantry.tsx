@@ -11,15 +11,31 @@ type PantryItem = {
   notified: boolean;
 };
 
-const initialItems: PantryItem[] = [
-  { id: 1, name: "Whole Milk", emoji: "🥛", quantity: "1L", expiryDate: "2026-03-23", daysLeft: 1, notified: true },
-  { id: 2, name: "Baby Spinach", emoji: "🥬", quantity: "200g", expiryDate: "2026-03-23", daysLeft: 1, notified: true },
-  { id: 3, name: "Greek Yogurt", emoji: "🍦", quantity: "500g", expiryDate: "2026-03-25", daysLeft: 3, notified: false },
-  { id: 4, name: "Chicken Breast", emoji: "🍗", quantity: "400g", expiryDate: "2026-03-24", daysLeft: 2, notified: false },
-  { id: 5, name: "Eggs", emoji: "🥚", quantity: "6 pcs", expiryDate: "2026-04-02", daysLeft: 11, notified: false },
-  { id: 6, name: "Cheddar Cheese", emoji: "🧀", quantity: "150g", expiryDate: "2026-04-05", daysLeft: 14, notified: false },
-  { id: 7, name: "Fresh Basil", emoji: "🌿", quantity: "30g", expiryDate: "2026-03-24", daysLeft: 2, notified: false },
-];
+function calcDaysLeft(expiryDate: string) {
+  const now = new Date();
+  now.setHours(0, 0, 0, 0);
+  const exp = new Date(expiryDate);
+  exp.setHours(0, 0, 0, 0);
+  return Math.max(0, Math.ceil((exp.getTime() - now.getTime()) / 86400000));
+}
+
+const createInitialItems = (): PantryItem[] => {
+  const today = new Date();
+  const addDays = (d: number) => {
+    const date = new Date(today);
+    date.setDate(date.getDate() + d);
+    return date.toISOString().split("T")[0];
+  };
+  return [
+    { id: 1, name: "Whole Milk", emoji: "🥛", quantity: "1L", expiryDate: addDays(1), daysLeft: 1, notified: true },
+    { id: 2, name: "Baby Spinach", emoji: "🥬", quantity: "200g", expiryDate: addDays(1), daysLeft: 1, notified: true },
+    { id: 3, name: "Greek Yogurt", emoji: "🍦", quantity: "500g", expiryDate: addDays(3), daysLeft: 3, notified: false },
+    { id: 4, name: "Chicken Breast", emoji: "🍗", quantity: "400g", expiryDate: addDays(2), daysLeft: 2, notified: false },
+    { id: 5, name: "Eggs", emoji: "🥚", quantity: "6 pcs", expiryDate: addDays(11), daysLeft: 11, notified: false },
+    { id: 6, name: "Cheddar Cheese", emoji: "🧀", quantity: "150g", expiryDate: addDays(14), daysLeft: 14, notified: false },
+    { id: 7, name: "Fresh Basil", emoji: "🌿", quantity: "30g", expiryDate: addDays(2), daysLeft: 2, notified: false },
+  ];
+};
 
 const recipeSuggestions: Record<string, string[]> = {
   "Whole Milk": ["Creamy mushroom soup", "Homemade ricotta", "Milk pudding"],
