@@ -318,7 +318,7 @@ export default function WeeklyReport() {
       </section>
 
       {/* Macros Breakdown */}
-      <section className="bg-card border rounded-2xl p-4 animate-fade-up" style={{ animationDelay: "240ms" }}>
+      <section data-pdf-section className="bg-card border rounded-2xl p-4 animate-fade-up" style={{ animationDelay: "240ms" }}>
         <h3 className="text-sm font-semibold text-foreground mb-3">🥩 Weekly Macros (avg/day)</h3>
         <div className="space-y-3">
           {[
