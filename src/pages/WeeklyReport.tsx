@@ -104,56 +104,33 @@ export default function WeeklyReport() {
     if (!reportRef.current) return;
     setIsExporting(true);
     try {
-      // Capture each section separately for clean layout
-      const sections = Array.from(
-        reportRef.current.querySelectorAll("[data-pdf-section]")
-      ) as HTMLElement[];
+      const canvas = await html2canvas(reportRef.current, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: "#ffffff",
+        windowWidth: 420,
+      });
 
       const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
-      const A4_WIDTH = 210;
-      const A4_HEIGHT = 297;
-      const MARGIN = 10;
-      const CONTENT_WIDTH = A4_WIDTH - MARGIN * 2;
-      const CONTENT_HEIGHT = A4_HEIGHT - MARGIN * 2;
+      const A4_W = 210;
+      const A4_H = 297;
+      const M = 8;
+      const CW = A4_W - M * 2;
+      const CH = A4_H - M * 2;
 
-      // Add title
-      pdf.setFontSize(18);
-      pdf.setFont("helvetica", "bold");
-      pdf.text("SavePlate Weekly Report", MARGIN, MARGIN + 6);
-      pdf.setFontSize(11);
-      pdf.setFont("helvetica", "normal");
-      pdf.setTextColor(100, 100, 100);
-      pdf.text(week.label, MARGIN, MARGIN + 13);
-      pdf.setTextColor(0, 0, 0);
+      const imgW = canvas.width;
+      const imgH = canvas.height;
+      const ratio = Math.min(CW / imgW, CH / imgH);
+      const finalW = imgW * ratio;
+      const finalH = imgH * ratio;
+      const offsetX = M + (CW - finalW) / 2;
+      const offsetY = M;
 
-      let currentY = MARGIN + 18;
-      const SECTION_GAP = 3;
+      const imgData = canvas.toDataURL("image/jpeg", 0.92);
+      pdf.addImage(imgData, "JPEG", offsetX, offsetY, finalW, finalH);
 
-      for (const section of sections) {
-        const canvas = await html2canvas(section, {
-          scale: 2,
-          useCORS: true,
-          backgroundColor: "#ffffff",
-        });
-
-        const imgWidth = canvas.width / 2;
-        const imgHeight = canvas.height / 2;
-        const scaleFactor = CONTENT_WIDTH / imgWidth;
-        const heightMM = imgHeight * scaleFactor;
-
-        const remaining = A4_HEIGHT - MARGIN - currentY;
-
-        if (heightMM > remaining && currentY > MARGIN + 18) {
-          pdf.addPage();
-          currentY = MARGIN;
-        }
-
-        const imgData = canvas.toDataURL("image/png");
-        pdf.addImage(imgData, "PNG", MARGIN, currentY, CONTENT_WIDTH, heightMM);
-        currentY += heightMM + SECTION_GAP;
-      }
-
-      pdf.save(`weekly-report-${week.label.replace(/\s/g, "-")}.pdf`);
+      const dateStr = week.label.replace(/\s/g, "-");
+      pdf.save(`Weekly-Report-${dateStr}.pdf`);
       toast({ title: "Report downloaded!", description: "Your weekly report PDF has been saved." });
     } catch {
       toast({ title: "Export failed", description: "Could not generate PDF. Please try again.", variant: "destructive" });
