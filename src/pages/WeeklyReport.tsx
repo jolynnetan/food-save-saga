@@ -421,7 +421,7 @@ export default function WeeklyReport() {
       </section>
 
       {/* Summary Message */}
-      <section className="bg-primary/10 border border-primary/20 rounded-2xl p-4 animate-fade-up" style={{ animationDelay: "560ms" }}>
+      <section data-pdf-section className="bg-primary/10 border border-primary/20 rounded-2xl p-4 animate-fade-up" style={{ animationDelay: "560ms" }}>
         <p className="text-sm text-foreground leading-relaxed font-medium">
           {goalDiff <= 0
             ? `Great week! 🎉 You stayed ${Math.abs(goalDiff)} kcal under your calorie goal and saved ${week.foodSaved} kg of food from going to waste. Keep this momentum going!`
