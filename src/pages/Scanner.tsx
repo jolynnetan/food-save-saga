@@ -206,54 +206,78 @@ export default function Scanner() {
     setResult({ ...result, items, totalCalories: result.totalCalories - removed.calories });
   };
 
+  const analyzeRecipe = async (name: string, description: string, retries = 2): Promise<any | null> => {
+    for (let attempt = 0; attempt <= retries; attempt++) {
+      try {
+        if (attempt > 0) await new Promise(r => setTimeout(r, 2000 * attempt));
+        const { data, error } = await supabase.functions.invoke("food-assistant", {
+          body: {
+            messages: [{ role: "user", content: `Analyze this recipe and estimate the nutrition per serving.\nRecipe: ${name}\nDescription: ${description}\nPlease provide detailed step-by-step cooking instructions and a complete ingredient list with amounts.` }],
+            mode: "recipe-analyze",
+          },
+        });
+        if (error) { console.error(`Analysis attempt ${attempt + 1} error for ${name}:`, error); continue; }
+        if (data && !data.error && typeof data.calories === "number" && data.calories > 0) return data;
+        console.warn(`Analysis attempt ${attempt + 1} returned incomplete data for ${name}:`, data);
+      } catch (err) {
+        console.error(`Analysis attempt ${attempt + 1} exception for ${name}:`, err);
+      }
+    }
+    return null;
+  };
+
   const saveRecipeSuggestions = async (recipes: ScanResult["recipeSuggestions"]) => {
     if (!user || recipes.length === 0) return;
-    // Get existing recipe names to avoid duplicates
     const { data: existingRecipes } = await supabase.from("user_recipes").select("name").eq("user_id", user.id);
     const existingNames = new Set((existingRecipes || []).map(r => r.name.toLowerCase()));
 
     const ids: string[] = [];
-    for (const r of recipes) {
+    for (let i = 0; i < recipes.length; i++) {
+      const r = recipes[i];
       if (existingNames.has(r.name.toLowerCase())) {
         toast.info(`"${r.name}" already in your recipes, skipped.`);
         continue;
       }
 
-      // Run AI analysis to get full ingredients, calories, and detailed steps
+      // Add delay between API calls to avoid rate limiting
+      if (i > 0) await new Promise(resolve => setTimeout(resolve, 1500));
+
+      const analysisData = await analyzeRecipe(r.name, r.description);
+
       let calories = 0, protein = 0, carbs = 0, fat = 0, servings = 1;
       let ingredients: any[] = [];
-      let steps: string[] = [r.description];
+      let steps: string[] = [];
       let emoji = r.emoji || "🍳";
       let time = r.time || "15 min";
 
-      try {
-        const { data: analysisData, error: analysisError } = await supabase.functions.invoke("food-assistant", {
-          body: {
-            messages: [{ role: "user", content: `Analyze this recipe and estimate the nutrition per serving.\nRecipe: ${r.name}\nDescription: ${r.description}\nPlease provide detailed step-by-step cooking instructions and a complete ingredient list with amounts.` }],
-            mode: "recipe-analyze",
-          },
-        });
-
-        if (!analysisError && analysisData && !analysisData.error) {
-          calories = Number(analysisData.calories) || 0;
-          protein = Number(analysisData.protein) || 0;
-          carbs = Number(analysisData.carbs) || 0;
-          fat = Number(analysisData.fat) || 0;
-          servings = Number(analysisData.servings) || 1;
-          emoji = analysisData.emoji || emoji;
-          time = analysisData.time || time;
-          if (Array.isArray(analysisData.ingredients) && analysisData.ingredients.length > 0) {
-            ingredients = analysisData.ingredients.map((ing: any) => ({
-              name: ing.name || "", amount: ing.amount || "", cal: Number(ing.cal) || 0,
-            }));
-          }
-          if (Array.isArray(analysisData.steps) && analysisData.steps.length > 0) {
-            steps = analysisData.steps;
-          }
+      if (analysisData) {
+        calories = Number(analysisData.calories) || 0;
+        protein = Number(analysisData.protein) || 0;
+        carbs = Number(analysisData.carbs) || 0;
+        fat = Number(analysisData.fat) || 0;
+        servings = Number(analysisData.servings) || 1;
+        emoji = analysisData.emoji || emoji;
+        time = analysisData.time || time;
+        if (Array.isArray(analysisData.ingredients) && analysisData.ingredients.length > 0) {
+          ingredients = analysisData.ingredients.map((ing: any) => ({
+            name: ing.name || "", amount: ing.amount || "", cal: Number(ing.cal) || 0,
+          }));
         }
-      } catch (err) {
-        console.error("Recipe analysis failed for", r.name, err);
+        if (Array.isArray(analysisData.steps) && analysisData.steps.length > 0) {
+          steps = analysisData.steps.map((s: string) =>
+            s.startsWith("Step ") ? s : `Step ${analysisData.steps.indexOf(s) + 1}: ${s}`
+          );
+        }
       }
+
+      // Don't save recipe if analysis completely failed (0 cal, no ingredients)
+      if (calories === 0 && ingredients.length === 0) {
+        console.warn(`Skipping "${r.name}" — analysis failed to return nutrition data`);
+        toast.error(`Could not analyze "${r.name}", skipped.`);
+        continue;
+      }
+
+      if (steps.length === 0) steps = [r.description];
 
       const { data } = await supabase.from("user_recipes").insert({
         user_id: user.id,
@@ -267,10 +291,10 @@ export default function Scanner() {
         calories, protein, carbs, fat, servings,
       }).select("id").single();
       if (data) ids.push(data.id);
-      existingNames.add(r.name.toLowerCase()); // prevent dupes within same batch
+      existingNames.add(r.name.toLowerCase());
     }
     setSavedRecipeIds(ids);
-    if (ids.length > 0) toast.success(`${ids.length} recipe(s) saved with nutrition data!`);
+    if (ids.length > 0) toast.success(`${ids.length} recipe(s) saved with full nutrition data!`);
   };
 
   const clear = () => { setImage(null); setResult(null); setSavedRecipeIds([]); };
