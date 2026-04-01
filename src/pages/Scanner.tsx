@@ -386,10 +386,10 @@ export default function Scanner() {
               <h3 className="text-sm font-semibold text-foreground flex items-center gap-2 mb-3"><ChefHat size={16} className="text-primary" /> Use It Up — Recipes</h3>
               <p className="text-xs text-muted-foreground mb-2">Saved to your Recipe Guide! Tap to view.</p>
               <div className="space-y-2">
-                {result.recipeSuggestions.map((r, i) => (
+                  {result.recipeSuggestions.map((r, i) => (
                   <div
                     key={i}
-                    onClick={() => navigate("/recipes")}
+                    onClick={() => navigate(`/recipes?open=${encodeURIComponent(r.name)}`)}
                     className="flex items-center gap-3 bg-muted/50 rounded-xl p-3 cursor-pointer hover:bg-primary/10 transition-colors active:scale-[0.98]"
                   >
                     <span className="text-2xl">{r.emoji}</span>

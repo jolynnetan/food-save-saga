@@ -310,7 +310,7 @@ export default function Dashboard() {
           to="/calories"
           className="col-span-2 bg-card border border-border rounded-2xl p-4 flex flex-col items-center justify-center hover-lift shadow-soft-sm"
         >
-          <CalorieRing />
+          <CalorieRing consumed={todayCalories} />
           <p className="text-[11px] font-semibold text-foreground mt-2">Today's Calories</p>
         </Link>
 

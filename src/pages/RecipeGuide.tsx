@@ -221,6 +221,7 @@ const cuisineOptions: { key: CuisinePref; label: string; emoji: string }[] = [
 
 export default function RecipeGuide() {
   const { user } = useAuth();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [step, setStep] = useState(0);
   const [diet, setDiet] = useState<DietaryPref>("none");
   const [cuisine, setCuisine] = useState<CuisinePref>("any");
@@ -242,7 +243,7 @@ export default function RecipeGuide() {
         .eq("user_id", user.id)
         .order("created_at", { ascending: false });
       if (data) {
-        setUserRecipes(data.map(r => ({
+        const mapped = data.map(r => ({
           name: r.name,
           emoji: r.emoji,
           cuisine: r.cuisine,
@@ -256,7 +257,21 @@ export default function RecipeGuide() {
           ingredients: r.ingredients as any,
           steps: r.steps,
           isUserRecipe: true,
-        })));
+        }));
+        setUserRecipes(mapped);
+
+        // Auto-open recipe from URL param (e.g. from Scanner)
+        const openName = searchParams.get("open");
+        if (openName) {
+          const allCombined = [...allRecipes, ...mapped];
+          const match = allCombined.find(r => r.name.toLowerCase() === openName.toLowerCase());
+          if (match) {
+            setSelectedRecipe(match);
+            setCurrentStep(0);
+            setStep(3);
+          }
+          setSearchParams({}, { replace: true });
+        }
       }
     };
     fetchUserRecipes();
