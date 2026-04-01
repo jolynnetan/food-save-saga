@@ -252,7 +252,6 @@ export default function RecipeGuide() {
     }
     setAnalyzing(true);
     try {
-      const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/food-assistant`;
       const prompt = `Analyze this recipe and estimate the nutrition per serving. Return ONLY a JSON object (no markdown).
 Recipe: ${uploadForm.name}
 Ingredients: ${uploadForm.ingredients}
