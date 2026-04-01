@@ -403,7 +403,7 @@ export default function WeeklyReport() {
       </section>
 
       {/* Top Saved Items */}
-      <section className="bg-card border rounded-2xl p-4 animate-fade-up" style={{ animationDelay: "480ms" }}>
+      <section data-pdf-section className="bg-card border rounded-2xl p-4 animate-fade-up" style={{ animationDelay: "480ms" }}>
         <h3 className="text-sm font-semibold text-foreground mb-3">🏅 Top Saved Items</h3>
         <div className="space-y-2">
           {week.topItems.map((item, i) => (
