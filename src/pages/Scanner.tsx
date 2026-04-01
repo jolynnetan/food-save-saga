@@ -214,21 +214,63 @@ export default function Scanner() {
 
     const ids: string[] = [];
     for (const r of recipes) {
-      if (existingNames.has(r.name.toLowerCase())) continue; // skip duplicates
+      if (existingNames.has(r.name.toLowerCase())) {
+        toast.info(`"${r.name}" already in your recipes, skipped.`);
+        continue;
+      }
+
+      // Run AI analysis to get full ingredients, calories, and detailed steps
+      let calories = 0, protein = 0, carbs = 0, fat = 0, servings = 1;
+      let ingredients: any[] = [];
+      let steps: string[] = [r.description];
+      let emoji = r.emoji || "🍳";
+      let time = r.time || "15 min";
+
+      try {
+        const { data: analysisData, error: analysisError } = await supabase.functions.invoke("food-assistant", {
+          body: {
+            messages: [{ role: "user", content: `Analyze this recipe and estimate the nutrition per serving.\nRecipe: ${r.name}\nDescription: ${r.description}\nPlease provide detailed step-by-step cooking instructions and a complete ingredient list with amounts.` }],
+            mode: "recipe-analyze",
+          },
+        });
+
+        if (!analysisError && analysisData && !analysisData.error) {
+          calories = Number(analysisData.calories) || 0;
+          protein = Number(analysisData.protein) || 0;
+          carbs = Number(analysisData.carbs) || 0;
+          fat = Number(analysisData.fat) || 0;
+          servings = Number(analysisData.servings) || 1;
+          emoji = analysisData.emoji || emoji;
+          time = analysisData.time || time;
+          if (Array.isArray(analysisData.ingredients) && analysisData.ingredients.length > 0) {
+            ingredients = analysisData.ingredients.map((ing: any) => ({
+              name: ing.name || "", amount: ing.amount || "", cal: Number(ing.cal) || 0,
+            }));
+          }
+          if (Array.isArray(analysisData.steps) && analysisData.steps.length > 0) {
+            steps = analysisData.steps;
+          }
+        }
+      } catch (err) {
+        console.error("Recipe analysis failed for", r.name, err);
+      }
+
       const { data } = await supabase.from("user_recipes").insert({
         user_id: user.id,
         name: r.name,
-        emoji: r.emoji || "🍳",
-        time: r.time || "15 min",
+        emoji,
+        time,
         cuisine: "any",
         diet: ["none"],
-        steps: [r.description],
-        ingredients: [] as any,
-        calories: 0, protein: 0, carbs: 0, fat: 0, servings: 1,
+        steps,
+        ingredients: ingredients as any,
+        calories, protein, carbs, fat, servings,
       }).select("id").single();
       if (data) ids.push(data.id);
+      existingNames.add(r.name.toLowerCase()); // prevent dupes within same batch
     }
     setSavedRecipeIds(ids);
+    if (ids.length > 0) toast.success(`${ids.length} recipe(s) saved with nutrition data!`);
   };
 
   const clear = () => { setImage(null); setResult(null); setSavedRecipeIds([]); };

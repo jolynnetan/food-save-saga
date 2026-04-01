@@ -66,9 +66,10 @@ Set isLeftover to true if the item appears to be a leftover (cooked food, partia
       systemPrompt = `You are a recipe nutrition analysis AI. The user will give you a recipe with ingredients and steps.
 Estimate the total nutrition per serving including calories, protein, carbs, fat, servings count, and cooking time.
 Also list each ingredient with its amount and estimated calories.
+Write clear, detailed step-by-step cooking instructions.
 Return ONLY a JSON object with this exact structure, no other text:
-{"calories": 450, "protein": 28, "carbs": 52, "fat": 16, "servings": 2, "time": "25 min", "emoji": "🍳", "ingredients": [{"name": "Ingredient", "amount": "200g", "cal": 150}]}
-Keep ingredients matching the user's input. Use realistic calorie estimates.`;
+{"calories": 450, "protein": 28, "carbs": 52, "fat": 16, "servings": 2, "time": "25 min", "emoji": "🍳", "ingredients": [{"name": "Ingredient", "amount": "200g", "cal": 150}], "steps": ["Step 1: Prepare ingredients by...", "Step 2: Heat oil in a pan...", "Step 3: Cook until..."]}
+Keep ingredients matching the user's input. Use realistic calorie estimates. Steps should be clear, numbered, and actionable.`;
     }
 
     // Build messages array with vision support
