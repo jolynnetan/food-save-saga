@@ -119,11 +119,13 @@ const parseScanPayload = async (data: unknown) => {
 
 export default function Scanner() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [image, setImage] = useState<string | null>(null);
   const [scanning, setScanning] = useState(false);
   const [result, setResult] = useState<ScanResult | null>(null);
   const [newItem, setNewItem] = useState("");
   const [addingItem, setAddingItem] = useState(false);
+  const [savedRecipeIds, setSavedRecipeIds] = useState<string[]>([]);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const handleFile = (file: File) => {
