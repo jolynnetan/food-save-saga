@@ -252,52 +252,17 @@ export default function RecipeGuide() {
     }
     setAnalyzing(true);
     try {
-      const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/food-assistant`;
-      const prompt = `Analyze this recipe and estimate the nutrition per serving. Return ONLY a JSON object (no markdown).
+      const { data: nutrition, error: fnError } = await (await import("@/integrations/supabase/client")).supabase.functions.invoke("food-assistant", {
+        body: {
+          messages: [{ role: "user", content: `Analyze this recipe and estimate the nutrition per serving.
 Recipe: ${uploadForm.name}
 Ingredients: ${uploadForm.ingredients}
-Steps: ${uploadForm.steps}
-
-Return JSON: {"calories":number,"protein":number,"carbs":number,"fat":number,"servings":number,"time":"X min","ingredients":[{"name":"...","amount":"...","cal":number}]}`;
-
-      const resp = await fetch(CHAT_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+Steps: ${uploadForm.steps}` }],
+          mode: "recipe-analyze",
         },
-        body: JSON.stringify({
-          messages: [{ role: "user", content: prompt }],
-          mode: "scan-calories",
-        }),
       });
 
-      if (!resp.ok) throw new Error("AI analysis failed");
-
-      const reader = resp.body?.getReader();
-      const decoder = new TextDecoder();
-      let fullText = "";
-      if (reader) {
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          const chunk = decoder.decode(value, { stream: true });
-          for (const line of chunk.split("\n")) {
-            if (!line.startsWith("data: ") || line.includes("[DONE]")) continue;
-            try {
-              const parsed = JSON.parse(line.slice(6));
-              const content = parsed.choices?.[0]?.delta?.content;
-              if (content) fullText += content;
-            } catch { /* skip */ }
-          }
-        }
-      }
-
-      // Try to parse the AI response
-      const jsonMatch = fullText.match(/\{[\s\S]*\}/);
-      if (!jsonMatch) throw new Error("Could not parse nutrition data");
-
-      const nutrition = JSON.parse(jsonMatch[0]);
+      if (fnError || !nutrition || nutrition.error) throw new Error(fnError?.message || nutrition?.error || "AI analysis failed");
       const stepsArr = uploadForm.steps.split(/\n|\./).map(s => s.trim()).filter(Boolean);
       const ingredientsList = nutrition.ingredients || uploadForm.ingredients.split(/\n|,/).map((ing: string) => ({
         name: ing.trim(), amount: "", cal: 0,
@@ -305,7 +270,7 @@ Return JSON: {"calories":number,"protein":number,"carbs":number,"fat":number,"se
 
       const newRecipe: Recipe = {
         name: uploadForm.name,
-        emoji: "👨‍🍳",
+        emoji: nutrition.emoji || "👨‍🍳",
         cuisine: "any",
         diet: ["none"],
         time: nutrition.time || "30 min",
