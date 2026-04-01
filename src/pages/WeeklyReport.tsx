@@ -104,56 +104,33 @@ export default function WeeklyReport() {
     if (!reportRef.current) return;
     setIsExporting(true);
     try {
-      // Capture each section separately for clean layout
-      const sections = Array.from(
-        reportRef.current.querySelectorAll("[data-pdf-section]")
-      ) as HTMLElement[];
+      const canvas = await html2canvas(reportRef.current, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: "#ffffff",
+        windowWidth: 420,
+      });
 
       const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
-      const A4_WIDTH = 210;
-      const A4_HEIGHT = 297;
-      const MARGIN = 10;
-      const CONTENT_WIDTH = A4_WIDTH - MARGIN * 2;
-      const CONTENT_HEIGHT = A4_HEIGHT - MARGIN * 2;
+      const A4_W = 210;
+      const A4_H = 297;
+      const M = 8;
+      const CW = A4_W - M * 2;
+      const CH = A4_H - M * 2;
 
-      // Add title
-      pdf.setFontSize(18);
-      pdf.setFont("helvetica", "bold");
-      pdf.text("SavePlate Weekly Report", MARGIN, MARGIN + 6);
-      pdf.setFontSize(11);
-      pdf.setFont("helvetica", "normal");
-      pdf.setTextColor(100, 100, 100);
-      pdf.text(week.label, MARGIN, MARGIN + 13);
-      pdf.setTextColor(0, 0, 0);
+      const imgW = canvas.width;
+      const imgH = canvas.height;
+      const ratio = Math.min(CW / imgW, CH / imgH);
+      const finalW = imgW * ratio;
+      const finalH = imgH * ratio;
+      const offsetX = M + (CW - finalW) / 2;
+      const offsetY = M;
 
-      let currentY = MARGIN + 18;
-      const SECTION_GAP = 3;
+      const imgData = canvas.toDataURL("image/jpeg", 0.92);
+      pdf.addImage(imgData, "JPEG", offsetX, offsetY, finalW, finalH);
 
-      for (const section of sections) {
-        const canvas = await html2canvas(section, {
-          scale: 2,
-          useCORS: true,
-          backgroundColor: "#ffffff",
-        });
-
-        const imgWidth = canvas.width / 2;
-        const imgHeight = canvas.height / 2;
-        const scaleFactor = CONTENT_WIDTH / imgWidth;
-        const heightMM = imgHeight * scaleFactor;
-
-        const remaining = A4_HEIGHT - MARGIN - currentY;
-
-        if (heightMM > remaining && currentY > MARGIN + 18) {
-          pdf.addPage();
-          currentY = MARGIN;
-        }
-
-        const imgData = canvas.toDataURL("image/png");
-        pdf.addImage(imgData, "PNG", MARGIN, currentY, CONTENT_WIDTH, heightMM);
-        currentY += heightMM + SECTION_GAP;
-      }
-
-      pdf.save(`weekly-report-${week.label.replace(/\s/g, "-")}.pdf`);
+      const dateStr = week.label.replace(/\s/g, "-");
+      pdf.save(`Weekly-Report-${dateStr}.pdf`);
       toast({ title: "Report downloaded!", description: "Your weekly report PDF has been saved." });
     } catch {
       toast({ title: "Export failed", description: "Could not generate PDF. Please try again.", variant: "destructive" });
@@ -163,51 +140,66 @@ export default function WeeklyReport() {
   };
 
   const handleSendEmail = async () => {
+    if (!reportRef.current) return;
     setIsSending(true);
-    const email = user?.email || "";
-    const subject = `SavePlate Weekly Report – ${week.label}`;
-    const summaryText = goalDiff <= 0
-      ? `Great week! You stayed ${Math.abs(goalDiff)} kcal under your calorie goal and saved ${week.foodSaved} kg of food from going to waste.`
-      : `You went ${goalDiff} kcal over your goal this week, but you still saved ${week.foodSaved} kg of food!`;
+    try {
+      const email = user?.email || "";
+      if (!email) {
+        toast({ title: "No email found", description: "Please log in to send the report to your email.", variant: "destructive" });
+        setIsSending(false);
+        return;
+      }
 
-    const body = [
-      `SavePlate Weekly Report`,
-      `Week: ${week.label}`,
-      ``,
-      `--- Highlights ---`,
-      `Food Saved: ${week.foodSaved} kg`,
-      `Streak: ${week.streakDays} days`,
-      `Challenges Completed: ${week.challengesCompleted}`,
-      `Meals Logged: ${week.mealsLogged}`,
-      ``,
-      `--- Calories ---`,
-      `Average: ${avgCalories} kcal/day (Goal: 2,000 kcal)`,
-      `Weekly Total: ${totalConsumed} / ${totalGoal} kcal (${goalPercent}%)`,
-      ``,
-      `--- Macros (avg/day) ---`,
-      `Protein: ${week.macros.protein}g`,
-      `Carbs: ${week.macros.carbs}g`,
-      `Fat: ${week.macros.fat}g`,
-      ``,
-      `--- Waste Reduction ---`,
-      `Reduced by ${week.wasteReduction}% this week`,
-      `Top saved items: ${week.topItems.map(i => `${i.name} (${i.saved})`).join(", ")}`,
-      ``,
-      `--- Summary ---`,
-      summaryText,
-      ``,
-      `Keep up the great work! 🌱`,
-      `— SavePlate`,
-    ].join("\n");
+      const summaryText = goalDiff <= 0
+        ? `You stayed ${Math.abs(goalDiff)} kcal under your calorie goal and saved ${week.foodSaved} kg of food from going to waste.`
+        : `You went ${goalDiff} kcal over your goal this week, but you still saved ${week.foodSaved} kg of food!`;
 
-    const mailtoUrl = `mailto:${encodeURIComponent(email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-    window.open(mailtoUrl, "_blank");
+      const subject = `🌱 Your SavePlate Weekly Wrap-Up: ${week.foodSaved}kg Saved & ${week.streakDays}-Day Streak! (${week.label})`;
 
-    setIsSending(false);
-    toast({
-      title: "Email ready! ✉️",
-      description: "Your email client has been opened with the weekly report. Just hit Send!",
-    });
+      const body = [
+        `Hi there! 👋`,
+        ``,
+        `Here's your SavePlate Weekly Report for ${week.label}:`,
+        ``,
+        `✨ WEEKLY HIGHLIGHTS`,
+        `━━━━━━━━━━━━━━━━━━`,
+        `🌿 Food Saved: ${week.foodSaved} kg`,
+        `🔥 Streak: ${week.streakDays} days`,
+        `🏆 Challenges Completed: ${week.challengesCompleted}`,
+        `📝 Meals Logged: ${week.mealsLogged}`,
+        ``,
+        `🔥 CALORIE SUMMARY`,
+        `━━━━━━━━━━━━━━━━━━`,
+        `Average: ${avgCalories} kcal/day (Goal: 2,000 kcal)`,
+        `Weekly Total: ${totalConsumed.toLocaleString()} / ${totalGoal.toLocaleString()} kcal (${goalPercent}%)`,
+        ``,
+        `🥩 MACROS (avg/day)`,
+        `━━━━━━━━━━━━━━━━━━`,
+        `Protein: ${week.macros.protein}g | Carbs: ${week.macros.carbs}g | Fat: ${week.macros.fat}g`,
+        ``,
+        `🌍 WASTE REDUCTION`,
+        `━━━━━━━━━━━━━━━━━━`,
+        `Reduced by ${week.wasteReduction}% this week!`,
+        `Top saved: ${week.topItems.map(i => `${i.name} (${i.saved})`).join(", ")}`,
+        ``,
+        `💬 ${summaryText}`,
+        ``,
+        `Keep making a difference! 🌱`,
+        `— The SavePlate Team`,
+      ].join("\n");
+
+      const mailtoUrl = `mailto:${encodeURIComponent(email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+      window.open(mailtoUrl, "_blank");
+
+      toast({
+        title: "Email ready! ✉️",
+        description: `Your email client opened with the report for ${email}. Just hit Send!`,
+      });
+    } catch {
+      toast({ title: "Failed", description: "Could not prepare the email.", variant: "destructive" });
+    } finally {
+      setIsSending(false);
+    }
   };
 
   return (
