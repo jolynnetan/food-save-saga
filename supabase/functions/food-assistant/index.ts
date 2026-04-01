@@ -102,7 +102,7 @@ Keep ingredients matching the user's input. Use realistic calorie estimates.`;
       ];
     }
 
-    const isStructuredMode = mode === "scan-leftovers" || mode === "scan-calories" || mode === "meal-analyze";
+    const isStructuredMode = mode === "scan-leftovers" || mode === "scan-calories" || mode === "meal-analyze" || mode === "recipe-analyze";
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
