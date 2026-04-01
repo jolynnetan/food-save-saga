@@ -219,6 +219,7 @@ const cuisineOptions: { key: CuisinePref; label: string; emoji: string }[] = [
 ];
 
 export default function RecipeGuide() {
+  const { user } = useAuth();
   const [step, setStep] = useState(0);
   const [diet, setDiet] = useState<DietaryPref>("none");
   const [cuisine, setCuisine] = useState<CuisinePref>("any");
@@ -229,6 +230,36 @@ export default function RecipeGuide() {
   const [uploadForm, setUploadForm] = useState({ name: "", ingredients: "", steps: "" });
   const [analyzing, setAnalyzing] = useState(false);
   const { addPoints } = usePoints();
+
+  // Load user recipes from DB on mount
+  useEffect(() => {
+    if (!user) return;
+    const fetchUserRecipes = async () => {
+      const { data } = await supabase
+        .from("user_recipes")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false });
+      if (data) {
+        setUserRecipes(data.map(r => ({
+          name: r.name,
+          emoji: r.emoji,
+          cuisine: r.cuisine,
+          diet: r.diet,
+          time: r.time,
+          calories: r.calories,
+          protein: r.protein,
+          carbs: r.carbs,
+          fat: r.fat,
+          servings: r.servings,
+          ingredients: r.ingredients as any,
+          steps: r.steps,
+          isUserRecipe: true,
+        })));
+      }
+    };
+    fetchUserRecipes();
+  }, [user]);
 
   const combinedRecipes = [...allRecipes, ...userRecipes];
 
