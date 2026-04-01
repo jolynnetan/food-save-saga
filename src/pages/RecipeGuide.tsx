@@ -1,6 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ChefHat, ArrowRight, ArrowLeft, Flame, Check, RotateCcw, Upload, Loader2, Sparkles } from "lucide-react";
 import { usePoints } from "@/contexts/PointsContext";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 type DietaryPref = "vegetarian" | "vegan" | "halal" | "gluten-free" | "dairy-free" | "none";
@@ -227,6 +229,37 @@ export default function RecipeGuide() {
   const [uploadForm, setUploadForm] = useState({ name: "", ingredients: "", steps: "" });
   const [analyzing, setAnalyzing] = useState(false);
   const { addPoints } = usePoints();
+  const { user } = useAuth();
+
+  // Load user recipes from database
+  useEffect(() => {
+    if (!user) return;
+    const fetchRecipes = async () => {
+      const { data } = await supabase
+        .from("user_recipes")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false });
+      if (data) {
+        setUserRecipes(data.map((r: any) => ({
+          name: r.name,
+          emoji: r.emoji,
+          cuisine: r.cuisine,
+          diet: r.diet,
+          time: r.time,
+          calories: r.calories,
+          protein: r.protein,
+          carbs: r.carbs,
+          fat: r.fat,
+          servings: r.servings,
+          ingredients: r.ingredients as { name: string; amount: string; cal: number }[],
+          steps: r.steps,
+          isUserRecipe: true,
+        })));
+      }
+    };
+    fetchRecipes();
+  }, [user]);
 
   const combinedRecipes = [...allRecipes, ...userRecipes];
 
@@ -284,6 +317,25 @@ Steps: ${uploadForm.steps}` }],
         isUserRecipe: true,
       };
 
+      // Save to database
+      if (user) {
+        await supabase.from("user_recipes").insert({
+          user_id: user.id,
+          name: newRecipe.name,
+          emoji: newRecipe.emoji,
+          cuisine: newRecipe.cuisine,
+          diet: newRecipe.diet,
+          time: newRecipe.time,
+          calories: newRecipe.calories,
+          protein: newRecipe.protein,
+          carbs: newRecipe.carbs,
+          fat: newRecipe.fat,
+          servings: newRecipe.servings,
+          ingredients: newRecipe.ingredients as any,
+          steps: newRecipe.steps,
+        });
+      }
+
       setUserRecipes(prev => [...prev, newRecipe]);
       addPoints(25);
       toast.success("Recipe added! +25 pts 🎉");
@@ -306,6 +358,16 @@ Steps: ${uploadForm.steps}` }],
         ingredients: ingredientsList, steps: stepsArr.length > 0 ? stepsArr : [uploadForm.steps],
         isUserRecipe: true,
       };
+      // Save to database
+      if (user) {
+        await supabase.from("user_recipes").insert({
+          user_id: user.id,
+          name: newRecipe.name, emoji: newRecipe.emoji, cuisine: newRecipe.cuisine, diet: newRecipe.diet,
+          time: newRecipe.time, calories: newRecipe.calories, protein: newRecipe.protein,
+          carbs: newRecipe.carbs, fat: newRecipe.fat, servings: newRecipe.servings,
+          ingredients: newRecipe.ingredients as any, steps: newRecipe.steps,
+        });
+      }
       setUserRecipes(prev => [...prev, newRecipe]);
       addPoints(15);
       toast.success("Recipe added (without analysis)! +15 pts");

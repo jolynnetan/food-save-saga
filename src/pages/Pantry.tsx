@@ -1,8 +1,10 @@
-import { useState } from "react";
-import { Plus, Bell, BellRing, Trash2, Clock, ChefHat } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Plus, Bell, BellRing, Trash2, Clock, ChefHat, Loader2 } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 
 type PantryItem = {
-  id: number;
+  id: string;
   name: string;
   emoji: string;
   quantity: string;
@@ -10,16 +12,6 @@ type PantryItem = {
   daysLeft: number;
   notified: boolean;
 };
-
-const initialItems: PantryItem[] = [
-  { id: 1, name: "Whole Milk", emoji: "🥛", quantity: "1L", expiryDate: "2026-03-23", daysLeft: 1, notified: true },
-  { id: 2, name: "Baby Spinach", emoji: "🥬", quantity: "200g", expiryDate: "2026-03-23", daysLeft: 1, notified: true },
-  { id: 3, name: "Greek Yogurt", emoji: "🍦", quantity: "500g", expiryDate: "2026-03-25", daysLeft: 3, notified: false },
-  { id: 4, name: "Chicken Breast", emoji: "🍗", quantity: "400g", expiryDate: "2026-03-24", daysLeft: 2, notified: false },
-  { id: 5, name: "Eggs", emoji: "🥚", quantity: "6 pcs", expiryDate: "2026-04-02", daysLeft: 11, notified: false },
-  { id: 6, name: "Cheddar Cheese", emoji: "🧀", quantity: "150g", expiryDate: "2026-04-05", daysLeft: 14, notified: false },
-  { id: 7, name: "Fresh Basil", emoji: "🌿", quantity: "30g", expiryDate: "2026-03-24", daysLeft: 2, notified: false },
-];
 
 const recipeSuggestions: Record<string, string[]> = {
   "Whole Milk": ["Creamy mushroom soup", "Homemade ricotta", "Milk pudding"],
@@ -34,42 +26,79 @@ function getUrgencyColor(daysLeft: number) {
   return { text: "text-success", bg: "bg-success/10", ring: "ring-success/20" };
 }
 
+function calcDaysLeft(expiryDate: string): number {
+  const expiry = new Date(expiryDate + "T23:59:59");
+  const now = new Date();
+  return Math.max(0, Math.ceil((expiry.getTime() - now.getTime()) / 86400000));
+}
+
 export default function Pantry() {
-  const [items, setItems] = useState(initialItems);
+  const [items, setItems] = useState<PantryItem[]>([]);
+  const [loading, setLoading] = useState(true);
   const [showAdd, setShowAdd] = useState(false);
   const [selectedItem, setSelectedItem] = useState<PantryItem | null>(null);
   const [newName, setNewName] = useState("");
   const [newExpiry, setNewExpiry] = useState("");
   const [newQty, setNewQty] = useState("");
+  const { user } = useAuth();
+
+  useEffect(() => {
+    if (!user) { setLoading(false); return; }
+    const fetchItems = async () => {
+      const { data } = await supabase
+        .from("pantry_items")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("expiry_date", { ascending: true });
+      if (data) {
+        setItems(data.map((item: any) => ({
+          id: item.id,
+          name: item.name,
+          emoji: item.emoji,
+          quantity: item.quantity,
+          expiryDate: item.expiry_date,
+          daysLeft: calcDaysLeft(item.expiry_date),
+          notified: item.notified,
+        })));
+      }
+      setLoading(false);
+    };
+    fetchItems();
+  }, [user]);
 
   const urgentItems = items.filter((i) => i.daysLeft <= 1);
   const soonItems = items.filter((i) => i.daysLeft > 1 && i.daysLeft <= 3);
   const safeItems = items.filter((i) => i.daysLeft > 3);
 
-  const handleAdd = () => {
+  const handleAdd = async () => {
     if (!newName || !newExpiry) return;
-    const expiry = new Date(newExpiry);
-    const now = new Date();
-    const daysLeft = Math.max(0, Math.ceil((expiry.getTime() - now.getTime()) / 86400000));
-    setItems([
-      ...items,
-      {
-        id: Date.now(),
+    const daysLeft = calcDaysLeft(newExpiry);
+
+    if (user) {
+      const { data } = await supabase.from("pantry_items").insert({
+        user_id: user.id,
         name: newName,
         emoji: "📦",
         quantity: newQty || "—",
-        expiryDate: newExpiry,
-        daysLeft,
+        expiry_date: newExpiry,
         notified: daysLeft <= 1,
-      },
-    ]);
-    setNewName("");
-    setNewExpiry("");
-    setNewQty("");
-    setShowAdd(false);
+      }).select().single();
+
+      if (data) {
+        setItems(prev => [...prev, {
+          id: data.id, name: newName, emoji: "📦",
+          quantity: newQty || "—", expiryDate: newExpiry,
+          daysLeft, notified: daysLeft <= 1,
+        }]);
+      }
+    }
+    setNewName(""); setNewExpiry(""); setNewQty(""); setShowAdd(false);
   };
 
-  const removeItem = (id: number) => {
+  const removeItem = async (id: string) => {
+    if (user) {
+      await supabase.from("pantry_items").delete().eq("id", id).eq("user_id", user.id);
+    }
     setItems(items.filter((i) => i.id !== id));
     if (selectedItem?.id === id) setSelectedItem(null);
   };
@@ -110,9 +139,16 @@ export default function Pantry() {
     );
   };
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="animate-spin text-primary" size={32} />
+      </div>
+    );
+  }
+
   return (
     <div className="px-4 py-5 max-w-lg mx-auto space-y-5">
-      {/* Header */}
       <div className="flex items-center justify-between animate-fade-up">
         <div>
           <h2 className="text-2xl font-bold text-foreground text-balance">Smart Pantry</h2>
@@ -126,7 +162,6 @@ export default function Pantry() {
         </button>
       </div>
 
-      {/* Urgent notification banner */}
       {urgentItems.length > 0 && (
         <div className="bg-destructive/10 border border-destructive/20 rounded-2xl p-4 animate-fade-up flex items-start gap-3" style={{ animationDelay: "60ms" }}>
           <Bell className="text-destructive mt-0.5 shrink-0" size={18} />
@@ -141,7 +176,6 @@ export default function Pantry() {
         </div>
       )}
 
-      {/* Add form */}
       {showAdd && (
         <div className="bg-card border rounded-2xl p-4 animate-scale-in space-y-3">
           <h3 className="text-sm font-semibold text-foreground">Add pantry item</h3>
@@ -174,7 +208,6 @@ export default function Pantry() {
         </div>
       )}
 
-      {/* Recipe suggestion for selected item */}
       {selectedItem && recipeSuggestions[selectedItem.name] && (
         <div className="bg-secondary rounded-2xl p-4 animate-scale-in space-y-2">
           <div className="flex items-center justify-between">
@@ -196,28 +229,35 @@ export default function Pantry() {
         </div>
       )}
 
-      {/* Item sections */}
       <div className="space-y-4 animate-fade-up" style={{ animationDelay: "120ms" }}>
         {renderSection("⚠️ Expiring soon (24h)", urgentItems, "urgent")}
         {renderSection("⏰ Use within 3 days", soonItems, "soon")}
         {renderSection("✅ Fresh & safe", safeItems, "safe")}
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-3 gap-3 animate-fade-up" style={{ animationDelay: "200ms" }}>
-        <div className="bg-card border rounded-2xl p-3 text-center">
-          <p className="text-lg font-bold text-foreground tabular-nums">{items.length}</p>
-          <p className="text-[10px] text-muted-foreground">Total Items</p>
+      {items.length === 0 && (
+        <div className="text-center py-8">
+          <span className="text-4xl">🥫</span>
+          <p className="text-muted-foreground text-sm mt-3">Your pantry is empty. Tap + to add items!</p>
         </div>
-        <div className="bg-destructive/10 rounded-2xl p-3 text-center">
-          <p className="text-lg font-bold text-foreground tabular-nums">{urgentItems.length}</p>
-          <p className="text-[10px] text-muted-foreground">Expiring</p>
+      )}
+
+      {items.length > 0 && (
+        <div className="grid grid-cols-3 gap-3 animate-fade-up" style={{ animationDelay: "200ms" }}>
+          <div className="bg-card border rounded-2xl p-3 text-center">
+            <p className="text-lg font-bold text-foreground tabular-nums">{items.length}</p>
+            <p className="text-[10px] text-muted-foreground">Total Items</p>
+          </div>
+          <div className="bg-destructive/10 rounded-2xl p-3 text-center">
+            <p className="text-lg font-bold text-foreground tabular-nums">{urgentItems.length}</p>
+            <p className="text-[10px] text-muted-foreground">Expiring</p>
+          </div>
+          <div className="bg-success/10 rounded-2xl p-3 text-center">
+            <p className="text-lg font-bold text-foreground tabular-nums">{safeItems.length}</p>
+            <p className="text-[10px] text-muted-foreground">Fresh</p>
+          </div>
         </div>
-        <div className="bg-success/10 rounded-2xl p-3 text-center">
-          <p className="text-lg font-bold text-foreground tabular-nums">{safeItems.length}</p>
-          <p className="text-[10px] text-muted-foreground">Fresh</p>
-        </div>
-      </div>
+      )}
     </div>
   );
 }
