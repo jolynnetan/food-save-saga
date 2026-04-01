@@ -104,11 +104,30 @@ function CalorieRing({ consumed = 1450, target = 2000 }: { consumed?: number; ta
 }
 
 export default function Dashboard() {
+  const { user } = useAuth();
   const { streak } = usePoints();
   const { appMode } = useSettings();
   const { level, xp, xpProgress, dailyMissions, completeMission, recentAchievements, gamificationEnabled, seasonalEvent } = useGamification();
   const [todayTasks, setTodayTasks] = useState(getDailyChallenges);
+  const [todayCalories, setTodayCalories] = useState(0);
   const isSimple = appMode === "simple";
+
+  // Fetch today's calorie total from DB
+  useEffect(() => {
+    if (!user) return;
+    const today = format(new Date(), "yyyy-MM-dd");
+    const fetchCalories = async () => {
+      const { data } = await supabase
+        .from("calorie_entries")
+        .select("calories")
+        .eq("user_id", user.id)
+        .eq("logged_date", today);
+      if (data) {
+        setTodayCalories(data.reduce((sum, e) => sum + e.calories, 0));
+      }
+    };
+    fetchCalories();
+  }, [user]);
 
   useEffect(() => {
     const handleFocus = () => setTodayTasks(getDailyChallenges());
