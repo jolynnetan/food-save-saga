@@ -345,7 +345,7 @@ export default function WeeklyReport() {
       </section>
 
       {/* Food Waste Reduction */}
-      <section className="bg-card border rounded-2xl p-4 animate-fade-up" style={{ animationDelay: "320ms" }}>
+      <section data-pdf-section className="bg-card border rounded-2xl p-4 animate-fade-up" style={{ animationDelay: "320ms" }}>
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-sm font-semibold text-foreground">🌍 Waste Reduction</h3>
           <span className="text-xs font-bold text-success bg-success/10 px-2 py-0.5 rounded-full">
