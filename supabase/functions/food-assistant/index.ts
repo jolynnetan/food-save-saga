@@ -112,7 +112,7 @@ Units should be "g", "ml", or "pcs". Use realistic portion sizes. Include 4-8 in
       ];
     }
 
-    const isStructuredMode = mode === "scan-leftovers" || mode === "scan-calories" || mode === "meal-analyze" || mode === "recipe-analyze";
+    const isStructuredMode = mode === "scan-leftovers" || mode === "scan-calories" || mode === "meal-analyze" || mode === "recipe-analyze" || mode === "portion-analyze";
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
