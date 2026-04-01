@@ -233,9 +233,9 @@ export default function WeeklyReport() {
         </Button>
       </div>
 
-      <div ref={reportRef} className="space-y-5">
+      <div ref={reportRef} className="space-y-4">
       {/* Header with week navigation */}
-      <div className="animate-fade-up">
+      <div data-pdf-section className="animate-fade-up">
         <h2 className="text-2xl font-bold text-foreground text-balance">📊 Weekly Report</h2>
         <div className="flex items-center justify-between mt-2">
           <button
@@ -257,7 +257,7 @@ export default function WeeklyReport() {
       </div>
 
       {/* Highlights strip */}
-      <div className="grid grid-cols-3 gap-3 animate-fade-up" style={{ animationDelay: "80ms" }}>
+      <div data-pdf-section className="grid grid-cols-3 gap-3 animate-fade-up" style={{ animationDelay: "80ms" }}>
         <div className="bg-success/10 rounded-2xl p-3 text-center">
           <Leaf className="text-success mx-auto mb-1" size={20} />
           <p className="text-lg font-bold text-foreground">{week.foodSaved} kg</p>
