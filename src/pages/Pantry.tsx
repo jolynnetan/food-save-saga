@@ -58,9 +58,10 @@ export default function Pantry() {
   const [newExpiry, setNewExpiry] = useState("");
   const [newQty, setNewQty] = useState("");
 
-  const urgentItems = items.filter((i) => i.daysLeft <= 1);
-  const soonItems = items.filter((i) => i.daysLeft > 1 && i.daysLeft <= 3);
-  const safeItems = items.filter((i) => i.daysLeft > 3);
+  const itemsWithLiveDays = items.map(i => ({ ...i, daysLeft: calcDaysLeft(i.expiryDate), notified: calcDaysLeft(i.expiryDate) <= 1 }));
+  const urgentItems = itemsWithLiveDays.filter((i) => i.daysLeft <= 1);
+  const soonItems = itemsWithLiveDays.filter((i) => i.daysLeft > 1 && i.daysLeft <= 3);
+  const safeItems = itemsWithLiveDays.filter((i) => i.daysLeft > 3);
 
   const handleAdd = () => {
     if (!newName || !newExpiry) return;
