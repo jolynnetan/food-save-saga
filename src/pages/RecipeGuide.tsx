@@ -1,7 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ChefHat, ArrowRight, ArrowLeft, Flame, Check, RotateCcw, Upload, Loader2, Sparkles } from "lucide-react";
 import { usePoints } from "@/contexts/PointsContext";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 
 type DietaryPref = "vegetarian" | "vegan" | "halal" | "gluten-free" | "dairy-free" | "none";
 type CuisinePref = "asian" | "western" | "mediterranean" | "indian" | "mexican" | "middle-eastern" | "japanese" | "korean" | "any";
