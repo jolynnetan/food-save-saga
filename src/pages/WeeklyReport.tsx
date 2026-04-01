@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
+import { useAuth } from "@/contexts/AuthContext";
 
 const WEEK_DATA = [
   {
@@ -83,6 +84,7 @@ const WEEK_DATA = [
 ];
 
 export default function WeeklyReport() {
+  const { user } = useAuth();
   const [weekIndex, setWeekIndex] = useState(0);
   const week = WEEK_DATA[weekIndex];
 
@@ -102,27 +104,53 @@ export default function WeeklyReport() {
     if (!reportRef.current) return;
     setIsExporting(true);
     try {
-      const canvas = await html2canvas(reportRef.current, {
-        scale: 2,
-        useCORS: true,
-        backgroundColor: "#f5f9f5",
-      });
-      const imgData = canvas.toDataURL("image/png");
-      const pdf = new jsPDF("p", "mm", "a4");
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+      // Capture each section separately for clean layout
+      const sections = Array.from(
+        reportRef.current.querySelectorAll("[data-pdf-section]")
+      ) as HTMLElement[];
 
-      let heightLeft = pdfHeight;
-      let position = 0;
+      const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+      const A4_WIDTH = 210;
+      const A4_HEIGHT = 297;
+      const MARGIN = 10;
+      const CONTENT_WIDTH = A4_WIDTH - MARGIN * 2;
+      const CONTENT_HEIGHT = A4_HEIGHT - MARGIN * 2;
 
-      pdf.addImage(imgData, "PNG", 0, position, pdfWidth, pdfHeight);
-      heightLeft -= pdf.internal.pageSize.getHeight();
+      // Add title
+      pdf.setFontSize(18);
+      pdf.setFont("helvetica", "bold");
+      pdf.text("SavePlate Weekly Report", MARGIN, MARGIN + 6);
+      pdf.setFontSize(11);
+      pdf.setFont("helvetica", "normal");
+      pdf.setTextColor(100, 100, 100);
+      pdf.text(week.label, MARGIN, MARGIN + 13);
+      pdf.setTextColor(0, 0, 0);
 
-      while (heightLeft > 0) {
-        position -= pdf.internal.pageSize.getHeight();
-        pdf.addPage();
-        pdf.addImage(imgData, "PNG", 0, position, pdfWidth, pdfHeight);
-        heightLeft -= pdf.internal.pageSize.getHeight();
+      let currentY = MARGIN + 18;
+      const SECTION_GAP = 3;
+
+      for (const section of sections) {
+        const canvas = await html2canvas(section, {
+          scale: 2,
+          useCORS: true,
+          backgroundColor: "#ffffff",
+        });
+
+        const imgWidth = canvas.width / 2;
+        const imgHeight = canvas.height / 2;
+        const scaleFactor = CONTENT_WIDTH / imgWidth;
+        const heightMM = imgHeight * scaleFactor;
+
+        const remaining = A4_HEIGHT - MARGIN - currentY;
+
+        if (heightMM > remaining && currentY > MARGIN + 18) {
+          pdf.addPage();
+          currentY = MARGIN;
+        }
+
+        const imgData = canvas.toDataURL("image/png");
+        pdf.addImage(imgData, "PNG", MARGIN, currentY, CONTENT_WIDTH, heightMM);
+        currentY += heightMM + SECTION_GAP;
       }
 
       pdf.save(`weekly-report-${week.label.replace(/\s/g, "-")}.pdf`);
@@ -136,11 +164,49 @@ export default function WeeklyReport() {
 
   const handleSendEmail = async () => {
     setIsSending(true);
-    await new Promise((r) => setTimeout(r, 1500));
+    const email = user?.email || "";
+    const subject = `SavePlate Weekly Report – ${week.label}`;
+    const summaryText = goalDiff <= 0
+      ? `Great week! You stayed ${Math.abs(goalDiff)} kcal under your calorie goal and saved ${week.foodSaved} kg of food from going to waste.`
+      : `You went ${goalDiff} kcal over your goal this week, but you still saved ${week.foodSaved} kg of food!`;
+
+    const body = [
+      `SavePlate Weekly Report`,
+      `Week: ${week.label}`,
+      ``,
+      `--- Highlights ---`,
+      `Food Saved: ${week.foodSaved} kg`,
+      `Streak: ${week.streakDays} days`,
+      `Challenges Completed: ${week.challengesCompleted}`,
+      `Meals Logged: ${week.mealsLogged}`,
+      ``,
+      `--- Calories ---`,
+      `Average: ${avgCalories} kcal/day (Goal: 2,000 kcal)`,
+      `Weekly Total: ${totalConsumed} / ${totalGoal} kcal (${goalPercent}%)`,
+      ``,
+      `--- Macros (avg/day) ---`,
+      `Protein: ${week.macros.protein}g`,
+      `Carbs: ${week.macros.carbs}g`,
+      `Fat: ${week.macros.fat}g`,
+      ``,
+      `--- Waste Reduction ---`,
+      `Reduced by ${week.wasteReduction}% this week`,
+      `Top saved items: ${week.topItems.map(i => `${i.name} (${i.saved})`).join(", ")}`,
+      ``,
+      `--- Summary ---`,
+      summaryText,
+      ``,
+      `Keep up the great work! 🌱`,
+      `— SavePlate`,
+    ].join("\n");
+
+    const mailtoUrl = `mailto:${encodeURIComponent(email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    window.open(mailtoUrl, "_blank");
+
     setIsSending(false);
     toast({
-      title: "Report sent! ✉️",
-      description: "Your weekly report has been sent to your registered email.",
+      title: "Email ready! ✉️",
+      description: "Your email client has been opened with the weekly report. Just hit Send!",
     });
   };
 
@@ -167,9 +233,9 @@ export default function WeeklyReport() {
         </Button>
       </div>
 
-      <div ref={reportRef} className="space-y-5">
+      <div ref={reportRef} className="space-y-4">
       {/* Header with week navigation */}
-      <div className="animate-fade-up">
+      <div data-pdf-section className="animate-fade-up">
         <h2 className="text-2xl font-bold text-foreground text-balance">📊 Weekly Report</h2>
         <div className="flex items-center justify-between mt-2">
           <button
@@ -191,7 +257,7 @@ export default function WeeklyReport() {
       </div>
 
       {/* Highlights strip */}
-      <div className="grid grid-cols-3 gap-3 animate-fade-up" style={{ animationDelay: "80ms" }}>
+      <div data-pdf-section className="grid grid-cols-3 gap-3 animate-fade-up" style={{ animationDelay: "80ms" }}>
         <div className="bg-success/10 rounded-2xl p-3 text-center">
           <Leaf className="text-success mx-auto mb-1" size={20} />
           <p className="text-lg font-bold text-foreground">{week.foodSaved} kg</p>
@@ -210,7 +276,7 @@ export default function WeeklyReport() {
       </div>
 
       {/* Calories vs Goal */}
-      <section className="bg-card border rounded-2xl p-4 animate-fade-up" style={{ animationDelay: "160ms" }}>
+      <section data-pdf-section className="bg-card border rounded-2xl p-4 animate-fade-up" style={{ animationDelay: "160ms" }}>
         <div className="flex items-center justify-between mb-1">
           <h3 className="text-sm font-semibold text-foreground">🔥 Calories vs Goal</h3>
           <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${goalDiff <= 0 ? "bg-success/10 text-success" : "bg-warning/10 text-warning"}`}>
@@ -252,7 +318,7 @@ export default function WeeklyReport() {
       </section>
 
       {/* Macros Breakdown */}
-      <section className="bg-card border rounded-2xl p-4 animate-fade-up" style={{ animationDelay: "240ms" }}>
+      <section data-pdf-section className="bg-card border rounded-2xl p-4 animate-fade-up" style={{ animationDelay: "240ms" }}>
         <h3 className="text-sm font-semibold text-foreground mb-3">🥩 Weekly Macros (avg/day)</h3>
         <div className="space-y-3">
           {[
@@ -279,7 +345,7 @@ export default function WeeklyReport() {
       </section>
 
       {/* Food Waste Reduction */}
-      <section className="bg-card border rounded-2xl p-4 animate-fade-up" style={{ animationDelay: "320ms" }}>
+      <section data-pdf-section className="bg-card border rounded-2xl p-4 animate-fade-up" style={{ animationDelay: "320ms" }}>
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-sm font-semibold text-foreground">🌍 Waste Reduction</h3>
           <span className="text-xs font-bold text-success bg-success/10 px-2 py-0.5 rounded-full">
@@ -301,7 +367,7 @@ export default function WeeklyReport() {
       </section>
 
       {/* Waste by Category */}
-      <section className="bg-card border rounded-2xl p-4 animate-fade-up" style={{ animationDelay: "400ms" }}>
+      <section data-pdf-section className="bg-card border rounded-2xl p-4 animate-fade-up" style={{ animationDelay: "400ms" }}>
         <h3 className="text-sm font-semibold text-foreground mb-3">📦 Waste by Category</h3>
         <div className="flex items-center gap-4">
           <div className="w-28 h-28">
@@ -337,7 +403,7 @@ export default function WeeklyReport() {
       </section>
 
       {/* Top Saved Items */}
-      <section className="bg-card border rounded-2xl p-4 animate-fade-up" style={{ animationDelay: "480ms" }}>
+      <section data-pdf-section className="bg-card border rounded-2xl p-4 animate-fade-up" style={{ animationDelay: "480ms" }}>
         <h3 className="text-sm font-semibold text-foreground mb-3">🏅 Top Saved Items</h3>
         <div className="space-y-2">
           {week.topItems.map((item, i) => (
@@ -355,7 +421,7 @@ export default function WeeklyReport() {
       </section>
 
       {/* Summary Message */}
-      <section className="bg-primary/10 border border-primary/20 rounded-2xl p-4 animate-fade-up" style={{ animationDelay: "560ms" }}>
+      <section data-pdf-section className="bg-primary/10 border border-primary/20 rounded-2xl p-4 animate-fade-up" style={{ animationDelay: "560ms" }}>
         <p className="text-sm text-foreground leading-relaxed font-medium">
           {goalDiff <= 0
             ? `Great week! 🎉 You stayed ${Math.abs(goalDiff)} kcal under your calorie goal and saved ${week.foodSaved} kg of food from going to waste. Keep this momentum going!`
