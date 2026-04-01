@@ -136,6 +136,51 @@ export type Database = {
           },
         ]
       }
+      food_drops: {
+        Row: {
+          claimed_by: string | null
+          created_at: string
+          description: string
+          emoji: string
+          expires_at: string
+          id: string
+          lat: number
+          lng: number
+          posted_by_name: string
+          status: string
+          title: string
+          user_id: string
+        }
+        Insert: {
+          claimed_by?: string | null
+          created_at?: string
+          description?: string
+          emoji?: string
+          expires_at: string
+          id?: string
+          lat: number
+          lng: number
+          posted_by_name?: string
+          status?: string
+          title: string
+          user_id: string
+        }
+        Update: {
+          claimed_by?: string | null
+          created_at?: string
+          description?: string
+          emoji?: string
+          expires_at?: string
+          id?: string
+          lat?: number
+          lng?: number
+          posted_by_name?: string
+          status?: string
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       food_tracker_entries: {
         Row: {
           amount: string
