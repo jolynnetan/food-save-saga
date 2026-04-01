@@ -276,7 +276,7 @@ export default function WeeklyReport() {
       </div>
 
       {/* Calories vs Goal */}
-      <section className="bg-card border rounded-2xl p-4 animate-fade-up" style={{ animationDelay: "160ms" }}>
+      <section data-pdf-section className="bg-card border rounded-2xl p-4 animate-fade-up" style={{ animationDelay: "160ms" }}>
         <div className="flex items-center justify-between mb-1">
           <h3 className="text-sm font-semibold text-foreground">🔥 Calories vs Goal</h3>
           <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${goalDiff <= 0 ? "bg-success/10 text-success" : "bg-warning/10 text-warning"}`}>
