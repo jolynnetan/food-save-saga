@@ -311,7 +311,9 @@ Steps: ${uploadForm.steps}` }],
       toast.success("Recipe added (without analysis)! +15 pts");
       setUploadForm({ name: "", ingredients: "", steps: "" });
       setShowUpload(false);
-      setStep(2);
+      setSelectedRecipe(newRecipe);
+      setCurrentStep(0);
+      setStep(3);
     } finally {
       setAnalyzing(false);
     }
