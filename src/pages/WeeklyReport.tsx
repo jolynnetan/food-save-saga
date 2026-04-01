@@ -140,51 +140,66 @@ export default function WeeklyReport() {
   };
 
   const handleSendEmail = async () => {
+    if (!reportRef.current) return;
     setIsSending(true);
-    const email = user?.email || "";
-    const subject = `SavePlate Weekly Report – ${week.label}`;
-    const summaryText = goalDiff <= 0
-      ? `Great week! You stayed ${Math.abs(goalDiff)} kcal under your calorie goal and saved ${week.foodSaved} kg of food from going to waste.`
-      : `You went ${goalDiff} kcal over your goal this week, but you still saved ${week.foodSaved} kg of food!`;
+    try {
+      const email = user?.email || "";
+      if (!email) {
+        toast({ title: "No email found", description: "Please log in to send the report to your email.", variant: "destructive" });
+        setIsSending(false);
+        return;
+      }
 
-    const body = [
-      `SavePlate Weekly Report`,
-      `Week: ${week.label}`,
-      ``,
-      `--- Highlights ---`,
-      `Food Saved: ${week.foodSaved} kg`,
-      `Streak: ${week.streakDays} days`,
-      `Challenges Completed: ${week.challengesCompleted}`,
-      `Meals Logged: ${week.mealsLogged}`,
-      ``,
-      `--- Calories ---`,
-      `Average: ${avgCalories} kcal/day (Goal: 2,000 kcal)`,
-      `Weekly Total: ${totalConsumed} / ${totalGoal} kcal (${goalPercent}%)`,
-      ``,
-      `--- Macros (avg/day) ---`,
-      `Protein: ${week.macros.protein}g`,
-      `Carbs: ${week.macros.carbs}g`,
-      `Fat: ${week.macros.fat}g`,
-      ``,
-      `--- Waste Reduction ---`,
-      `Reduced by ${week.wasteReduction}% this week`,
-      `Top saved items: ${week.topItems.map(i => `${i.name} (${i.saved})`).join(", ")}`,
-      ``,
-      `--- Summary ---`,
-      summaryText,
-      ``,
-      `Keep up the great work! 🌱`,
-      `— SavePlate`,
-    ].join("\n");
+      const summaryText = goalDiff <= 0
+        ? `You stayed ${Math.abs(goalDiff)} kcal under your calorie goal and saved ${week.foodSaved} kg of food from going to waste.`
+        : `You went ${goalDiff} kcal over your goal this week, but you still saved ${week.foodSaved} kg of food!`;
 
-    const mailtoUrl = `mailto:${encodeURIComponent(email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-    window.open(mailtoUrl, "_blank");
+      const subject = `🌱 Your SavePlate Weekly Wrap-Up: ${week.foodSaved}kg Saved & ${week.streakDays}-Day Streak! (${week.label})`;
 
-    setIsSending(false);
-    toast({
-      title: "Email ready! ✉️",
-      description: "Your email client has been opened with the weekly report. Just hit Send!",
-    });
+      const body = [
+        `Hi there! 👋`,
+        ``,
+        `Here's your SavePlate Weekly Report for ${week.label}:`,
+        ``,
+        `✨ WEEKLY HIGHLIGHTS`,
+        `━━━━━━━━━━━━━━━━━━`,
+        `🌿 Food Saved: ${week.foodSaved} kg`,
+        `🔥 Streak: ${week.streakDays} days`,
+        `🏆 Challenges Completed: ${week.challengesCompleted}`,
+        `📝 Meals Logged: ${week.mealsLogged}`,
+        ``,
+        `🔥 CALORIE SUMMARY`,
+        `━━━━━━━━━━━━━━━━━━`,
+        `Average: ${avgCalories} kcal/day (Goal: 2,000 kcal)`,
+        `Weekly Total: ${totalConsumed.toLocaleString()} / ${totalGoal.toLocaleString()} kcal (${goalPercent}%)`,
+        ``,
+        `🥩 MACROS (avg/day)`,
+        `━━━━━━━━━━━━━━━━━━`,
+        `Protein: ${week.macros.protein}g | Carbs: ${week.macros.carbs}g | Fat: ${week.macros.fat}g`,
+        ``,
+        `🌍 WASTE REDUCTION`,
+        `━━━━━━━━━━━━━━━━━━`,
+        `Reduced by ${week.wasteReduction}% this week!`,
+        `Top saved: ${week.topItems.map(i => `${i.name} (${i.saved})`).join(", ")}`,
+        ``,
+        `💬 ${summaryText}`,
+        ``,
+        `Keep making a difference! 🌱`,
+        `— The SavePlate Team`,
+      ].join("\n");
+
+      const mailtoUrl = `mailto:${encodeURIComponent(email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+      window.open(mailtoUrl, "_blank");
+
+      toast({
+        title: "Email ready! ✉️",
+        description: `Your email client opened with the report for ${email}. Just hit Send!`,
+      });
+    } catch {
+      toast({ title: "Failed", description: "Could not prepare the email.", variant: "destructive" });
+    } finally {
+      setIsSending(false);
+    }
   };
 
   return (
