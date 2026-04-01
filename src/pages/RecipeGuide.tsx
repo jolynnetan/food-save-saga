@@ -261,7 +261,11 @@ export default function RecipeGuide() {
     fetchUserRecipes();
   }, [user]);
 
-  const combinedRecipes = [...allRecipes, ...userRecipes];
+  const combinedRecipes = (() => {
+    const userNames = new Set(userRecipes.map(r => r.name.toLowerCase()));
+    const deduped = allRecipes.filter(r => !userNames.has(r.name.toLowerCase()));
+    return [...userRecipes, ...deduped];
+  })();
 
   const filteredRecipes = combinedRecipes.filter((r) => {
     const dietMatch = diet === "none" || r.diet.includes(diet);
