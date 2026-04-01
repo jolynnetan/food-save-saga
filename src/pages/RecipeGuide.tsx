@@ -252,17 +252,13 @@ export default function RecipeGuide() {
     }
     setAnalyzing(true);
     try {
-      const prompt = `Analyze this recipe and estimate the nutrition per serving. Return ONLY a JSON object (no markdown).
-Recipe: ${uploadForm.name}
-Ingredients: ${uploadForm.ingredients}
-Steps: ${uploadForm.steps}
-
-Return JSON: {"calories":number,"protein":number,"carbs":number,"fat":number,"servings":number,"time":"X min","ingredients":[{"name":"...","amount":"...","cal":number}]}`;
-
       const { data: nutrition, error: fnError } = await (await import("@/integrations/supabase/client")).supabase.functions.invoke("food-assistant", {
         body: {
-          messages: [{ role: "user", content: prompt }],
-          mode: "meal-analyze",
+          messages: [{ role: "user", content: `Analyze this recipe and estimate the nutrition per serving.
+Recipe: ${uploadForm.name}
+Ingredients: ${uploadForm.ingredients}
+Steps: ${uploadForm.steps}` }],
+          mode: "recipe-analyze",
         },
       });
 
