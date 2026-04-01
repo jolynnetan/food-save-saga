@@ -274,18 +274,30 @@ Return JSON: {"calories":number,"protein":number,"carbs":number,"fat":number,"se
 
       if (!resp.ok) throw new Error("AI analysis failed");
 
-      const data = await resp.json();
-      let nutrition: any = {};
-
-      // Handle both direct JSON and nested response formats
-      if (data.calories !== undefined) {
-        nutrition = data;
-      } else {
-        const text = typeof data === "string" ? data : JSON.stringify(data);
-        const jsonMatch = text.match(/\{[\s\S]*\}/);
-        if (jsonMatch) nutrition = JSON.parse(jsonMatch[0]);
+      const reader = resp.body?.getReader();
+      const decoder = new TextDecoder();
+      let fullText = "";
+      if (reader) {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          const chunk = decoder.decode(value, { stream: true });
+          for (const line of chunk.split("\n")) {
+            if (!line.startsWith("data: ") || line.includes("[DONE]")) continue;
+            try {
+              const parsed = JSON.parse(line.slice(6));
+              const content = parsed.choices?.[0]?.delta?.content;
+              if (content) fullText += content;
+            } catch { /* skip */ }
+          }
+        }
       }
 
+      // Try to parse the AI response
+      const jsonMatch = fullText.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) throw new Error("Could not parse nutrition data");
+
+      const nutrition = JSON.parse(jsonMatch[0]);
       const stepsArr = uploadForm.steps.split(/\n|\./).map(s => s.trim()).filter(Boolean);
       const ingredientsList = nutrition.ingredients || uploadForm.ingredients.split(/\n|,/).map((ing: string) => ({
         name: ing.trim(), amount: "", cal: 0,
@@ -312,11 +324,7 @@ Return JSON: {"calories":number,"protein":number,"carbs":number,"fat":number,"se
       toast.success("Recipe added! +25 pts 🎉");
       setUploadForm({ name: "", ingredients: "", steps: "" });
       setShowUpload(false);
-      // Reset filters so the new recipe is visible, then show recipe list
-      setDiet("none");
-      setCuisine("any");
-      setSelectedRecipe(newRecipe);
-      setStep(3);
+      setStep(2);
     } catch (err) {
       console.error(err);
       // Fallback: add without AI analysis
