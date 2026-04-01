@@ -35,6 +35,7 @@ export default function Scanner() {
   const [result, setResult] = useState<ScanResult | null>(null);
   const [newItem, setNewItem] = useState("");
   const [addingItem, setAddingItem] = useState(false);
+  const { user } = useAuth();
   const fileRef = useRef<HTMLInputElement>(null);
 
   const handleFile = (file: File) => {
