@@ -206,7 +206,27 @@ export default function Scanner() {
     setResult({ ...result, items, totalCalories: result.totalCalories - removed.calories });
   };
 
-  const clear = () => { setImage(null); setResult(null); };
+  const saveRecipeSuggestions = async (recipes: ScanResult["recipeSuggestions"]) => {
+    if (!user || recipes.length === 0) return;
+    const ids: string[] = [];
+    for (const r of recipes) {
+      const { data } = await supabase.from("user_recipes").insert({
+        user_id: user.id,
+        name: r.name,
+        emoji: r.emoji || "🍳",
+        time: r.time || "15 min",
+        cuisine: "any",
+        diet: ["none"],
+        steps: [r.description],
+        ingredients: [] as any,
+        calories: 0, protein: 0, carbs: 0, fat: 0, servings: 1,
+      }).select("id").single();
+      if (data) ids.push(data.id);
+    }
+    setSavedRecipeIds(ids);
+  };
+
+  const clear = () => { setImage(null); setResult(null); setSavedRecipeIds([]); };
 
   return (
     <div className="px-4 py-5 max-w-lg mx-auto space-y-5 pb-28">
