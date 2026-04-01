@@ -5,6 +5,9 @@ import { Link } from "react-router-dom";
 import { usePoints } from "@/contexts/PointsContext";
 import { useSettings } from "@/contexts/SettingsContext";
 import { useGamification, LEVELS } from "@/contexts/GamificationContext";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { format } from "date-fns";
 
 const initialDailyTasks = [
   { id: 1, title: "Finish yesterday's rice", emoji: "🍚", done: false, pts: 10 },
@@ -101,11 +104,30 @@ function CalorieRing({ consumed = 1450, target = 2000 }: { consumed?: number; ta
 }
 
 export default function Dashboard() {
+  const { user } = useAuth();
   const { streak } = usePoints();
   const { appMode } = useSettings();
   const { level, xp, xpProgress, dailyMissions, completeMission, recentAchievements, gamificationEnabled, seasonalEvent } = useGamification();
   const [todayTasks, setTodayTasks] = useState(getDailyChallenges);
+  const [todayCalories, setTodayCalories] = useState(0);
   const isSimple = appMode === "simple";
+
+  // Fetch today's calorie total from DB
+  useEffect(() => {
+    if (!user) return;
+    const today = format(new Date(), "yyyy-MM-dd");
+    const fetchCalories = async () => {
+      const { data } = await supabase
+        .from("calorie_entries")
+        .select("calories")
+        .eq("user_id", user.id)
+        .eq("logged_date", today);
+      if (data) {
+        setTodayCalories(data.reduce((sum, e) => sum + e.calories, 0));
+      }
+    };
+    fetchCalories();
+  }, [user]);
 
   useEffect(() => {
     const handleFocus = () => setTodayTasks(getDailyChallenges());
@@ -288,7 +310,7 @@ export default function Dashboard() {
           to="/calories"
           className="col-span-2 bg-card border border-border rounded-2xl p-4 flex flex-col items-center justify-center hover-lift shadow-soft-sm"
         >
-          <CalorieRing />
+          <CalorieRing consumed={todayCalories} />
           <p className="text-[11px] font-semibold text-foreground mt-2">Today's Calories</p>
         </Link>
 
