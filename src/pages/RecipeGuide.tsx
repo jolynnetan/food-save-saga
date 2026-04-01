@@ -259,23 +259,26 @@ export default function RecipeGuide() {
           isUserRecipe: true,
         }));
         setUserRecipes(mapped);
-
-        // Auto-open recipe from URL param (e.g. from Scanner)
-        const openName = searchParams.get("open");
-        if (openName) {
-          const allCombined = [...allRecipes, ...mapped];
-          const match = allCombined.find(r => r.name.toLowerCase() === openName.toLowerCase());
-          if (match) {
-            setSelectedRecipe(match);
-            setCurrentStep(0);
-            setStep(3);
-          }
-          setSearchParams({}, { replace: true });
-        }
       }
     };
     fetchUserRecipes();
   }, [user]);
+
+  // Auto-open recipe from URL param (e.g. from Scanner) — separate effect
+  useEffect(() => {
+    const openName = searchParams.get("open");
+    if (!openName) return;
+
+    // Wait until userRecipes are loaded (or user is null for built-in recipes only)
+    const allCombined = [...allRecipes, ...userRecipes];
+    const match = allCombined.find(r => r.name.toLowerCase() === openName.toLowerCase());
+    if (match) {
+      setSelectedRecipe(match);
+      setCurrentStep(0);
+      setStep(3);
+      setSearchParams({}, { replace: true });
+    }
+  }, [searchParams, userRecipes]);
 
   const combinedRecipes = [...allRecipes, ...userRecipes];
 
