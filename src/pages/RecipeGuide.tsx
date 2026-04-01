@@ -301,6 +301,14 @@ Steps: ${uploadForm.steps}` }],
         name: ing.trim(), amount: "", cal: 0,
       }));
 
+      // Check for duplicate recipe name
+      const existingNames = [...allRecipes, ...userRecipes].map(r => r.name.toLowerCase());
+      if (existingNames.includes(uploadForm.name.trim().toLowerCase())) {
+        toast.error("A recipe with this name already exists!");
+        setAnalyzing(false);
+        return;
+      }
+
       const newRecipe: Recipe = {
         name: uploadForm.name,
         emoji: nutrition.emoji || "👨‍🍳",
