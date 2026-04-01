@@ -1,5 +1,6 @@
 import { useState, useRef } from "react";
-import { Camera, Upload, X, Lightbulb, ChefHat, Recycle, Plus, Trash2, Flame, Loader2, Refrigerator, Leaf } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Camera, Upload, X, Lightbulb, ChefHat, Recycle, Plus, Trash2, Flame, Loader2, Refrigerator, Leaf, ArrowRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
@@ -118,11 +119,13 @@ const parseScanPayload = async (data: unknown) => {
 
 export default function Scanner() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [image, setImage] = useState<string | null>(null);
   const [scanning, setScanning] = useState(false);
   const [result, setResult] = useState<ScanResult | null>(null);
   const [newItem, setNewItem] = useState("");
   const [addingItem, setAddingItem] = useState(false);
+  const [savedRecipeIds, setSavedRecipeIds] = useState<string[]>([]);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const handleFile = (file: File) => {
@@ -158,6 +161,7 @@ export default function Scanner() {
       const normalized = normalizeScanResult(parsed);
       setResult(normalized);
       await saveScanResult(normalized);
+      await saveRecipeSuggestions(normalized.recipeSuggestions);
       if (!normalized.items.length) toast.warning("No food detected. Try another angle or add items manually.");
     } catch (err) {
       console.error("Scan error:", err);
@@ -202,7 +206,27 @@ export default function Scanner() {
     setResult({ ...result, items, totalCalories: result.totalCalories - removed.calories });
   };
 
-  const clear = () => { setImage(null); setResult(null); };
+  const saveRecipeSuggestions = async (recipes: ScanResult["recipeSuggestions"]) => {
+    if (!user || recipes.length === 0) return;
+    const ids: string[] = [];
+    for (const r of recipes) {
+      const { data } = await supabase.from("user_recipes").insert({
+        user_id: user.id,
+        name: r.name,
+        emoji: r.emoji || "🍳",
+        time: r.time || "15 min",
+        cuisine: "any",
+        diet: ["none"],
+        steps: [r.description],
+        ingredients: [] as any,
+        calories: 0, protein: 0, carbs: 0, fat: 0, servings: 1,
+      }).select("id").single();
+      if (data) ids.push(data.id);
+    }
+    setSavedRecipeIds(ids);
+  };
+
+  const clear = () => { setImage(null); setResult(null); setSavedRecipeIds([]); };
 
   return (
     <div className="px-4 py-5 max-w-lg mx-auto space-y-5 pb-28">
@@ -289,17 +313,29 @@ export default function Scanner() {
           {result.recipeSuggestions.length > 0 && (
             <div className="bg-card border rounded-2xl p-4 animate-fade-up" style={{ animationDelay: "240ms" }}>
               <h3 className="text-sm font-semibold text-foreground flex items-center gap-2 mb-3"><ChefHat size={16} className="text-primary" /> Use It Up — Recipes</h3>
+              <p className="text-xs text-muted-foreground mb-2">Saved to your Recipe Guide! Tap to view.</p>
               <div className="space-y-2">
                 {result.recipeSuggestions.map((r, i) => (
-                  <div key={i} className="flex items-center gap-3 bg-muted/50 rounded-xl p-3">
+                  <div
+                    key={i}
+                    onClick={() => navigate("/recipes")}
+                    className="flex items-center gap-3 bg-muted/50 rounded-xl p-3 cursor-pointer hover:bg-primary/10 transition-colors active:scale-[0.98]"
+                  >
                     <span className="text-2xl">{r.emoji}</span>
                     <div className="flex-1">
                       <p className="text-sm font-medium text-foreground">{r.name}</p>
                       <p className="text-xs text-muted-foreground">{r.description} · ⏱ {r.time}</p>
                     </div>
+                    <ArrowRight size={16} className="text-primary shrink-0" />
                   </div>
                 ))}
               </div>
+              <button
+                onClick={() => navigate("/recipes")}
+                className="w-full mt-3 bg-primary/10 text-primary rounded-xl py-2.5 text-sm font-semibold transition-all active:scale-[0.97] flex items-center justify-center gap-2"
+              >
+                <ChefHat size={16} /> View All in Recipe Guide <ArrowRight size={14} />
+              </button>
             </div>
           )}
         </div>
