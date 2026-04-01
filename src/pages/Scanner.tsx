@@ -1,6 +1,7 @@
 import { useState, useRef } from "react";
 import { Camera, Upload, X, Lightbulb, ChefHat, Recycle, Plus, Trash2, Flame, Loader2, Refrigerator, Leaf } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 
