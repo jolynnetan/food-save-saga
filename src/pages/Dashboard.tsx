@@ -5,6 +5,9 @@ import { Link } from "react-router-dom";
 import { usePoints } from "@/contexts/PointsContext";
 import { useSettings } from "@/contexts/SettingsContext";
 import { useGamification, LEVELS } from "@/contexts/GamificationContext";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { format } from "date-fns";
 
 const initialDailyTasks = [
   { id: 1, title: "Finish yesterday's rice", emoji: "🍚", done: false, pts: 10 },
