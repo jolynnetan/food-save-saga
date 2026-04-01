@@ -270,7 +270,7 @@ Steps: ${uploadForm.steps}` }],
 
       const newRecipe: Recipe = {
         name: uploadForm.name,
-        emoji: "👨‍🍳",
+        emoji: nutrition.emoji || "👨‍🍳",
         cuisine: "any",
         diet: ["none"],
         time: nutrition.time || "30 min",
