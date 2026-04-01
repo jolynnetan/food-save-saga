@@ -161,6 +161,7 @@ export default function Scanner() {
       const normalized = normalizeScanResult(parsed);
       setResult(normalized);
       await saveScanResult(normalized);
+      await saveRecipeSuggestions(normalized.recipeSuggestions);
       if (!normalized.items.length) toast.warning("No food detected. Try another angle or add items manually.");
     } catch (err) {
       console.error("Scan error:", err);
