@@ -367,7 +367,7 @@ export default function WeeklyReport() {
       </section>
 
       {/* Waste by Category */}
-      <section className="bg-card border rounded-2xl p-4 animate-fade-up" style={{ animationDelay: "400ms" }}>
+      <section data-pdf-section className="bg-card border rounded-2xl p-4 animate-fade-up" style={{ animationDelay: "400ms" }}>
         <h3 className="text-sm font-semibold text-foreground mb-3">📦 Waste by Category</h3>
         <div className="flex items-center gap-4">
           <div className="w-28 h-28">
