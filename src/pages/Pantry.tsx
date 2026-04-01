@@ -51,7 +51,7 @@ function getUrgencyColor(daysLeft: number) {
 }
 
 export default function Pantry() {
-  const [items, setItems] = useState(initialItems);
+  const [items, setItems] = useState(createInitialItems);
   const [showAdd, setShowAdd] = useState(false);
   const [selectedItem, setSelectedItem] = useState<PantryItem | null>(null);
   const [newName, setNewName] = useState("");
