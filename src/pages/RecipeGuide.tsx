@@ -357,6 +357,15 @@ Steps: ${uploadForm.steps}` }],
         ingredients: ingredientsList, steps: stepsArr.length > 0 ? stepsArr : [uploadForm.steps],
         isUserRecipe: true,
       };
+      // Save fallback to database too
+      if (user) {
+        await supabase.from("user_recipes").insert({
+          user_id: user.id, name: newRecipe.name, emoji: newRecipe.emoji,
+          cuisine: newRecipe.cuisine, diet: newRecipe.diet, time: newRecipe.time,
+          calories: 0, protein: 0, carbs: 0, fat: 0, servings: 1,
+          ingredients: newRecipe.ingredients as any, steps: newRecipe.steps,
+        });
+      }
       setUserRecipes(prev => [...prev, newRecipe]);
       addPoints(15);
       toast.success("Recipe added (without analysis)! +15 pts");
