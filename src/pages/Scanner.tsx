@@ -208,8 +208,13 @@ export default function Scanner() {
 
   const saveRecipeSuggestions = async (recipes: ScanResult["recipeSuggestions"]) => {
     if (!user || recipes.length === 0) return;
+    // Get existing recipe names to avoid duplicates
+    const { data: existingRecipes } = await supabase.from("user_recipes").select("name").eq("user_id", user.id);
+    const existingNames = new Set((existingRecipes || []).map(r => r.name.toLowerCase()));
+
     const ids: string[] = [];
     for (const r of recipes) {
+      if (existingNames.has(r.name.toLowerCase())) continue; // skip duplicates
       const { data } = await supabase.from("user_recipes").insert({
         user_id: user.id,
         name: r.name,
