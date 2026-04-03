@@ -48,6 +48,8 @@ export default function CalorieTracker() {
   const [scanMode, setScanMode] = useState<"none" | "photo" | "barcode">("none");
   const [scanning, setScanning] = useState(false);
   const [barcodeInput, setBarcodeInput] = useState("");
+  const [manualInput, setManualInput] = useState("");
+  const [estimating, setEstimating] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
