@@ -79,13 +79,8 @@ const WEEK_DATA = [
 ];
 
 export default function WeeklyReport() {
-  const { user } = useAuth();
   const [weekIndex, setWeekIndex] = useState(0);
   const week = WEEK_DATA[weekIndex];
-
-  const reportRef = useRef<HTMLDivElement>(null);
-  const [isExporting, setIsExporting] = useState(false);
-  const [isSending, setIsSending] = useState(false);
 
   const totalConsumed = week.dailyCalories.reduce((s, d) => s + d.consumed, 0);
   const totalGoal = week.dailyCalories.reduce((s, d) => s + d.goal, 0);
