@@ -51,6 +51,20 @@ const lowStockIcon = new L.DivIcon({
   iconAnchor: [16, 16],
 });
 
+function RestockPhoto({ path }: { path: string }) {
+  const [src, setSrc] = useState<string | null>(null);
+  useEffect(() => {
+    supabase.storage
+      .from("restock-photos")
+      .createSignedUrl(path, 3600)
+      .then(({ data }) => {
+        if (data?.signedUrl) setSrc(data.signedUrl);
+      });
+  }, [path]);
+  if (!src) return null;
+  return <img src={src} alt="Restock" className="w-12 h-12 rounded-lg object-cover border" />;
+}
+
 export default function Foodbank() {
   const { user } = useAuth();
   const [tab, setTab] = useState<Tab>("collect");
