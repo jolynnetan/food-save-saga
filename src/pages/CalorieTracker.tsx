@@ -376,6 +376,7 @@ export default function CalorieTracker() {
             </div>
           )}
 
+          {scanMode === "none" && (
             <>
               <h3 className="text-sm font-semibold text-foreground">Quick Add Food</h3>
               <div className="grid grid-cols-2 gap-2">
