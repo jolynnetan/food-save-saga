@@ -207,6 +207,62 @@ export default function CalorieTracker() {
     setScanMode("none");
   };
 
+  const handleManualEstimate = async () => {
+    const foodName = manualInput.trim();
+    if (!foodName) return;
+    setEstimating(true);
+    try {
+      const resp = await fetch(SCAN_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+        },
+        body: JSON.stringify({
+          mode: "scan-calories",
+          messages: [{ role: "user", content: `Estimate the calories and macronutrients for: ${foodName}. Return JSON with items array containing objects with name, emoji, calories, protein, carbs, fat.` }],
+        }),
+      });
+      if (!resp.ok) throw new Error("Estimation failed");
+      const reader = resp.body?.getReader();
+      const decoder = new TextDecoder();
+      let full = "";
+      if (reader) {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          const chunk = decoder.decode(value, { stream: true });
+          for (const line of chunk.split("\n")) {
+            if (!line.startsWith("data: ")) continue;
+            const json = line.slice(6).trim();
+            if (json === "[DONE]") continue;
+            try { const p = JSON.parse(json); const c = p.choices?.[0]?.delta?.content; if (c) full += c; } catch {}
+          }
+        }
+      }
+      const jsonMatch = full.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        const data = JSON.parse(jsonMatch[0]);
+        if (data.items?.length > 0) {
+          for (const item of data.items) {
+            await addMeal({ name: item.name || foodName, emoji: item.emoji || "🍽️", calories: item.calories || 0, protein: item.protein || 0, carbs: item.carbs || 0, fat: item.fat || 0 });
+          }
+          toast({ title: "✨ AI Estimated!", description: `Added ${data.items.length} item(s) with estimated nutrition.` });
+        } else {
+          throw new Error("No items");
+        }
+      } else {
+        throw new Error("No JSON");
+      }
+    } catch {
+      await addMeal({ name: foodName, emoji: "🍽️", calories: 200, protein: 10, carbs: 25, fat: 8 });
+      toast({ title: "🍽️ Added!", description: "Used rough estimate. You can edit later." });
+    }
+    setManualInput("");
+    setEstimating(false);
+    setScanMode("none");
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
