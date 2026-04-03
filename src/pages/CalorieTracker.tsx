@@ -45,9 +45,11 @@ export default function CalorieTracker() {
   const [loading, setLoading] = useState(true);
   const [weeklyData, setWeeklyData] = useState<{ day: string; calories: number; protein: number; carbs: number; fat: number }[]>([]);
   const [showAdd, setShowAdd] = useState(false);
-  const [scanMode, setScanMode] = useState<"none" | "photo" | "barcode">("none");
+  const [scanMode, setScanMode] = useState<"none" | "photo" | "barcode" | "manual">("none");
   const [scanning, setScanning] = useState(false);
   const [barcodeInput, setBarcodeInput] = useState("");
+  const [manualInput, setManualInput] = useState("");
+  const [estimating, setEstimating] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
@@ -205,6 +207,62 @@ export default function CalorieTracker() {
     setScanMode("none");
   };
 
+  const handleManualEstimate = async () => {
+    const foodName = manualInput.trim();
+    if (!foodName) return;
+    setEstimating(true);
+    try {
+      const resp = await fetch(SCAN_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+        },
+        body: JSON.stringify({
+          mode: "scan-calories",
+          messages: [{ role: "user", content: `Estimate the calories and macronutrients for: ${foodName}. Return JSON with items array containing objects with name, emoji, calories, protein, carbs, fat.` }],
+        }),
+      });
+      if (!resp.ok) throw new Error("Estimation failed");
+      const reader = resp.body?.getReader();
+      const decoder = new TextDecoder();
+      let full = "";
+      if (reader) {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          const chunk = decoder.decode(value, { stream: true });
+          for (const line of chunk.split("\n")) {
+            if (!line.startsWith("data: ")) continue;
+            const json = line.slice(6).trim();
+            if (json === "[DONE]") continue;
+            try { const p = JSON.parse(json); const c = p.choices?.[0]?.delta?.content; if (c) full += c; } catch {}
+          }
+        }
+      }
+      const jsonMatch = full.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        const data = JSON.parse(jsonMatch[0]);
+        if (data.items?.length > 0) {
+          for (const item of data.items) {
+            await addMeal({ name: item.name || foodName, emoji: item.emoji || "🍽️", calories: item.calories || 0, protein: item.protein || 0, carbs: item.carbs || 0, fat: item.fat || 0 });
+          }
+          toast({ title: "✨ AI Estimated!", description: `Added ${data.items.length} item(s) with estimated nutrition.` });
+        } else {
+          throw new Error("No items");
+        }
+      } else {
+        throw new Error("No JSON");
+      }
+    } catch {
+      await addMeal({ name: foodName, emoji: "🍽️", calories: 200, protein: 10, carbs: 25, fat: 8 });
+      toast({ title: "🍽️ Added!", description: "Used rough estimate. You can edit later." });
+    }
+    setManualInput("");
+    setEstimating(false);
+    setScanMode("none");
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -253,8 +311,11 @@ export default function CalorieTracker() {
       {showAdd && (
         <div className="bg-card border rounded-2xl p-4 animate-scale-in space-y-4">
           <div className="flex gap-2">
+            <button onClick={() => setScanMode("manual")} className={`flex-1 flex items-center justify-center gap-2 rounded-xl py-3 text-sm font-semibold transition-all active:scale-[0.97] ${scanMode === "manual" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
+              ✏️ Manual
+            </button>
             <button onClick={() => setScanMode("photo")} className={`flex-1 flex items-center justify-center gap-2 rounded-xl py-3 text-sm font-semibold transition-all active:scale-[0.97] ${scanMode === "photo" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
-              <Camera size={16} /> Photo Scan
+              <Camera size={16} /> Photo
             </button>
             <button onClick={() => setScanMode("barcode")} className={`flex-1 flex items-center justify-center gap-2 rounded-xl py-3 text-sm font-semibold transition-all active:scale-[0.97] ${scanMode === "barcode" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
               <ScanBarcode size={16} /> Barcode
@@ -288,6 +349,30 @@ export default function CalorieTracker() {
                 <button onClick={handleBarcodeLookup} disabled={!barcodeInput.trim()} className="bg-primary text-primary-foreground rounded-xl px-4 py-3 text-sm font-semibold transition-all active:scale-[0.97] disabled:opacity-40">Look up</button>
               </div>
               <p className="text-[10px] text-muted-foreground">Try: 4901234567890, 8888888888888, or 1234567890123</p>
+            </div>
+          )}
+
+          {scanMode === "manual" && (
+            <div className="space-y-3">
+              <p className="text-xs text-muted-foreground">Type what you ate and AI will estimate the nutrition.</p>
+              <input
+                value={manualInput}
+                onChange={(e) => setManualInput(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleManualEstimate()}
+                placeholder="e.g. Nasi lemak with fried chicken"
+                className="w-full bg-muted rounded-xl px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:ring-2 focus:ring-primary/30"
+              />
+              <button
+                onClick={handleManualEstimate}
+                disabled={!manualInput.trim() || estimating}
+                className="w-full bg-primary text-primary-foreground rounded-xl py-3 text-sm font-semibold transition-all active:scale-[0.97] disabled:opacity-40 flex items-center justify-center gap-2"
+              >
+                {estimating ? (
+                  <><Loader2 size={16} className="animate-spin" /> Estimating...</>
+                ) : (
+                  "✨ Estimate with AI"
+                )}
+              </button>
             </div>
           )}
 
