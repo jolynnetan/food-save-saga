@@ -45,7 +45,7 @@ export default function CalorieTracker() {
   const [loading, setLoading] = useState(true);
   const [weeklyData, setWeeklyData] = useState<{ day: string; calories: number; protein: number; carbs: number; fat: number }[]>([]);
   const [showAdd, setShowAdd] = useState(false);
-  const [scanMode, setScanMode] = useState<"none" | "photo" | "barcode">("none");
+  const [scanMode, setScanMode] = useState<"none" | "photo" | "barcode" | "manual">("none");
   const [scanning, setScanning] = useState(false);
   const [barcodeInput, setBarcodeInput] = useState("");
   const [manualInput, setManualInput] = useState("");
