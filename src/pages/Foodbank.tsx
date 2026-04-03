@@ -472,11 +472,7 @@ export default function Foodbank() {
                     </p>
                   </div>
                   {log.photo_url && (
-                    <img
-                      src={log.photo_url}
-                      alt="Restock"
-                      className="w-12 h-12 rounded-lg object-cover border"
-                    />
+                    <RestockPhoto path={log.photo_url} />
                   )}
                 </div>
               ))
