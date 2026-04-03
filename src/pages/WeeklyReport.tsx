@@ -1,12 +1,7 @@
-import { useState, useRef } from "react";
-import { ChevronLeft, ChevronRight, TrendingDown, TrendingUp, Flame, Leaf, Target, Award, Share2, Download, Mail, CheckCircle, Loader2 } from "lucide-react";
+import { useState } from "react";
+import { ChevronLeft, ChevronRight, TrendingDown, TrendingUp, Flame, Leaf, Award } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, PieChart, Pie, LineChart, Line } from "recharts";
 import { Progress } from "@/components/ui/progress";
-import { Button } from "@/components/ui/button";
-import { toast } from "@/hooks/use-toast";
-import html2canvas from "html2canvas";
-import jsPDF from "jspdf";
-import { useAuth } from "@/contexts/AuthContext";
 
 const WEEK_DATA = [
   {
