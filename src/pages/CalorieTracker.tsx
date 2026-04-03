@@ -352,7 +352,30 @@ export default function CalorieTracker() {
             </div>
           )}
 
-          {scanMode === "none" && (
+          {scanMode === "manual" && (
+            <div className="space-y-3">
+              <p className="text-xs text-muted-foreground">Type what you ate and AI will estimate the nutrition.</p>
+              <input
+                value={manualInput}
+                onChange={(e) => setManualInput(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleManualEstimate()}
+                placeholder="e.g. Nasi lemak with fried chicken"
+                className="w-full bg-muted rounded-xl px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:ring-2 focus:ring-primary/30"
+              />
+              <button
+                onClick={handleManualEstimate}
+                disabled={!manualInput.trim() || estimating}
+                className="w-full bg-primary text-primary-foreground rounded-xl py-3 text-sm font-semibold transition-all active:scale-[0.97] disabled:opacity-40 flex items-center justify-center gap-2"
+              >
+                {estimating ? (
+                  <><Loader2 size={16} className="animate-spin" /> Estimating...</>
+                ) : (
+                  "✨ Estimate with AI"
+                )}
+              </button>
+            </div>
+          )}
+
             <>
               <h3 className="text-sm font-semibold text-foreground">Quick Add Food</h3>
               <div className="grid grid-cols-2 gap-2">
