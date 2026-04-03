@@ -121,12 +121,7 @@ export default function Share() {
     if (!user) return toast.error("Please sign in to claim food");
     setClaiming(dropId);
     try {
-      const { error } = await supabase
-        .from("food_drops")
-        .update({ status: "claimed", claimed_by: user.id })
-        .eq("id", dropId)
-        .eq("status", "available");
-
+      const { error } = await supabase.rpc("claim_food_drop", { drop_id: dropId });
       if (error) throw error;
       toast.success("Food claimed! Contact the poster for pickup 🙌");
       fetchDrops();
