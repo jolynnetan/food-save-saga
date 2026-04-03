@@ -1,12 +1,7 @@
-import { useState, useRef } from "react";
-import { ChevronLeft, ChevronRight, TrendingDown, TrendingUp, Flame, Leaf, Target, Award, Share2, Download, Mail, CheckCircle, Loader2 } from "lucide-react";
+import { useState } from "react";
+import { ChevronLeft, ChevronRight, TrendingDown, TrendingUp, Flame, Leaf, Award } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, PieChart, Pie, LineChart, Line } from "recharts";
 import { Progress } from "@/components/ui/progress";
-import { Button } from "@/components/ui/button";
-import { toast } from "@/hooks/use-toast";
-import html2canvas from "html2canvas";
-import jsPDF from "jspdf";
-import { useAuth } from "@/contexts/AuthContext";
 
 const WEEK_DATA = [
   {
@@ -84,13 +79,8 @@ const WEEK_DATA = [
 ];
 
 export default function WeeklyReport() {
-  const { user } = useAuth();
   const [weekIndex, setWeekIndex] = useState(0);
   const week = WEEK_DATA[weekIndex];
-
-  const reportRef = useRef<HTMLDivElement>(null);
-  const [isExporting, setIsExporting] = useState(false);
-  const [isSending, setIsSending] = useState(false);
 
   const totalConsumed = week.dailyCalories.reduce((s, d) => s + d.consumed, 0);
   const totalGoal = week.dailyCalories.reduce((s, d) => s + d.goal, 0);
@@ -100,132 +90,9 @@ export default function WeeklyReport() {
 
   const totalMacros = week.macros.protein + week.macros.carbs + week.macros.fat;
 
-  const handleDownloadPDF = async () => {
-    if (!reportRef.current) return;
-    setIsExporting(true);
-    try {
-      const canvas = await html2canvas(reportRef.current, {
-        scale: 2,
-        useCORS: true,
-        backgroundColor: "#ffffff",
-        windowWidth: 420,
-      });
-
-      const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
-      const A4_W = 210;
-      const A4_H = 297;
-      const M = 8;
-      const CW = A4_W - M * 2;
-      const CH = A4_H - M * 2;
-
-      const imgW = canvas.width;
-      const imgH = canvas.height;
-      const ratio = Math.min(CW / imgW, CH / imgH);
-      const finalW = imgW * ratio;
-      const finalH = imgH * ratio;
-      const offsetX = M + (CW - finalW) / 2;
-      const offsetY = M;
-
-      const imgData = canvas.toDataURL("image/jpeg", 0.92);
-      pdf.addImage(imgData, "JPEG", offsetX, offsetY, finalW, finalH);
-
-      const dateStr = week.label.replace(/\s/g, "-");
-      pdf.save(`Weekly-Report-${dateStr}.pdf`);
-      toast({ title: "Report downloaded!", description: "Your weekly report PDF has been saved." });
-    } catch {
-      toast({ title: "Export failed", description: "Could not generate PDF. Please try again.", variant: "destructive" });
-    } finally {
-      setIsExporting(false);
-    }
-  };
-
-  const handleSendEmail = async () => {
-    if (!reportRef.current) return;
-    setIsSending(true);
-    try {
-      const email = user?.email || "";
-      if (!email) {
-        toast({ title: "No email found", description: "Please log in to send the report to your email.", variant: "destructive" });
-        setIsSending(false);
-        return;
-      }
-
-      const summaryText = goalDiff <= 0
-        ? `You stayed ${Math.abs(goalDiff)} kcal under your calorie goal and saved ${week.foodSaved} kg of food from going to waste.`
-        : `You went ${goalDiff} kcal over your goal this week, but you still saved ${week.foodSaved} kg of food!`;
-
-      const subject = `🌱 Your SavePlate Weekly Wrap-Up: ${week.foodSaved}kg Saved & ${week.streakDays}-Day Streak! (${week.label})`;
-
-      const body = [
-        `Hi there! 👋`,
-        ``,
-        `Here's your SavePlate Weekly Report for ${week.label}:`,
-        ``,
-        `✨ WEEKLY HIGHLIGHTS`,
-        `━━━━━━━━━━━━━━━━━━`,
-        `🌿 Food Saved: ${week.foodSaved} kg`,
-        `🔥 Streak: ${week.streakDays} days`,
-        `🏆 Challenges Completed: ${week.challengesCompleted}`,
-        `📝 Meals Logged: ${week.mealsLogged}`,
-        ``,
-        `🔥 CALORIE SUMMARY`,
-        `━━━━━━━━━━━━━━━━━━`,
-        `Average: ${avgCalories} kcal/day (Goal: 2,000 kcal)`,
-        `Weekly Total: ${totalConsumed.toLocaleString()} / ${totalGoal.toLocaleString()} kcal (${goalPercent}%)`,
-        ``,
-        `🥩 MACROS (avg/day)`,
-        `━━━━━━━━━━━━━━━━━━`,
-        `Protein: ${week.macros.protein}g | Carbs: ${week.macros.carbs}g | Fat: ${week.macros.fat}g`,
-        ``,
-        `🌍 WASTE REDUCTION`,
-        `━━━━━━━━━━━━━━━━━━`,
-        `Reduced by ${week.wasteReduction}% this week!`,
-        `Top saved: ${week.topItems.map(i => `${i.name} (${i.saved})`).join(", ")}`,
-        ``,
-        `💬 ${summaryText}`,
-        ``,
-        `Keep making a difference! 🌱`,
-        `— The SavePlate Team`,
-      ].join("\n");
-
-      const mailtoUrl = `mailto:${encodeURIComponent(email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-      window.open(mailtoUrl, "_blank");
-
-      toast({
-        title: "Email ready! ✉️",
-        description: `Your email client opened with the report for ${email}. Just hit Send!`,
-      });
-    } catch {
-      toast({ title: "Failed", description: "Could not prepare the email.", variant: "destructive" });
-    } finally {
-      setIsSending(false);
-    }
-  };
-
   return (
     <div className="px-4 py-5 max-w-lg mx-auto space-y-5 pb-24">
-      {/* Action buttons */}
-      <div className="flex gap-2 animate-fade-up">
-        <Button
-          onClick={handleDownloadPDF}
-          disabled={isExporting}
-          variant="outline"
-          className="flex-1 gap-2 rounded-xl"
-        >
-          {isExporting ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}
-          {isExporting ? "Generating…" : "Download PDF"}
-        </Button>
-        <Button
-          onClick={handleSendEmail}
-          disabled={isSending}
-          className="flex-1 gap-2 rounded-xl"
-        >
-          {isSending ? <Loader2 size={16} className="animate-spin" /> : <Mail size={16} />}
-          {isSending ? "Sending…" : "Send to Email"}
-        </Button>
-      </div>
-
-      <div ref={reportRef} className="space-y-4">
+      <div className="space-y-4">
       {/* Header with week navigation */}
       <div data-pdf-section className="animate-fade-up">
         <h2 className="text-2xl font-bold text-foreground text-balance">📊 Weekly Report</h2>
@@ -420,7 +287,7 @@ export default function WeeklyReport() {
             : `You went ${goalDiff} kcal over your goal this week, but you still saved ${week.foodSaved} kg of food! 💪 Try planning meals ahead next week to stay on track.`}
         </p>
       </section>
-      </div>{/* end reportRef */}
+      </div>
     </div>
   );
 }
