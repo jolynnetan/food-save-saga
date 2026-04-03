@@ -136,10 +136,8 @@ export default function Foodbank() {
         return;
       }
 
-      const { data: urlData } = supabase.storage
-        .from("restock-photos")
-        .getPublicUrl(path);
-      photoUrl = urlData.publicUrl;
+      // Store the path, not public URL — bucket is private
+      photoUrl = path;
     }
 
     const { error } = await supabase.from("restock_logs").insert({
