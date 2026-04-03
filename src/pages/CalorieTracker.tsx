@@ -311,8 +311,11 @@ export default function CalorieTracker() {
       {showAdd && (
         <div className="bg-card border rounded-2xl p-4 animate-scale-in space-y-4">
           <div className="flex gap-2">
+            <button onClick={() => setScanMode("manual")} className={`flex-1 flex items-center justify-center gap-2 rounded-xl py-3 text-sm font-semibold transition-all active:scale-[0.97] ${scanMode === "manual" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
+              ✏️ Manual
+            </button>
             <button onClick={() => setScanMode("photo")} className={`flex-1 flex items-center justify-center gap-2 rounded-xl py-3 text-sm font-semibold transition-all active:scale-[0.97] ${scanMode === "photo" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
-              <Camera size={16} /> Photo Scan
+              <Camera size={16} /> Photo
             </button>
             <button onClick={() => setScanMode("barcode")} className={`flex-1 flex items-center justify-center gap-2 rounded-xl py-3 text-sm font-semibold transition-all active:scale-[0.97] ${scanMode === "barcode" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
               <ScanBarcode size={16} /> Barcode
