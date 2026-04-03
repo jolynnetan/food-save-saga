@@ -292,7 +292,7 @@ export default function WeeklyReport() {
             : `You went ${goalDiff} kcal over your goal this week, but you still saved ${week.foodSaved} kg of food! 💪 Try planning meals ahead next week to stay on track.`}
         </p>
       </section>
-      </div>{/* end reportRef */}
+      </div>
     </div>
   );
 }
