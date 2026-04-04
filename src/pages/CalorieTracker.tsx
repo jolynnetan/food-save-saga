@@ -207,9 +207,12 @@ export default function CalorieTracker() {
     setScanMode("none");
   };
 
+  const [manualAmount, setManualAmount] = useState("");
+
   const handleManualEstimate = async () => {
     const foodName = manualInput.trim();
     if (!foodName) return;
+    const amount = manualAmount.trim() || "1 serving";
     setEstimating(true);
     try {
       const resp = await fetch(SCAN_URL, {
@@ -220,45 +223,25 @@ export default function CalorieTracker() {
         },
         body: JSON.stringify({
           mode: "scan-calories",
-          messages: [{ role: "user", content: `Estimate the calories and macronutrients for: ${foodName}. Return JSON with items array containing objects with name, emoji, calories, protein, carbs, fat.` }],
+          messages: [{ role: "user", content: `Estimate the calories and macronutrients for: ${amount} of ${foodName}. Return JSON with items array containing objects with name, emoji, calories, protein, carbs, fat.` }],
         }),
       });
       if (!resp.ok) throw new Error("Estimation failed");
-      const reader = resp.body?.getReader();
-      const decoder = new TextDecoder();
-      let full = "";
-      if (reader) {
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          const chunk = decoder.decode(value, { stream: true });
-          for (const line of chunk.split("\n")) {
-            if (!line.startsWith("data: ")) continue;
-            const json = line.slice(6).trim();
-            if (json === "[DONE]") continue;
-            try { const p = JSON.parse(json); const c = p.choices?.[0]?.delta?.content; if (c) full += c; } catch {}
-          }
+      const data = await resp.json();
+      if (data.items?.length > 0) {
+        for (const item of data.items) {
+          await addMeal({ name: `${item.name || foodName} (${amount})`, emoji: item.emoji || "🍽️", calories: item.calories || 0, protein: item.protein || 0, carbs: item.carbs || 0, fat: item.fat || 0 });
         }
-      }
-      const jsonMatch = full.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        const data = JSON.parse(jsonMatch[0]);
-        if (data.items?.length > 0) {
-          for (const item of data.items) {
-            await addMeal({ name: item.name || foodName, emoji: item.emoji || "🍽️", calories: item.calories || 0, protein: item.protein || 0, carbs: item.carbs || 0, fat: item.fat || 0 });
-          }
-          toast({ title: "✨ AI Estimated!", description: `Added ${data.items.length} item(s) with estimated nutrition.` });
-        } else {
-          throw new Error("No items");
-        }
+        toast({ title: "✨ AI Estimated!", description: `Added ${data.items.length} item(s) with estimated nutrition.` });
       } else {
-        throw new Error("No JSON");
+        throw new Error("No items");
       }
     } catch {
-      await addMeal({ name: foodName, emoji: "🍽️", calories: 200, protein: 10, carbs: 25, fat: 8 });
+      await addMeal({ name: `${foodName} (${amount})`, emoji: "🍽️", calories: 200, protein: 10, carbs: 25, fat: 8 });
       toast({ title: "🍽️ Added!", description: "Used rough estimate. You can edit later." });
     }
     setManualInput("");
+    setManualAmount("");
     setEstimating(false);
     setScanMode("none");
   };
@@ -360,6 +343,13 @@ export default function CalorieTracker() {
                 onChange={(e) => setManualInput(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleManualEstimate()}
                 placeholder="e.g. Nasi lemak with fried chicken"
+                className="w-full bg-muted rounded-xl px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:ring-2 focus:ring-primary/30"
+              />
+              <input
+                value={manualAmount}
+                onChange={(e) => setManualAmount(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleManualEstimate()}
+                placeholder="Amount (e.g. 2 plates, 300g, 1 bowl)"
                 className="w-full bg-muted rounded-xl px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:ring-2 focus:ring-primary/30"
               />
               <button
