@@ -296,7 +296,7 @@ export default function Dashboard() {
               <div className="w-6 h-6 gradient-reward rounded-lg flex items-center justify-center shadow-reward-glow">
                 <Zap size={14} className="text-white" />
               </div>
-              <h3 className="text-base font-bold text-foreground">Daily Quests</h3>
+              <h3 className="text-base font-bold text-foreground">{t("dailyQuests")}</h3>
             </div>
             <span className="text-[11px] font-semibold text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
               {dailyMissions.filter(m => m.completed).length}/{dailyMissions.length}
