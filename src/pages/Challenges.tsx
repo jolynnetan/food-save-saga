@@ -164,17 +164,18 @@ const birthdayVouchers: Reward[] = [
   { id: 903, title: "🎊 Birthday Meal Donation", emoji: "💝", description: "We donate a meal in your name — on us!", cost: 0, category: "donate", terms: "Automatically donated during your birthday month. One per year." },
 ];
 
-const challengeTabs = [
-  { key: "daily" as const, label: "Daily", icon: Flame },
-  { key: "weekly" as const, label: "Weekly", icon: Calendar },
-  { key: "monthly" as const, label: "Monthly", icon: Star },
+// These will be populated inside the component with translations
+const challengeTabKeys = [
+  { key: "daily" as const, labelKey: "daily", icon: Flame },
+  { key: "weekly" as const, labelKey: "weekly", icon: Calendar },
+  { key: "monthly" as const, labelKey: "monthly", icon: Star },
 ];
 
-const rewardCategories = [
-  { key: "all" as const, label: "All", icon: Sparkles },
-  { key: "donate" as const, label: "Donate", icon: Heart },
-  { key: "eco" as const, label: "Eco", icon: TreePine },
-  { key: "voucher" as const, label: "Vouchers", icon: ShoppingBag },
+const rewardCategoryKeys = [
+  { key: "all" as const, labelKey: "all", icon: Sparkles },
+  { key: "donate" as const, labelKey: "donate", icon: Heart },
+  { key: "eco" as const, labelKey: "eco", icon: TreePine },
+  { key: "voucher" as const, labelKey: "vouchers", icon: ShoppingBag },
 ];
 
 export default function Challenges() {
