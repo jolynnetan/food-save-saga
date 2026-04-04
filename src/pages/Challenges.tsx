@@ -668,7 +668,7 @@ export default function Challenges() {
                   className="w-full h-40 border-2 border-dashed border-muted-foreground/30 rounded-xl flex flex-col items-center justify-center gap-2 text-muted-foreground hover:border-primary/40 hover:text-primary transition-colors"
                 >
                   <Upload size={24} />
-                  <span className="text-xs font-medium">Tap to upload photo</span>
+                  <span className="text-xs font-medium">{t("tapToUpload")}</span>
                 </button>
               )}
             </div>
