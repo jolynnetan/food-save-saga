@@ -122,7 +122,7 @@ export default function Friends() {
       .or(`from_user_id.eq.${user.id},to_user_id.eq.${user.id}`);
 
     if (data && data.length > 0) {
-      const userIds = [...new Set(data.flatMap(r => [r.from_user_id, r.to_user_id]))];
+      const userIds = Array.from(new Set(data.flatMap(r => [r.from_user_id, r.to_user_id])));
       const { data: profiles } = await supabase
         .from("profiles")
         .select("user_id, display_name, avatar_url")
