@@ -23,8 +23,8 @@ export default function Achievements() {
   return (
     <div className="px-4 py-5 max-w-lg mx-auto space-y-5">
       <div className="animate-fade-up">
-        <h2 className="text-2xl font-bold text-foreground">Achievements</h2>
-        <p className="text-muted-foreground mt-1">{unlockedCount}/{badges.length} badges unlocked</p>
+        <h2 className="text-2xl font-bold text-foreground">{t("achievementsTitle")}</h2>
+        <p className="text-muted-foreground mt-1">{unlockedCount}/{badges.length} {t("badgesUnlocked")}</p>
       </div>
 
       {/* Level card */}
