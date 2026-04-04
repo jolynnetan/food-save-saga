@@ -489,10 +489,24 @@ export default function Dashboard() {
           <h3 className="text-base font-bold text-foreground mb-3 flex items-center gap-2">
             <span>🌍</span> Why It Matters
           </h3>
-          <div className="bg-primary/8 border border-primary/15 rounded-2xl p-4 shadow-soft-sm">
-            <p className="text-sm text-foreground leading-relaxed font-medium">
-              {getDailyQuote()}
-            </p>
+          <div className="relative overflow-hidden rounded-2xl border border-primary/15 shadow-soft-sm">
+            <div className="absolute inset-0 gradient-hero opacity-10" />
+            <div className="relative p-5">
+              <div className="flex items-start gap-3.5">
+                <div className="w-12 h-12 rounded-2xl bg-primary/15 flex items-center justify-center shrink-0 text-2xl">
+                  {getDailyQuote().emoji}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm text-foreground leading-relaxed font-medium">
+                    {getDailyQuote().text}
+                  </p>
+                  <div className="mt-2.5 inline-flex items-center gap-1.5 bg-primary/10 border border-primary/15 rounded-full px-2.5 py-1">
+                    <span className="text-[10px]">📊</span>
+                    <span className="text-[10px] font-bold text-primary">{getDailyQuote().stat}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </section>
       )}
@@ -502,10 +516,23 @@ export default function Dashboard() {
         <h3 className="text-base font-bold text-foreground mb-3 flex items-center gap-2">
           <span>💡</span> Daily Tip
         </h3>
-        <div className="gradient-card border border-border rounded-2xl p-4 shadow-soft-sm">
-          <p className="text-sm text-secondary-foreground leading-relaxed">
-            {tips[Math.floor(Math.random() * tips.length)]}
-          </p>
+        <div className="relative overflow-hidden rounded-2xl border border-warning/15 shadow-soft-sm">
+          <div className="absolute inset-0 bg-gradient-to-br from-warning/5 to-streak/5" />
+          <div className="relative p-5">
+            <div className="flex items-start gap-3.5">
+              <div className="w-12 h-12 rounded-2xl bg-warning/15 flex items-center justify-center shrink-0 text-2xl">
+                {getDailyTip().emoji}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm text-foreground leading-relaxed font-medium">
+                  {getDailyTip().text}
+                </p>
+                <div className="mt-2.5 inline-flex items-center gap-1.5 bg-warning/10 border border-warning/15 rounded-full px-2.5 py-1">
+                  <span className="text-[10px] font-bold text-warning">{getDailyTip().category}</span>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
     </div>
