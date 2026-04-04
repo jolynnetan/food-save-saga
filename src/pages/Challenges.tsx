@@ -534,9 +534,9 @@ export default function Challenges() {
               <div className="bg-gradient-to-r from-primary/10 via-warning/10 to-primary/10 border border-primary/20 rounded-2xl p-4">
                 <div className="flex items-center gap-2 mb-3">
                   <Cake size={18} className="text-primary" />
-                  <h3 className="text-sm font-bold text-foreground">🎉 Happy Birthday!</h3>
+                  <h3 className="text-sm font-bold text-foreground">{t("happyBirthday")}</h3>
                 </div>
-                <p className="text-xs text-muted-foreground mb-3">These free rewards are available during your birthday month. Claim them before the month ends!</p>
+                <p className="text-xs text-muted-foreground mb-3">{t("birthdayDesc")}</p>
                 <div className="space-y-2">
                   {birthdayVouchers.map((reward) => {
                     const isClaimed = birthdayRedeemed.includes(reward.id);
