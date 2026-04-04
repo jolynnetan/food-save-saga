@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { User, Copy, Check, Pencil, Save, X } from "lucide-react";
+import { User, Copy, Check, Pencil, Save, X, Cake } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -14,16 +14,21 @@ export default function ProfileCard() {
   const [saving, setSaving] = useState(false);
   const [friendCode, setFriendCode] = useState("");
   const [copied, setCopied] = useState(false);
+  const [birthday, setBirthday] = useState<string>("");
+  const [editingBirthday, setEditingBirthday] = useState(false);
+  const [editBirthday, setEditBirthday] = useState("");
+  const [savingBirthday, setSavingBirthday] = useState(false);
 
   const fetchProfile = useCallback(async () => {
     if (!user) return;
     const { data } = await supabase
       .from("profiles")
-      .select("display_name")
+      .select("display_name, birthday")
       .eq("user_id", user.id)
       .maybeSingle();
     if (data?.display_name) setDisplayName(data.display_name);
     else setDisplayName(user.email?.split("@")[0] || "User");
+    if (data?.birthday) setBirthday(data.birthday);
   }, [user]);
 
   const fetchCode = useCallback(async () => {
@@ -66,10 +71,33 @@ export default function ProfileCard() {
     setSaving(false);
   };
 
+  const handleSaveBirthday = async () => {
+    if (!user || !editBirthday) return;
+    setSavingBirthday(true);
+    const { error } = await supabase
+      .from("profiles")
+      .update({ birthday: editBirthday } as any)
+      .eq("user_id", user.id);
+    if (error) {
+      toast({ title: "Error saving birthday", description: error.message, variant: "destructive" });
+    } else {
+      setBirthday(editBirthday);
+      setEditingBirthday(false);
+      toast({ title: "Birthday saved! 🎂" });
+    }
+    setSavingBirthday(false);
+  };
+
   const copyCode = () => {
     navigator.clipboard.writeText(friendCode);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const formatBirthday = (dateStr: string) => {
+    if (!dateStr) return "";
+    const d = new Date(dateStr + "T00:00:00");
+    return d.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
   };
 
   const initial = (displayName || "U")[0].toUpperCase();
@@ -113,6 +141,41 @@ export default function ProfileCard() {
           )}
           <p className="text-[11px] text-muted-foreground truncate mt-0.5">{user?.email}</p>
         </div>
+      </div>
+
+      {/* Birthday */}
+      <div className="bg-muted/50 rounded-xl p-3">
+        <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Birthday</p>
+        {editingBirthday ? (
+          <div className="flex items-center gap-2">
+            <input
+              type="date"
+              value={editBirthday}
+              onChange={e => setEditBirthday(e.target.value)}
+              max={new Date().toISOString().slice(0, 10)}
+              className="flex-1 bg-muted rounded-lg px-3 py-1.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
+            />
+            <button onClick={handleSaveBirthday} disabled={savingBirthday || !editBirthday} className="p-1.5 rounded-lg bg-success/15 text-success hover:bg-success/25 transition-colors">
+              <Save size={14} />
+            </button>
+            <button onClick={() => setEditingBirthday(false)} className="p-1.5 rounded-lg bg-muted text-muted-foreground hover:bg-muted/80 transition-colors">
+              <X size={14} />
+            </button>
+          </div>
+        ) : (
+          <div className="flex items-center gap-2">
+            <Cake size={14} className="text-primary shrink-0" />
+            <span className="flex-1 text-sm font-medium text-foreground">
+              {birthday ? formatBirthday(birthday) : "Not set"}
+            </span>
+            <button
+              onClick={() => { setEditBirthday(birthday || ""); setEditingBirthday(true); }}
+              className="p-1 rounded-lg hover:bg-muted transition-colors text-muted-foreground"
+            >
+              <Pencil size={12} />
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Unique ID */}

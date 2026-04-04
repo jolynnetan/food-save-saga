@@ -1,10 +1,12 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { Flame, Calendar, Star, Gift, Check, Lock, Heart, TreePine, Sparkles, ShoppingBag, X, FileText, RefreshCw, Camera, Upload, MessageSquare } from "lucide-react";
+import { Flame, Calendar, Star, Gift, Check, Lock, Heart, TreePine, Sparkles, ShoppingBag, X, FileText, RefreshCw, Camera, Upload, MessageSquare, Cake } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { usePoints } from "@/contexts/PointsContext";
 import { addRedeemedItem } from "@/pages/Store";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 
 type Challenge = {
   id: number;
@@ -155,6 +157,12 @@ const rewardsList: Reward[] = [
   { id: 14, title: "RM25 Meal Kit Voucher", emoji: "📦", description: "RM25 off a zero-waste meal kit", cost: 3500, category: "voucher", terms: "Valid for 60 days from redemption. First-time subscription only. Cannot be used with other discounts.", voucherCode: "MEALKIT-25" },
 ];
 
+const birthdayVouchers: Reward[] = [
+  { id: 901, title: "🎂 Birthday RM15 Voucher", emoji: "🎁", description: "Free RM15 grocery voucher — Happy Birthday!", cost: 0, category: "voucher", terms: "Valid for 30 days from redemption. Birthday month exclusive. One per year. Minimum purchase of RM30.", voucherCode: "BDAY-15" },
+  { id: 902, title: "🎈 Birthday Eco Kit", emoji: "🎉", description: "Free eco container set for your birthday!", cost: 0, category: "eco", terms: "Valid during your birthday month only. One per year. Collect at participating stores." },
+  { id: 903, title: "🎊 Birthday Meal Donation", emoji: "💝", description: "We donate a meal in your name — on us!", cost: 0, category: "donate", terms: "Automatically donated during your birthday month. One per year." },
+];
+
 const challengeTabs = [
   { key: "daily" as const, label: "Daily", icon: Flame },
   { key: "weekly" as const, label: "Weekly", icon: Calendar },
@@ -181,6 +189,35 @@ export default function Challenges() {
     return generateChallenges();
   });
   const [activeTab, setActiveTab] = useState<"daily" | "weekly" | "monthly">("daily");
+
+  // Birthday state
+  const { user } = useAuth();
+  const [isBirthdayMonth, setIsBirthdayMonth] = useState(false);
+  const [birthdayRedeemed, setBirthdayRedeemed] = useState<number[]>(() => {
+    try {
+      const saved = localStorage.getItem("sp-birthday-redeemed");
+      if (saved) {
+        const { year, ids } = JSON.parse(saved);
+        if (year === new Date().getFullYear()) return ids;
+      }
+    } catch {}
+    return [];
+  });
+
+  useEffect(() => {
+    if (!user) return;
+    supabase
+      .from("profiles")
+      .select("birthday")
+      .eq("user_id", user.id)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data?.birthday) {
+          const bMonth = new Date(data.birthday + "T00:00:00").getMonth();
+          setIsBirthdayMonth(bMonth === new Date().getMonth());
+        }
+      });
+  }, [user]);
 
   // Proof submission state
   const [proofChallenge, setProofChallenge] = useState<Challenge | null>(null);
@@ -287,6 +324,16 @@ export default function Challenges() {
   };
 
   const handleRedeem = (reward: Reward) => {
+    // Birthday vouchers are free
+    if (birthdayVouchers.some(b => b.id === reward.id)) {
+      if (birthdayRedeemed.includes(reward.id)) return;
+      if (reward.terms) {
+        setShowTerms(reward);
+        return;
+      }
+      confirmBirthdayRedeem(reward);
+      return;
+    }
     if (points < reward.cost) {
       toast({ title: "Not enough points", description: `You need ${reward.cost - points} more points.`, variant: "destructive" });
       return;
@@ -296,6 +343,28 @@ export default function Challenges() {
       return;
     }
     confirmRedeem(reward);
+  };
+
+  const confirmBirthdayRedeem = (reward: Reward) => {
+    const newRedeemed = [...birthdayRedeemed, reward.id];
+    setBirthdayRedeemed(newRedeemed);
+    localStorage.setItem("sp-birthday-redeemed", JSON.stringify({ year: new Date().getFullYear(), ids: newRedeemed }));
+    setShowTerms(null);
+    addRedeemedItem({
+      id: reward.id,
+      title: reward.title,
+      emoji: reward.emoji,
+      description: reward.description,
+      cost: 0,
+      category: reward.category,
+      voucherCode: reward.voucherCode,
+      terms: reward.terms,
+    });
+    if (reward.voucherCode) {
+      setShowVoucher(reward);
+    } else {
+      toast({ title: "🎂 Birthday Reward Claimed!", description: `You claimed "${reward.title}". Happy Birthday!` });
+    }
   };
 
   const confirmRedeem = (reward: Reward) => {
@@ -456,6 +525,44 @@ export default function Challenges() {
             ))}
           </div>
 
+          {/* Birthday Vouchers */}
+          {isBirthdayMonth && (
+            <div className="space-y-3 animate-fade-up" style={{ animationDelay: "140ms" }}>
+              <div className="bg-gradient-to-r from-primary/10 via-warning/10 to-primary/10 border border-primary/20 rounded-2xl p-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <Cake size={18} className="text-primary" />
+                  <h3 className="text-sm font-bold text-foreground">🎉 Happy Birthday!</h3>
+                </div>
+                <p className="text-xs text-muted-foreground mb-3">These free rewards are available during your birthday month. Claim them before the month ends!</p>
+                <div className="space-y-2">
+                  {birthdayVouchers.map((reward) => {
+                    const isClaimed = birthdayRedeemed.includes(reward.id);
+                    return (
+                      <div key={reward.id} className={`bg-card rounded-xl p-3 flex items-center gap-3 ${isClaimed ? "opacity-50" : ""}`}>
+                        <span className="text-2xl">{reward.emoji}</span>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-semibold text-foreground">{reward.title}</p>
+                          <p className="text-[10px] text-muted-foreground">{reward.description}</p>
+                        </div>
+                        <button
+                          onClick={() => handleRedeem(reward)}
+                          disabled={isClaimed}
+                          className={`shrink-0 flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-semibold transition-all active:scale-[0.95] ${
+                            isClaimed
+                              ? "bg-success/10 text-success"
+                              : "bg-primary text-primary-foreground shadow-sm"
+                          }`}
+                        >
+                          {isClaimed ? <><Check size={12} /> Claimed</> : <><Gift size={12} /> FREE</>}
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Rewards list */}
           <div className="space-y-3">
             {filteredRewards.map((reward, i) => {
@@ -603,7 +710,7 @@ export default function Challenges() {
               <span className="text-2xl">{showTerms.emoji}</span>
               <div>
                 <p className="text-sm font-semibold text-foreground">{showTerms.title}</p>
-                <p className="text-xs text-primary font-medium tabular-nums">{showTerms.cost.toLocaleString()} pts</p>
+                <p className="text-xs text-primary font-medium tabular-nums">{showTerms.cost === 0 ? "FREE 🎂" : `${showTerms.cost.toLocaleString()} pts`}</p>
               </div>
             </div>
             <div className="bg-muted/50 rounded-xl p-4">
@@ -618,7 +725,9 @@ export default function Challenges() {
             </div>
             <div className="flex gap-2">
               <button onClick={() => setShowTerms(null)} className="flex-1 bg-muted text-muted-foreground rounded-xl py-3 text-sm font-semibold transition-all active:scale-[0.97]">Cancel</button>
-              {points >= showTerms.cost ? (
+              {birthdayVouchers.some(b => b.id === showTerms.id) ? (
+                <button onClick={() => confirmBirthdayRedeem(showTerms)} className="flex-1 bg-primary text-primary-foreground rounded-xl py-3 text-sm font-semibold transition-all active:scale-[0.97] shadow-lg shadow-primary/20">Accept & Claim Free</button>
+              ) : points >= showTerms.cost ? (
                 <button onClick={() => confirmRedeem(showTerms)} className="flex-1 bg-primary text-primary-foreground rounded-xl py-3 text-sm font-semibold transition-all active:scale-[0.97] shadow-lg shadow-primary/20">Accept & Redeem</button>
               ) : (
                 <div className="flex-1 flex flex-col items-center justify-center bg-muted/80 rounded-xl py-2.5 gap-0.5">
