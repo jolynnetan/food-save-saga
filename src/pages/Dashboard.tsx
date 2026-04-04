@@ -148,6 +148,7 @@ export default function Dashboard() {
   const [quickTools, setQuickTools] = useState<QuickTool[]>(getSelectedTools);
   const [editToolsOpen, setEditToolsOpen] = useState(false);
   const isSimple = appMode === "simple";
+  const t = useT();
 
   // Fetch today's calorie total from DB
   useEffect(() => {
