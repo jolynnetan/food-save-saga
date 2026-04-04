@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { User, Copy, Check, Pencil, Save, X } from "lucide-react";
+import { User, Copy, Check, Pencil, Save, X, Cake } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -14,16 +14,21 @@ export default function ProfileCard() {
   const [saving, setSaving] = useState(false);
   const [friendCode, setFriendCode] = useState("");
   const [copied, setCopied] = useState(false);
+  const [birthday, setBirthday] = useState<string>("");
+  const [editingBirthday, setEditingBirthday] = useState(false);
+  const [editBirthday, setEditBirthday] = useState("");
+  const [savingBirthday, setSavingBirthday] = useState(false);
 
   const fetchProfile = useCallback(async () => {
     if (!user) return;
     const { data } = await supabase
       .from("profiles")
-      .select("display_name")
+      .select("display_name, birthday")
       .eq("user_id", user.id)
       .maybeSingle();
     if (data?.display_name) setDisplayName(data.display_name);
     else setDisplayName(user.email?.split("@")[0] || "User");
+    if (data?.birthday) setBirthday(data.birthday);
   }, [user]);
 
   const fetchCode = useCallback(async () => {
