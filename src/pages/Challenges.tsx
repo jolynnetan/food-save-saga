@@ -190,6 +190,35 @@ export default function Challenges() {
   });
   const [activeTab, setActiveTab] = useState<"daily" | "weekly" | "monthly">("daily");
 
+  // Birthday state
+  const { user } = useAuth();
+  const [isBirthdayMonth, setIsBirthdayMonth] = useState(false);
+  const [birthdayRedeemed, setBirthdayRedeemed] = useState<number[]>(() => {
+    try {
+      const saved = localStorage.getItem("sp-birthday-redeemed");
+      if (saved) {
+        const { year, ids } = JSON.parse(saved);
+        if (year === new Date().getFullYear()) return ids;
+      }
+    } catch {}
+    return [];
+  });
+
+  useEffect(() => {
+    if (!user) return;
+    supabase
+      .from("profiles")
+      .select("birthday")
+      .eq("user_id", user.id)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data?.birthday) {
+          const bMonth = new Date(data.birthday + "T00:00:00").getMonth();
+          setIsBirthdayMonth(bMonth === new Date().getMonth());
+        }
+      });
+  }, [user]);
+
   // Proof submission state
   const [proofChallenge, setProofChallenge] = useState<Challenge | null>(null);
   const [proofType, setProofType] = useState<"photo" | "text">("photo");
