@@ -67,11 +67,78 @@ function pickRandom<T>(arr: T[], count: number): T[] {
   return shuffled.slice(0, count);
 }
 
+function getRefreshTimestamps(): { daily: string; weekly: string; monthly: string } {
+  try {
+    const saved = localStorage.getItem("sp-challenge-timestamps");
+    if (saved) return JSON.parse(saved);
+  } catch {}
+  return { daily: "", weekly: "", monthly: "" };
+}
+
+function saveRefreshTimestamps(ts: { daily: string; weekly: string; monthly: string }) {
+  localStorage.setItem("sp-challenge-timestamps", JSON.stringify(ts));
+}
+
+function getTodayKey() {
+  return new Date().toISOString().slice(0, 10); // "2026-04-04"
+}
+
+function getWeekKey() {
+  const d = new Date();
+  const jan1 = new Date(d.getFullYear(), 0, 1);
+  const weekNum = Math.ceil(((d.getTime() - jan1.getTime()) / 86400000 + jan1.getDay() + 1) / 7);
+  return `${d.getFullYear()}-W${weekNum}`;
+}
+
+function getMonthKey() {
+  return new Date().toISOString().slice(0, 7); // "2026-04"
+}
+
+function generateChallengesForCategory(category: "daily" | "weekly" | "monthly"): Omit<Challenge, "id" | "done">[] {
+  const pool = challengePool.filter(c => c.category === category);
+  const count = category === "daily" ? 4 : category === "weekly" ? 3 : 2;
+  return pickRandom(pool, count);
+}
+
 function generateChallenges(): Challenge[] {
-  const daily = pickRandom(challengePool.filter(c => c.category === "daily"), 4);
-  const weekly = pickRandom(challengePool.filter(c => c.category === "weekly"), 3);
-  const monthly = pickRandom(challengePool.filter(c => c.category === "monthly"), 2);
-  return [...daily, ...weekly, ...monthly].map((c, i) => ({ ...c, id: Date.now() + i, done: false }));
+  const daily = generateChallengesForCategory("daily");
+  const weekly = generateChallengesForCategory("weekly");
+  const monthly = generateChallengesForCategory("monthly");
+  const all = [...daily, ...weekly, ...monthly].map((c, i) => ({ ...c, id: Date.now() + i, done: false }));
+  saveRefreshTimestamps({ daily: getTodayKey(), weekly: getWeekKey(), monthly: getMonthKey() });
+  return all;
+}
+
+function autoRefreshChallenges(existing: Challenge[]): Challenge[] {
+  const ts = getRefreshTimestamps();
+  const needDaily = ts.daily !== getTodayKey();
+  const needWeekly = ts.weekly !== getWeekKey();
+  const needMonthly = ts.monthly !== getMonthKey();
+
+  if (!needDaily && !needWeekly && !needMonthly) return existing;
+
+  let updated = [...existing];
+
+  if (needDaily) {
+    const newDaily = generateChallengesForCategory("daily").map((c, i) => ({ ...c, id: Date.now() + i, done: false }));
+    updated = updated.filter(c => c.category !== "daily").concat(newDaily);
+  }
+  if (needWeekly) {
+    const newWeekly = generateChallengesForCategory("weekly").map((c, i) => ({ ...c, id: Date.now() + 100 + i, done: false }));
+    updated = updated.filter(c => c.category !== "weekly").concat(newWeekly);
+  }
+  if (needMonthly) {
+    const newMonthly = generateChallengesForCategory("monthly").map((c, i) => ({ ...c, id: Date.now() + 200 + i, done: false }));
+    updated = updated.filter(c => c.category !== "monthly").concat(newMonthly);
+  }
+
+  saveRefreshTimestamps({
+    daily: getTodayKey(),
+    weekly: getWeekKey(),
+    monthly: getMonthKey(),
+  });
+
+  return updated;
 }
 
 const rewardsList: Reward[] = [
@@ -106,7 +173,10 @@ export default function Challenges() {
   const [challenges, setChallenges] = useState<Challenge[]>(() => {
     const saved = localStorage.getItem("sp-challenges");
     if (saved) {
-      try { return JSON.parse(saved); } catch { /* ignore */ }
+      try {
+        const parsed = JSON.parse(saved);
+        return autoRefreshChallenges(parsed);
+      } catch { /* ignore */ }
     }
     return generateChallenges();
   });
