@@ -425,7 +425,7 @@ export default function Challenges() {
             topTab === "rewards" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"
           }`}
         >
-          <Gift size={16} /> Rewards
+          <Gift size={16} /> {t("rewards")}
         </button>
       </div>
 
