@@ -324,6 +324,16 @@ export default function Challenges() {
   };
 
   const handleRedeem = (reward: Reward) => {
+    // Birthday vouchers are free
+    if (birthdayVouchers.some(b => b.id === reward.id)) {
+      if (birthdayRedeemed.includes(reward.id)) return;
+      if (reward.terms) {
+        setShowTerms(reward);
+        return;
+      }
+      confirmBirthdayRedeem(reward);
+      return;
+    }
     if (points < reward.cost) {
       toast({ title: "Not enough points", description: `You need ${reward.cost - points} more points.`, variant: "destructive" });
       return;
@@ -333,6 +343,28 @@ export default function Challenges() {
       return;
     }
     confirmRedeem(reward);
+  };
+
+  const confirmBirthdayRedeem = (reward: Reward) => {
+    const newRedeemed = [...birthdayRedeemed, reward.id];
+    setBirthdayRedeemed(newRedeemed);
+    localStorage.setItem("sp-birthday-redeemed", JSON.stringify({ year: new Date().getFullYear(), ids: newRedeemed }));
+    setShowTerms(null);
+    addRedeemedItem({
+      id: reward.id,
+      title: reward.title,
+      emoji: reward.emoji,
+      description: reward.description,
+      cost: 0,
+      category: reward.category,
+      voucherCode: reward.voucherCode,
+      terms: reward.terms,
+    });
+    if (reward.voucherCode) {
+      setShowVoucher(reward);
+    } else {
+      toast({ title: "🎂 Birthday Reward Claimed!", description: `You claimed "${reward.title}". Happy Birthday!` });
+    }
   };
 
   const confirmRedeem = (reward: Reward) => {
