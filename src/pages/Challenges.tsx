@@ -173,7 +173,10 @@ export default function Challenges() {
   const [challenges, setChallenges] = useState<Challenge[]>(() => {
     const saved = localStorage.getItem("sp-challenges");
     if (saved) {
-      try { return JSON.parse(saved); } catch { /* ignore */ }
+      try {
+        const parsed = JSON.parse(saved);
+        return autoRefreshChallenges(parsed);
+      } catch { /* ignore */ }
     }
     return generateChallenges();
   });
