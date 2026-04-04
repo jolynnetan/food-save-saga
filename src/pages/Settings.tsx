@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useSettings, useT, languages } from "@/contexts/SettingsContext";
 import { useGamification } from "@/contexts/GamificationContext";
 import { useAuth } from "@/contexts/AuthContext";
+import ProfileCard from "@/components/ProfileCard";
 
 type FontSize = "small" | "medium" | "large";
 
@@ -37,11 +38,15 @@ export default function Settings() {
         <h2 className="text-2xl font-bold text-foreground text-balance">{t("settings")}</h2>
         <p className="text-muted-foreground mt-1">{t("settingsDesc")}</p>
       </div>
+      {/* Profile */}
+      <section className="animate-fade-up" style={{ animationDelay: "40ms" }}>
+        <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">Profile</h3>
+        <ProfileCard />
+      </section>
 
       {/* General section */}
       <section className="space-y-3 animate-fade-up" style={{ animationDelay: "80ms" }}>
         <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{t("general")}</h3>
-
         {/* Language */}
         <div className="bg-card border rounded-2xl p-4 space-y-3">
           <div className="flex items-center gap-3">
@@ -193,17 +198,12 @@ export default function Settings() {
 
       {/* Sign out */}
       <section className="animate-fade-up" style={{ animationDelay: "240ms" }}>
-        <div className="bg-card border rounded-2xl p-4">
-          <div className="flex items-center gap-3 mb-3">
-            <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
-          </div>
-          <button
-            onClick={handleSignOut}
-            className="w-full flex items-center justify-center gap-2 bg-destructive/10 text-destructive rounded-xl py-2.5 text-sm font-semibold transition-all btn-press"
-          >
-            <LogOut size={16} /> Sign Out
-          </button>
-        </div>
+        <button
+          onClick={handleSignOut}
+          className="w-full flex items-center justify-center gap-2 bg-destructive/10 text-destructive border border-destructive/15 rounded-2xl py-3 text-sm font-semibold transition-all btn-press"
+        >
+          <LogOut size={16} /> Sign Out
+        </button>
       </section>
     </div>
   );

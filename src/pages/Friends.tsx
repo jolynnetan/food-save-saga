@@ -285,9 +285,9 @@ export default function Friends() {
         <p className="text-muted-foreground mt-1">{t("friendsDesc")}</p>
       </div>
 
-      {/* My Friend Code Card */}
+      {/* My Unique ID Card */}
       <div className="bg-card border rounded-2xl p-4 animate-fade-up" style={{ animationDelay: "60ms" }}>
-        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Your Friend Code</p>
+        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Your Unique ID</p>
         <div className="flex items-center gap-3">
           <div className="flex-1 bg-muted rounded-xl px-4 py-3 text-center">
             <span className="text-xl font-mono font-bold text-foreground tracking-[0.3em]">
@@ -302,7 +302,7 @@ export default function Friends() {
             {copied ? <Check size={18} /> : <Copy size={18} />}
           </button>
         </div>
-        <p className="text-[10px] text-muted-foreground mt-2 text-center">Share this code with friends so they can add you</p>
+        <p className="text-[10px] text-muted-foreground mt-2 text-center">Share this ID with friends so they can add you</p>
       </div>
 
       {/* Tab navigation */}
@@ -490,8 +490,8 @@ export default function Friends() {
       {tab === "add" && (
         <div className="space-y-5 animate-fade-up">
           <div className="bg-card border rounded-2xl p-5">
-            <h3 className="text-sm font-bold text-foreground mb-1">Add by Friend Code</h3>
-            <p className="text-xs text-muted-foreground mb-4">Enter your friend's 8-character code to send them a request.</p>
+            <h3 className="text-sm font-bold text-foreground mb-1">Add by Unique ID</h3>
+            <p className="text-xs text-muted-foreground mb-4">Enter your friend's 8-character unique ID to send them a request.</p>
             <div className="flex gap-2">
               <input
                 value={addCode}
@@ -516,8 +516,8 @@ export default function Friends() {
 
           {/* Share your code */}
           <div className="bg-primary/5 border border-primary/15 rounded-2xl p-5 text-center">
-            <p className="text-sm font-semibold text-foreground mb-1">Or share your code</p>
-            <p className="text-xs text-muted-foreground mb-3">Tell your friends to enter this code to connect with you</p>
+            <p className="text-sm font-semibold text-foreground mb-1">Or share your ID</p>
+            <p className="text-xs text-muted-foreground mb-3">Tell your friends to enter this ID to connect with you</p>
             <div className="inline-flex items-center gap-2 bg-card border rounded-xl px-5 py-3">
               <span className="text-lg font-mono font-bold text-primary tracking-[0.3em]">{myCode}</span>
               <button onClick={copyCode} className="text-muted-foreground hover:text-primary transition-colors">
