@@ -4,6 +4,7 @@ import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, Cell } from 
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { useT } from "@/contexts/SettingsContext";
 import { format, subDays, startOfDay } from "date-fns";
 
 type FoodEntry = {
@@ -23,6 +24,7 @@ const statusConfig = {
 
 export default function Tracker() {
   const { user } = useAuth();
+  const t = useT();
   const [entries, setEntries] = useState<FoodEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAdd, setShowAdd] = useState(false);
@@ -120,8 +122,8 @@ export default function Tracker() {
     <div className="px-4 py-5 max-w-lg mx-auto space-y-5">
       <div className="flex items-center justify-between animate-fade-up">
         <div>
-          <h2 className="text-2xl font-bold text-foreground text-balance">Food Tracker</h2>
-          <p className="text-muted-foreground mt-1">Monitor your food habits</p>
+          <h2 className="text-2xl font-bold text-foreground text-balance">{t("foodTracker")}</h2>
+          <p className="text-muted-foreground mt-1">{t("monitorHabits")}</p>
         </div>
         <button
           onClick={() => setShowAdd(!showAdd)}

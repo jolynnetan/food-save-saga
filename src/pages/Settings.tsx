@@ -7,12 +7,6 @@ import ProfileCard from "@/components/ProfileCard";
 
 type FontSize = "small" | "medium" | "large";
 
-const themeOptions = [
-  { key: "light" as const, label: "Light", icon: Sun, color: "text-warning" },
-  { key: "dark" as const, label: "Dark", icon: Moon, color: "text-accent" },
-  { key: "eco" as const, label: "Eco", icon: Leaf, color: "text-primary" },
-];
-
 export default function Settings() {
   const { language, setLanguage, fontSize, setFontSize, theme, setTheme, appMode, setAppMode } = useSettings();
   const { signOut, user } = useAuth();
@@ -25,6 +19,12 @@ export default function Settings() {
     navigate("/auth");
   };
 
+  const themeOptions = [
+    { key: "light" as const, label: t("light"), icon: Sun, color: "text-warning" },
+    { key: "dark" as const, label: t("dark"), icon: Moon, color: "text-accent" },
+    { key: "eco" as const, label: t("eco"), icon: Leaf, color: "text-primary" },
+  ];
+
   const fontSizes: { key: FontSize; label: string }[] = [
     { key: "small", label: t("small") },
     { key: "medium", label: t("medium") },
@@ -33,21 +33,17 @@ export default function Settings() {
 
   return (
     <div className="px-4 py-5 max-w-lg mx-auto space-y-6">
-      {/* Header */}
       <div className="animate-fade-up">
         <h2 className="text-2xl font-bold text-foreground text-balance">{t("settings")}</h2>
         <p className="text-muted-foreground mt-1">{t("settingsDesc")}</p>
       </div>
-      {/* Profile */}
       <section className="animate-fade-up" style={{ animationDelay: "40ms" }}>
-        <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">Profile</h3>
+        <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">{t("profile")}</h3>
         <ProfileCard />
       </section>
 
-      {/* General section */}
       <section className="space-y-3 animate-fade-up" style={{ animationDelay: "80ms" }}>
         <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{t("general")}</h3>
-        {/* Language */}
         <div className="bg-card border rounded-2xl p-4 space-y-3">
           <div className="flex items-center gap-3">
             <div className="bg-primary/10 rounded-xl p-2.5">
@@ -73,7 +69,6 @@ export default function Settings() {
           </div>
         </div>
 
-        {/* Friends link */}
         <Link
           to="/friends"
           className="flex items-center gap-3 bg-card border rounded-2xl p-4 transition-all duration-200 btn-press"
@@ -89,17 +84,15 @@ export default function Settings() {
         </Link>
       </section>
 
-      {/* Appearance section */}
       <section className="space-y-3 animate-fade-up" style={{ animationDelay: "160ms" }}>
         <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{t("appearance")}</h3>
 
-        {/* Theme selector */}
         <div className="bg-card border rounded-2xl p-4 space-y-3">
           <div className="flex items-center gap-3">
             <div className="bg-accent/10 rounded-xl p-2.5">
               <Palette size={18} className="text-accent" />
             </div>
-            <span className="text-sm font-semibold text-foreground">Theme</span>
+            <span className="text-sm font-semibold text-foreground">{t("theme")}</span>
           </div>
           <div className="grid grid-cols-3 gap-2">
             {themeOptions.map((opt) => (
@@ -119,7 +112,6 @@ export default function Settings() {
           </div>
         </div>
 
-        {/* Font size */}
         <div className="bg-card border rounded-2xl p-4 space-y-3">
           <div className="flex items-center gap-3">
             <div className="bg-success/10 rounded-xl p-2.5">
@@ -145,19 +137,17 @@ export default function Settings() {
         </div>
       </section>
 
-      {/* Experience section */}
       <section className="space-y-3 animate-fade-up" style={{ animationDelay: "200ms" }}>
-        <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Experience</h3>
+        <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{t("experience")}</h3>
 
-        {/* Simple Mode */}
         <div className="bg-card border rounded-2xl p-4">
           <div className="flex items-center gap-3">
             <div className="bg-primary/10 rounded-xl p-2.5">
               <Zap size={18} className="text-primary" />
             </div>
             <div className="flex-1">
-              <p className="text-sm font-semibold text-foreground">Simple Mode</p>
-              <p className="text-xs text-muted-foreground">Hide advanced analytics for a cleaner experience</p>
+              <p className="text-sm font-semibold text-foreground">{t("simpleMode")}</p>
+              <p className="text-xs text-muted-foreground">{t("simpleModeDesc")}</p>
             </div>
             <button
               onClick={() => setAppMode(appMode === "simple" ? "advanced" : "simple")}
@@ -172,15 +162,14 @@ export default function Settings() {
           </div>
         </div>
 
-        {/* Gamification toggle */}
         <div className="bg-card border rounded-2xl p-4">
           <div className="flex items-center gap-3">
             <div className="bg-warning/10 rounded-xl p-2.5">
               <Gamepad2 size={18} className="text-warning" />
             </div>
             <div className="flex-1">
-              <p className="text-sm font-semibold text-foreground">Gamification</p>
-              <p className="text-xs text-muted-foreground">XP, levels, badges & daily missions</p>
+              <p className="text-sm font-semibold text-foreground">{t("gamification")}</p>
+              <p className="text-xs text-muted-foreground">{t("gamificationDesc")}</p>
             </div>
             <button
               onClick={() => setGamificationEnabled(!gamificationEnabled)}
@@ -196,13 +185,12 @@ export default function Settings() {
         </div>
       </section>
 
-      {/* Sign out */}
       <section className="animate-fade-up" style={{ animationDelay: "240ms" }}>
         <button
           onClick={handleSignOut}
           className="w-full flex items-center justify-center gap-2 bg-destructive/10 text-destructive border border-destructive/15 rounded-2xl py-3 text-sm font-semibold transition-all btn-press"
         >
-          <LogOut size={16} /> Sign Out
+          <LogOut size={16} /> {t("signOut")}
         </button>
       </section>
     </div>

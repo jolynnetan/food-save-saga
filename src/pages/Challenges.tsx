@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { useT } from "@/contexts/SettingsContext";
 
 type Challenge = {
   id: number;
@@ -163,17 +164,18 @@ const birthdayVouchers: Reward[] = [
   { id: 903, title: "🎊 Birthday Meal Donation", emoji: "💝", description: "We donate a meal in your name — on us!", cost: 0, category: "donate", terms: "Automatically donated during your birthday month. One per year." },
 ];
 
-const challengeTabs = [
-  { key: "daily" as const, label: "Daily", icon: Flame },
-  { key: "weekly" as const, label: "Weekly", icon: Calendar },
-  { key: "monthly" as const, label: "Monthly", icon: Star },
+// These will be populated inside the component with translations
+const challengeTabKeys = [
+  { key: "daily" as const, labelKey: "daily", icon: Flame },
+  { key: "weekly" as const, labelKey: "weekly", icon: Calendar },
+  { key: "monthly" as const, labelKey: "monthly", icon: Star },
 ];
 
-const rewardCategories = [
-  { key: "all" as const, label: "All", icon: Sparkles },
-  { key: "donate" as const, label: "Donate", icon: Heart },
-  { key: "eco" as const, label: "Eco", icon: TreePine },
-  { key: "voucher" as const, label: "Vouchers", icon: ShoppingBag },
+const rewardCategoryKeys = [
+  { key: "all" as const, labelKey: "all", icon: Sparkles },
+  { key: "donate" as const, labelKey: "donate", icon: Heart },
+  { key: "eco" as const, labelKey: "eco", icon: TreePine },
+  { key: "voucher" as const, labelKey: "vouchers", icon: ShoppingBag },
 ];
 
 export default function Challenges() {
@@ -236,6 +238,7 @@ export default function Challenges() {
   const [showVoucher, setShowVoucher] = useState<Reward | null>(null);
   const { points, addPoints, spendPoints } = usePoints();
   const { toast } = useToast();
+  const t = useT();
 
   const refreshChallenges = useCallback(() => {
     const allDone = challenges.every(c => c.done);
@@ -396,14 +399,14 @@ export default function Challenges() {
   return (
     <div className="px-4 py-5 max-w-lg mx-auto space-y-5">
       <div className="animate-fade-up">
-        <h2 className="text-2xl font-bold text-foreground text-balance">Challenges & Rewards</h2>
-        <p className="text-muted-foreground mt-1">Earn points and redeem for real impact</p>
+        <h2 className="text-2xl font-bold text-foreground text-balance">{t("challengesAndRewards")}</h2>
+        <p className="text-muted-foreground mt-1">{t("earnPointsDesc")}</p>
       </div>
 
       {/* Points banner */}
       <div className="bg-primary/10 border border-primary/20 rounded-xl px-4 py-3 flex items-center justify-between animate-fade-up" style={{ animationDelay: "60ms" }}>
-        <span className="text-sm text-foreground">Your Points</span>
-        <span className="text-lg font-bold text-primary tabular-nums">{points.toLocaleString()} pts</span>
+        <span className="text-sm text-foreground">{t("yourPoints")}</span>
+        <span className="text-lg font-bold text-primary tabular-nums">{points.toLocaleString()} {t("pts")}</span>
       </div>
 
       {/* Top toggle */}
@@ -414,7 +417,7 @@ export default function Challenges() {
             topTab === "challenges" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"
           }`}
         >
-          <Flame size={16} /> Challenges
+          <Flame size={16} /> {t("challenges")}
         </button>
         <button
           onClick={() => setTopTab("rewards")}
@@ -422,7 +425,7 @@ export default function Challenges() {
             topTab === "rewards" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"
           }`}
         >
-          <Gift size={16} /> Rewards
+          <Gift size={16} /> {t("rewards")}
         </button>
       </div>
 
@@ -430,7 +433,7 @@ export default function Challenges() {
         <>
           {/* Category tabs */}
           <div className="flex items-center gap-2 animate-fade-up" style={{ animationDelay: "120ms" }}>
-            {challengeTabs.map(({ key, label, icon: Icon }) => (
+            {challengeTabKeys.map(({ key, labelKey, icon: Icon }) => (
               <button
                 key={key}
                 onClick={() => setActiveTab(key)}
@@ -440,7 +443,7 @@ export default function Challenges() {
                     : "bg-muted text-muted-foreground hover:bg-muted/80"
                 }`}
               >
-                <Icon size={14} /> {label}
+                <Icon size={14} /> {t(labelKey)}
               </button>
             ))}
             <button
@@ -448,15 +451,15 @@ export default function Challenges() {
               className="ml-auto flex items-center gap-1 px-3 py-2 rounded-full text-xs font-medium bg-muted text-muted-foreground hover:bg-muted/80 transition-all duration-200 active:scale-[0.96]"
               title="Get new challenges"
             >
-              <RefreshCw size={13} /> New
+              <RefreshCw size={13} /> {t("newChallenges")}
             </button>
           </div>
 
           {/* Progress */}
           <div className="bg-card border rounded-2xl p-4 animate-fade-up" style={{ animationDelay: "160ms" }}>
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm text-muted-foreground">{completedCount}/{filtered.length} completed</span>
-              <span className="text-sm font-semibold text-primary">+{totalPts} pts earned</span>
+              <span className="text-sm text-muted-foreground">{completedCount}/{filtered.length} {t("completed")}</span>
+              <span className="text-sm font-semibold text-primary">+{totalPts} {t("ptsEarned")}</span>
             </div>
             <div className="w-full bg-muted rounded-full h-2.5">
               <div
@@ -510,7 +513,7 @@ export default function Challenges() {
         <>
           {/* Reward category tabs */}
           <div className="flex gap-2 overflow-x-auto no-scrollbar animate-fade-up" style={{ animationDelay: "120ms" }}>
-            {rewardCategories.map(({ key, label, icon: Icon }) => (
+            {rewardCategoryKeys.map(({ key, labelKey, icon: Icon }) => (
               <button
                 key={key}
                 onClick={() => setRewardCategory(key)}
@@ -520,7 +523,7 @@ export default function Challenges() {
                     : "bg-muted text-muted-foreground hover:bg-muted/80"
                 }`}
               >
-                <Icon size={14} /> {label}
+                <Icon size={14} /> {t(labelKey)}
               </button>
             ))}
           </div>
@@ -531,9 +534,9 @@ export default function Challenges() {
               <div className="bg-gradient-to-r from-primary/10 via-warning/10 to-primary/10 border border-primary/20 rounded-2xl p-4">
                 <div className="flex items-center gap-2 mb-3">
                   <Cake size={18} className="text-primary" />
-                  <h3 className="text-sm font-bold text-foreground">🎉 Happy Birthday!</h3>
+                  <h3 className="text-sm font-bold text-foreground">{t("happyBirthday")}</h3>
                 </div>
-                <p className="text-xs text-muted-foreground mb-3">These free rewards are available during your birthday month. Claim them before the month ends!</p>
+                <p className="text-xs text-muted-foreground mb-3">{t("birthdayDesc")}</p>
                 <div className="space-y-2">
                   {birthdayVouchers.map((reward) => {
                     const isClaimed = birthdayRedeemed.includes(reward.id);
@@ -553,7 +556,7 @@ export default function Challenges() {
                               : "bg-primary text-primary-foreground shadow-sm"
                           }`}
                         >
-                          {isClaimed ? <><Check size={12} /> Claimed</> : <><Gift size={12} /> FREE</>}
+                          {isClaimed ? <><Check size={12} /> {t("claimed")}</> : <><Gift size={12} /> {t("free")}</>}
                         </button>
                       </div>
                     );
@@ -597,7 +600,7 @@ export default function Challenges() {
                           : "bg-muted text-muted-foreground cursor-not-allowed"
                       }`}
                     >
-                      {isRedeemed ? <><Check size={14} /> Done</> : canAfford ? <><Gift size={14} /> Redeem</> : <><Lock size={14} /> Locked</>}
+                      {isRedeemed ? <><Check size={14} /> {t("done")}</> : canAfford ? <><Gift size={14} /> {t("redeem")}</> : <><Lock size={14} /> {t("locked")}</>}
                     </button>
                   </div>
                 </div>
@@ -612,10 +615,10 @@ export default function Challenges() {
         <DialogContent className="max-w-sm rounded-2xl">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-base">
-              <span className="text-xl">{proofChallenge?.emoji}</span> Complete Challenge
+              <span className="text-xl">{proofChallenge?.emoji}</span> {t("completeChallenge")}
             </DialogTitle>
             <DialogDescription className="text-xs">
-              Submit proof that you completed: <span className="font-medium text-foreground">{proofChallenge?.title}</span>
+              {t("submitProof")}: <span className="font-medium text-foreground">{proofChallenge?.title}</span>
             </DialogDescription>
           </DialogHeader>
 
@@ -627,7 +630,7 @@ export default function Challenges() {
                 proofType === "photo" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"
               }`}
             >
-              <Camera size={14} /> Upload Photo
+              <Camera size={14} /> {t("uploadPhoto")}
             </button>
             <button
               onClick={() => setProofType("text")}
@@ -635,7 +638,7 @@ export default function Challenges() {
                 proofType === "text" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"
               }`}
             >
-              <MessageSquare size={14} /> Description
+              <MessageSquare size={14} /> {t("description")}
             </button>
           </div>
 
@@ -665,13 +668,13 @@ export default function Challenges() {
                   className="w-full h-40 border-2 border-dashed border-muted-foreground/30 rounded-xl flex flex-col items-center justify-center gap-2 text-muted-foreground hover:border-primary/40 hover:text-primary transition-colors"
                 >
                   <Upload size={24} />
-                  <span className="text-xs font-medium">Tap to upload photo</span>
+                  <span className="text-xs font-medium">{t("tapToUpload")}</span>
                 </button>
               )}
             </div>
           ) : (
             <Textarea
-              placeholder="Describe how you completed this challenge..."
+              placeholder={t("describeCompletion")}
               value={proofText}
               onChange={(e) => setProofText(e.target.value)}
               rows={4}
@@ -684,13 +687,13 @@ export default function Challenges() {
               onClick={() => setProofChallenge(null)}
               className="flex-1 bg-muted text-muted-foreground rounded-xl py-2.5 text-sm font-semibold transition-all active:scale-[0.97]"
             >
-              Cancel
+              {t("cancel")}
             </button>
             <button
               onClick={submitProof}
               className="flex-1 bg-primary text-primary-foreground rounded-xl py-2.5 text-sm font-semibold transition-all active:scale-[0.97] shadow-lg shadow-primary/20"
             >
-              Submit & Earn +{proofChallenge?.pts} pts
+              {t("submitAndEarn")} +{proofChallenge?.pts} {t("pts")}
             </button>
           </div>
         </DialogContent>
@@ -702,7 +705,7 @@ export default function Challenges() {
           <div className="bg-card rounded-2xl w-full max-w-md p-5 space-y-4 animate-scale-in">
             <div className="flex items-center justify-between">
               <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
-                <FileText size={18} className="text-primary" /> Terms & Conditions
+                <FileText size={18} className="text-primary" /> {t("termsAndConditions")}
               </h3>
               <button onClick={() => setShowTerms(null)} className="text-muted-foreground hover:text-foreground"><X size={18} /></button>
             </div>
@@ -710,7 +713,7 @@ export default function Challenges() {
               <span className="text-2xl">{showTerms.emoji}</span>
               <div>
                 <p className="text-sm font-semibold text-foreground">{showTerms.title}</p>
-                <p className="text-xs text-primary font-medium tabular-nums">{showTerms.cost === 0 ? "FREE 🎂" : `${showTerms.cost.toLocaleString()} pts`}</p>
+                <p className="text-xs text-primary font-medium tabular-nums">{showTerms.cost === 0 ? `${t("free")} 🎂` : `${showTerms.cost.toLocaleString()} ${t("pts")}`}</p>
               </div>
             </div>
             <div className="bg-muted/50 rounded-xl p-4">
@@ -724,15 +727,15 @@ export default function Challenges() {
               </ul>
             </div>
             <div className="flex gap-2">
-              <button onClick={() => setShowTerms(null)} className="flex-1 bg-muted text-muted-foreground rounded-xl py-3 text-sm font-semibold transition-all active:scale-[0.97]">Cancel</button>
+              <button onClick={() => setShowTerms(null)} className="flex-1 bg-muted text-muted-foreground rounded-xl py-3 text-sm font-semibold transition-all active:scale-[0.97]">{t("cancel")}</button>
               {birthdayVouchers.some(b => b.id === showTerms.id) ? (
-                <button onClick={() => confirmBirthdayRedeem(showTerms)} className="flex-1 bg-primary text-primary-foreground rounded-xl py-3 text-sm font-semibold transition-all active:scale-[0.97] shadow-lg shadow-primary/20">Accept & Claim Free</button>
+                <button onClick={() => confirmBirthdayRedeem(showTerms)} className="flex-1 bg-primary text-primary-foreground rounded-xl py-3 text-sm font-semibold transition-all active:scale-[0.97] shadow-lg shadow-primary/20">{t("acceptAndClaimFree")}</button>
               ) : points >= showTerms.cost ? (
-                <button onClick={() => confirmRedeem(showTerms)} className="flex-1 bg-primary text-primary-foreground rounded-xl py-3 text-sm font-semibold transition-all active:scale-[0.97] shadow-lg shadow-primary/20">Accept & Redeem</button>
+                <button onClick={() => confirmRedeem(showTerms)} className="flex-1 bg-primary text-primary-foreground rounded-xl py-3 text-sm font-semibold transition-all active:scale-[0.97] shadow-lg shadow-primary/20">{t("acceptAndRedeem")}</button>
               ) : (
                 <div className="flex-1 flex flex-col items-center justify-center bg-muted/80 rounded-xl py-2.5 gap-0.5">
-                  <span className="text-xs font-semibold text-muted-foreground flex items-center gap-1"><Lock size={12} /> Insufficient Points</span>
-                  <span className="text-[10px] text-muted-foreground tabular-nums">Need {(showTerms.cost - points).toLocaleString()} more pts</span>
+                  <span className="text-xs font-semibold text-muted-foreground flex items-center gap-1"><Lock size={12} /> {t("insufficientPoints")}</span>
+                  <span className="text-[10px] text-muted-foreground tabular-nums">{t("needMorePts", { amount: (showTerms.cost - points).toLocaleString() })}</span>
                 </div>
               )}
             </div>
@@ -745,14 +748,14 @@ export default function Challenges() {
         <div className="fixed inset-0 bg-foreground/50 z-50 flex items-end sm:items-center justify-center p-4">
           <div className="bg-card rounded-2xl w-full max-w-md p-5 space-y-4 animate-scale-in text-center">
             <span className="text-5xl">{showVoucher.emoji}</span>
-            <h3 className="text-lg font-bold text-foreground">Voucher Redeemed! 🎉</h3>
+            <h3 className="text-lg font-bold text-foreground">{t("voucherRedeemed")}</h3>
             <p className="text-sm text-muted-foreground">{showVoucher.title}</p>
             <div className="bg-muted rounded-xl p-4 border-2 border-dashed border-primary/30">
-              <p className="text-[10px] text-muted-foreground mb-1">Your voucher code</p>
+              <p className="text-[10px] text-muted-foreground mb-1">{t("yourVoucherCode")}</p>
               <p className="text-xl font-bold text-primary tracking-widest tabular-nums">{showVoucher.voucherCode}</p>
             </div>
-            <p className="text-[10px] text-muted-foreground">Screenshot this code. Show it at participating stores to redeem.</p>
-            <button onClick={() => setShowVoucher(null)} className="w-full bg-primary text-primary-foreground rounded-xl py-3 text-sm font-semibold transition-all active:scale-[0.97]">Got it!</button>
+            <p className="text-[10px] text-muted-foreground">{t("screenshotCode")}</p>
+            <button onClick={() => setShowVoucher(null)} className="w-full bg-primary text-primary-foreground rounded-xl py-3 text-sm font-semibold transition-all active:scale-[0.97]">{t("gotIt")}</button>
           </div>
         </div>
       )}

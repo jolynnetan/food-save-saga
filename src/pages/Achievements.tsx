@@ -1,16 +1,18 @@
 import { useGamification, LEVELS } from "@/contexts/GamificationContext";
+import { useT } from "@/contexts/SettingsContext";
 import { Lock, CheckCircle2 } from "lucide-react";
-
-const categoryLabels: Record<string, { label: string; emoji: string }> = {
-  streak: { label: "Streaks", emoji: "🔥" },
-  waste: { label: "Food Saving", emoji: "🥬" },
-  community: { label: "Community", emoji: "🤝" },
-  mastery: { label: "Mastery", emoji: "🎯" },
-};
 
 export default function Achievements() {
   const { badges, xp, level, xpProgress } = useGamification();
+  const t = useT();
   const unlockedCount = badges.filter(b => b.unlocked).length;
+
+  const categoryLabels: Record<string, { label: string; emoji: string }> = {
+    streak: { label: t("streaks"), emoji: "🔥" },
+    waste: { label: t("foodSaving"), emoji: "🥬" },
+    community: { label: t("community"), emoji: "🤝" },
+    mastery: { label: t("mastery"), emoji: "🎯" },
+  };
 
   const grouped = badges.reduce((acc, badge) => {
     if (!acc[badge.category]) acc[badge.category] = [];
@@ -21,8 +23,8 @@ export default function Achievements() {
   return (
     <div className="px-4 py-5 max-w-lg mx-auto space-y-5">
       <div className="animate-fade-up">
-        <h2 className="text-2xl font-bold text-foreground">Achievements</h2>
-        <p className="text-muted-foreground mt-1">{unlockedCount}/{badges.length} badges unlocked</p>
+        <h2 className="text-2xl font-bold text-foreground">{t("achievementsTitle")}</h2>
+        <p className="text-muted-foreground mt-1">{unlockedCount}/{badges.length} {t("badgesUnlocked")}</p>
       </div>
 
       {/* Level card */}

@@ -4,7 +4,7 @@ import QuickToolsEditor, { getSelectedTools, type QuickTool } from "@/components
 import ImpactStory from "@/components/ImpactStory";
 import { Link } from "react-router-dom";
 import { usePoints } from "@/contexts/PointsContext";
-import { useSettings } from "@/contexts/SettingsContext";
+import { useSettings, useT } from "@/contexts/SettingsContext";
 import { useGamification, LEVELS } from "@/contexts/GamificationContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -98,11 +98,11 @@ function getDailyTip() {
   return tips[(dayOfYear + 7) % tips.length];
 }
 
-function getGreeting() {
+function getGreeting(t: (key: string) => string) {
   const hour = new Date().getHours();
-  if (hour < 12) return "Good morning";
-  if (hour < 17) return "Good afternoon";
-  return "Good evening";
+  if (hour < 12) return t("goodMorning");
+  if (hour < 17) return t("goodAfternoon");
+  return t("goodEvening");
 }
 
 /* Calorie ring chart */
@@ -148,6 +148,7 @@ export default function Dashboard() {
   const [quickTools, setQuickTools] = useState<QuickTool[]>(getSelectedTools);
   const [editToolsOpen, setEditToolsOpen] = useState(false);
   const isSimple = appMode === "simple";
+  const t = useT();
 
   // Fetch today's calorie total from DB
   useEffect(() => {
@@ -183,9 +184,9 @@ export default function Dashboard() {
   useEffect(() => { setTodayTasks(getDailyChallenges()); }, []);
 
   const quickStats = [
-    { icon: Flame, label: "Streak", value: `${streak}`, unit: "days", color: "text-streak", bg: "bg-streak/10", border: "border-streak/20" },
-    { icon: Leaf, label: "Saved", value: "3.2", unit: "kg", color: "text-primary", bg: "bg-primary/10", border: "border-primary/20" },
-    { icon: TrendingDown, label: "CO₂", value: "-8.1", unit: "kg", color: "text-success", bg: "bg-success/10", border: "border-success/20" },
+    { icon: Flame, label: t("streak"), value: `${streak}`, unit: t("days"), color: "text-streak", bg: "bg-streak/10", border: "border-streak/20" },
+    { icon: Leaf, label: t("saved"), value: "3.2", unit: t("kg"), color: "text-primary", bg: "bg-primary/10", border: "border-primary/20" },
+    { icon: TrendingDown, label: "CO₂", value: "-8.1", unit: t("kg"), color: "text-success", bg: "bg-success/10", border: "border-success/20" },
   ];
 
   const nextLevel = LEVELS[Math.min(level.level, LEVELS.length - 1)];
@@ -216,10 +217,10 @@ export default function Dashboard() {
           )}
           <div className="flex-1 min-w-0">
             <h2 className="text-2xl font-bold leading-tight text-balance">
-              {getGreeting()}! 👋
+              {getGreeting(t)}! 👋
             </h2>
             <p className="text-primary-foreground/80 mt-1 text-sm leading-relaxed">
-              You've saved <span className="font-bold text-primary-foreground">3.2 kg</span> of food this week. Keep going!
+              {t("savedThisWeek", { amount: "3.2 kg" })}
             </p>
             {gamificationEnabled && (
               <div className="mt-2.5 flex items-center gap-2 flex-wrap">
@@ -295,7 +296,7 @@ export default function Dashboard() {
               <div className="w-6 h-6 gradient-reward rounded-lg flex items-center justify-center shadow-reward-glow">
                 <Zap size={14} className="text-white" />
               </div>
-              <h3 className="text-base font-bold text-foreground">Daily Quests</h3>
+              <h3 className="text-base font-bold text-foreground">{t("dailyQuests")}</h3>
             </div>
             <span className="text-[11px] font-semibold text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
               {dailyMissions.filter(m => m.completed).length}/{dailyMissions.length}
@@ -351,7 +352,7 @@ export default function Dashboard() {
           className="col-span-2 bg-card border border-border rounded-2xl p-4 flex flex-col items-center justify-center hover-lift shadow-soft-sm"
         >
           <CalorieRing consumed={todayCalories} />
-          <p className="text-[11px] font-semibold text-foreground mt-2">Today's Calories</p>
+          <p className="text-[11px] font-semibold text-foreground mt-2">{t("todaysCalories")}</p>
         </Link>
 
         {/* Scan CTA */}
@@ -364,8 +365,8 @@ export default function Dashboard() {
             <div className="bg-primary-foreground/15 rounded-xl p-2.5 w-fit group-hover:bg-primary-foreground/25 transition-colors duration-300">
               <Camera size={22} />
             </div>
-            <p className="font-bold text-[15px] mt-3">Scan leftovers</p>
-            <p className="text-sm text-primary-foreground/70 mt-0.5">Get recipe ideas</p>
+            <p className="font-bold text-[15px] mt-3">{t("scanLeftovers")}</p>
+            <p className="text-sm text-primary-foreground/70 mt-0.5">{t("getRecipeIdeas")}</p>
           </div>
           <ChevronRight size={18} className="opacity-50 self-end group-hover:translate-x-1 transition-transform duration-300" />
         </Link>
@@ -376,9 +377,9 @@ export default function Dashboard() {
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
             <span className="text-lg">🎯</span>
-            <h3 className="text-base font-bold text-foreground">Today's Challenges</h3>
+            <h3 className="text-base font-bold text-foreground">{t("todaysChallenges")}</h3>
           </div>
-          <Link to="/challenges" className="text-sm text-primary font-semibold hover:underline">See all</Link>
+          <Link to="/challenges" className="text-sm text-primary font-semibold hover:underline">{t("seeAll")}</Link>
         </div>
         <div className="space-y-2.5">
           {todayTasks.map((task) => (
@@ -423,9 +424,9 @@ export default function Dashboard() {
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <span className="text-lg">🏅</span>
-              <h3 className="text-base font-bold text-foreground">Recent Achievements</h3>
+              <h3 className="text-base font-bold text-foreground">{t("recentAchievements")}</h3>
             </div>
-            <Link to="/achievements" className="text-sm text-primary font-semibold hover:underline">View all</Link>
+            <Link to="/achievements" className="text-sm text-primary font-semibold hover:underline">{t("viewAll")}</Link>
           </div>
           <div className="flex gap-2.5 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-none">
             {recentAchievements.slice(0, 5).map((a, i) => (
@@ -449,16 +450,16 @@ export default function Dashboard() {
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
             <span className="text-lg">🧰</span>
-            <h3 className="text-base font-bold text-foreground">Quick Tools</h3>
+            <h3 className="text-base font-bold text-foreground">{t("quickTools")}</h3>
           </div>
           <div className="flex items-center gap-2">
             <button
               onClick={() => setEditToolsOpen(true)}
               className="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary font-semibold transition-colors btn-press"
             >
-              <Pencil size={12} /> Edit
+              <Pencil size={12} /> {t("edit")}
             </button>
-            <Link to="/more" className="text-sm text-primary font-semibold hover:underline">See all</Link>
+            <Link to="/more" className="text-sm text-primary font-semibold hover:underline">{t("seeAll")}</Link>
           </div>
         </div>
         <div className="grid grid-cols-3 gap-2.5">
@@ -487,7 +488,7 @@ export default function Dashboard() {
       {!isSimple && (
         <section className="animate-fade-up" style={{ animationDelay: "320ms" }}>
           <h3 className="text-base font-bold text-foreground mb-3 flex items-center gap-2">
-            <span>🌍</span> Why It Matters
+            <span>🌍</span> {t("whyItMatters")}
           </h3>
           <div className="relative overflow-hidden rounded-2xl border border-primary/15 shadow-soft-sm">
             <div className="absolute inset-0 gradient-hero opacity-10" />
@@ -514,7 +515,7 @@ export default function Dashboard() {
       {/* Daily Tip */}
       <section className="animate-fade-up" style={{ animationDelay: "400ms" }}>
         <h3 className="text-base font-bold text-foreground mb-3 flex items-center gap-2">
-          <span>💡</span> Daily Tip
+          <span>💡</span> {t("dailyTip")}
         </h3>
         <div className="relative overflow-hidden rounded-2xl border border-warning/15 shadow-soft-sm">
           <div className="absolute inset-0 bg-gradient-to-br from-warning/5 to-streak/5" />

@@ -3,16 +3,9 @@ import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { Home, Camera, MoreHorizontal, ArrowLeft, Settings, Sparkles, ChefHat, Flame } from "lucide-react";
 import { usePoints } from "@/contexts/PointsContext";
 import { useGamification } from "@/contexts/GamificationContext";
+import { useT } from "@/contexts/SettingsContext";
 import GlobalSearch from "@/components/GlobalSearch";
 import AiChatPopup from "@/components/AiChatPopup";
-
-const navItems = [
-  { to: "/", icon: Home, label: "Home" },
-  { to: "/challenges", icon: Flame, label: "Challenges" },
-  { to: "/scanner", icon: Camera, label: "Scan" },
-  { to: "/recipes", icon: ChefHat, label: "Recipes" },
-  { to: "/more", icon: MoreHorizontal, label: "More" },
-];
 
 const mainRoutes = ["/", "/challenges", "/scanner", "/recipes", "/more"];
 
@@ -22,6 +15,15 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const { points, streak } = usePoints();
   const { level, xp, gamificationEnabled } = useGamification();
   const [aiOpen, setAiOpen] = useState(false);
+  const t = useT();
+
+  const navItems = [
+    { to: "/", icon: Home, label: t("navHome") },
+    { to: "/challenges", icon: Flame, label: t("navChallenges") },
+    { to: "/scanner", icon: Camera, label: t("navScan") },
+    { to: "/recipes", icon: ChefHat, label: t("navRecipes") },
+    { to: "/more", icon: MoreHorizontal, label: t("navMore") },
+  ];
 
   const isSubPage = !mainRoutes.includes(location.pathname);
 

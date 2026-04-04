@@ -1,6 +1,9 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { Language, languages, allTranslations, translate } from "@/lib/translations";
 
-type Language = "en" | "ms" | "zh" | "ta";
+export type { Language };
+export { languages };
+
 type FontSize = "small" | "medium" | "large";
 type Theme = "light" | "dark" | "eco";
 type AppMode = "simple" | "advanced";
@@ -28,79 +31,8 @@ const fontSizeMap: Record<FontSize, string> = {
 
 const DEFAULT_DASHBOARD_ORDER = ["stats", "missions", "calories-scan", "challenges", "achievements", "impact", "tools", "motivation", "tip"];
 
-export const languages: Record<Language, { label: string; flag: string }> = {
-  en: { label: "English", flag: "🇬🇧" },
-  ms: { label: "Bahasa Melayu", flag: "🇲🇾" },
-  zh: { label: "中文", flag: "🇨🇳" },
-  ta: { label: "தமிழ்", flag: "🇮🇳" },
-};
-
-export const translations: Record<Language, Record<string, string>> = {
-  en: {
-    settings: "Settings",
-    settingsDesc: "Customize your experience",
-    language: "Language",
-    fontSize: "Font Size",
-    small: "Small",
-    medium: "Medium",
-    large: "Large",
-    darkMode: "Dark Mode",
-    darkModeDesc: "Switch to dark theme",
-    friends: "Friends",
-    friendsDesc: "Track your friends' progress",
-    appearance: "Appearance",
-    general: "General",
-    viewFriends: "View Friends",
-  },
-  ms: {
-    settings: "Tetapan",
-    settingsDesc: "Sesuaikan pengalaman anda",
-    language: "Bahasa",
-    fontSize: "Saiz Font",
-    small: "Kecil",
-    medium: "Sederhana",
-    large: "Besar",
-    darkMode: "Mod Gelap",
-    darkModeDesc: "Tukar ke tema gelap",
-    friends: "Rakan",
-    friendsDesc: "Jejaki kemajuan rakan anda",
-    appearance: "Penampilan",
-    general: "Umum",
-    viewFriends: "Lihat Rakan",
-  },
-  zh: {
-    settings: "设置",
-    settingsDesc: "自定义您的体验",
-    language: "语言",
-    fontSize: "字体大小",
-    small: "小",
-    medium: "中",
-    large: "大",
-    darkMode: "深色模式",
-    darkModeDesc: "切换到深色主题",
-    friends: "好友",
-    friendsDesc: "追踪好友的进展",
-    appearance: "外观",
-    general: "通用",
-    viewFriends: "查看好友",
-  },
-  ta: {
-    settings: "அமைப்புகள்",
-    settingsDesc: "உங்கள் அனுபவத்தை தனிப்பயனாக்கவும்",
-    language: "மொழி",
-    fontSize: "எழுத்துரு அளவு",
-    small: "சிறிய",
-    medium: "நடுத்தர",
-    large: "பெரிய",
-    darkMode: "இருண்ட பயன்முறை",
-    darkModeDesc: "இருண்ட தீம்க்கு மாறவும்",
-    friends: "நண்பர்கள்",
-    friendsDesc: "உங்கள் நண்பர்களின் முன்னேற்றத்தை கண்காணிக்கவும்",
-    appearance: "தோற்றம்",
-    general: "பொது",
-    viewFriends: "நண்பர்களைக் காண",
-  },
-};
+// Keep legacy export for backward compat
+export const translations = allTranslations;
 
 function applyThemeClass(theme: Theme) {
   const el = document.documentElement;
@@ -147,5 +79,5 @@ export function useSettings() {
 
 export function useT() {
   const { language } = useSettings();
-  return (key: string) => translations[language]?.[key] ?? translations.en[key] ?? key;
+  return (key: string, params?: Record<string, string | number>) => translate(language, key, params);
 }

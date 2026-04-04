@@ -4,6 +4,7 @@ import { Camera, Upload, X, Lightbulb, ChefHat, Recycle, Plus, Trash2, Flame, Lo
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { useT } from "@/contexts/SettingsContext";
 import { Input } from "@/components/ui/input";
 
 type ScannedItem = {
@@ -119,6 +120,7 @@ const parseScanPayload = async (data: unknown) => {
 
 export default function Scanner() {
   const { user } = useAuth();
+  const t = useT();
   const navigate = useNavigate();
   const [image, setImage] = useState<string | null>(null);
   const [scanning, setScanning] = useState(false);
@@ -302,8 +304,8 @@ export default function Scanner() {
   return (
     <div className="px-4 py-5 max-w-lg mx-auto space-y-5 pb-28">
       <div className="animate-fade-up">
-        <h2 className="text-2xl font-bold text-foreground">Food & Leftover Scanner</h2>
-        <p className="text-muted-foreground mt-1">Scan food to get calorie reports & waste reduction tips</p>
+        <h2 className="text-2xl font-bold text-foreground">{t("foodScanner")}</h2>
+        <p className="text-muted-foreground mt-1">{t("scannerDesc")}</p>
       </div>
 
       {!image ? (
