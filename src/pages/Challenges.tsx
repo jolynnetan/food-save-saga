@@ -600,7 +600,7 @@ export default function Challenges() {
                           : "bg-muted text-muted-foreground cursor-not-allowed"
                       }`}
                     >
-                      {isRedeemed ? <><Check size={14} /> Done</> : canAfford ? <><Gift size={14} /> Redeem</> : <><Lock size={14} /> Locked</>}
+                      {isRedeemed ? <><Check size={14} /> {t("done")}</> : canAfford ? <><Gift size={14} /> {t("redeem")}</> : <><Lock size={14} /> {t("locked")}</>}
                     </button>
                   </div>
                 </div>
