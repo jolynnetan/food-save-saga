@@ -345,6 +345,13 @@ export default function CalorieTracker() {
                 placeholder="e.g. Nasi lemak with fried chicken"
                 className="w-full bg-muted rounded-xl px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:ring-2 focus:ring-primary/30"
               />
+              <input
+                value={manualAmount}
+                onChange={(e) => setManualAmount(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleManualEstimate()}
+                placeholder="Amount (e.g. 2 plates, 300g, 1 bowl)"
+                className="w-full bg-muted rounded-xl px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:ring-2 focus:ring-primary/30"
+              />
               <button
                 onClick={handleManualEstimate}
                 disabled={!manualInput.trim() || estimating}
