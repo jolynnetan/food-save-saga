@@ -1,12 +1,6 @@
 import { useGamification, LEVELS } from "@/contexts/GamificationContext";
+import { useT } from "@/contexts/SettingsContext";
 import { Lock, CheckCircle2 } from "lucide-react";
-
-const categoryLabels: Record<string, { label: string; emoji: string }> = {
-  streak: { label: "Streaks", emoji: "🔥" },
-  waste: { label: "Food Saving", emoji: "🥬" },
-  community: { label: "Community", emoji: "🤝" },
-  mastery: { label: "Mastery", emoji: "🎯" },
-};
 
 export default function Achievements() {
   const { badges, xp, level, xpProgress } = useGamification();

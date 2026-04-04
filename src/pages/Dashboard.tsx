@@ -4,7 +4,7 @@ import QuickToolsEditor, { getSelectedTools, type QuickTool } from "@/components
 import ImpactStory from "@/components/ImpactStory";
 import { Link } from "react-router-dom";
 import { usePoints } from "@/contexts/PointsContext";
-import { useSettings } from "@/contexts/SettingsContext";
+import { useSettings, useT } from "@/contexts/SettingsContext";
 import { useGamification, LEVELS } from "@/contexts/GamificationContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
