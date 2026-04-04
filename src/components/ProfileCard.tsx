@@ -143,6 +143,41 @@ export default function ProfileCard() {
         </div>
       </div>
 
+      {/* Birthday */}
+      <div className="bg-muted/50 rounded-xl p-3">
+        <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Birthday</p>
+        {editingBirthday ? (
+          <div className="flex items-center gap-2">
+            <input
+              type="date"
+              value={editBirthday}
+              onChange={e => setEditBirthday(e.target.value)}
+              max={new Date().toISOString().slice(0, 10)}
+              className="flex-1 bg-muted rounded-lg px-3 py-1.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
+            />
+            <button onClick={handleSaveBirthday} disabled={savingBirthday || !editBirthday} className="p-1.5 rounded-lg bg-success/15 text-success hover:bg-success/25 transition-colors">
+              <Save size={14} />
+            </button>
+            <button onClick={() => setEditingBirthday(false)} className="p-1.5 rounded-lg bg-muted text-muted-foreground hover:bg-muted/80 transition-colors">
+              <X size={14} />
+            </button>
+          </div>
+        ) : (
+          <div className="flex items-center gap-2">
+            <Cake size={14} className="text-primary shrink-0" />
+            <span className="flex-1 text-sm font-medium text-foreground">
+              {birthday ? formatBirthday(birthday) : "Not set"}
+            </span>
+            <button
+              onClick={() => { setEditBirthday(birthday || ""); setEditingBirthday(true); }}
+              className="p-1 rounded-lg hover:bg-muted transition-colors text-muted-foreground"
+            >
+              <Pencil size={12} />
+            </button>
+          </div>
+        )}
+      </div>
+
       {/* Unique ID */}
       <div className="bg-muted/50 rounded-xl p-3">
         <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Your Unique ID</p>
