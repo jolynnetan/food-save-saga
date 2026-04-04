@@ -525,7 +525,6 @@ export default function Challenges() {
               >
                 <Icon size={14} /> {t(labelKey)}
               </button>
-              </button>
             ))}
           </div>
 
