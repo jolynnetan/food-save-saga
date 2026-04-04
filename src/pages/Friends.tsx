@@ -490,8 +490,8 @@ export default function Friends() {
       {tab === "add" && (
         <div className="space-y-5 animate-fade-up">
           <div className="bg-card border rounded-2xl p-5">
-            <h3 className="text-sm font-bold text-foreground mb-1">Add by Friend Code</h3>
-            <p className="text-xs text-muted-foreground mb-4">Enter your friend's 8-character code to send them a request.</p>
+            <h3 className="text-sm font-bold text-foreground mb-1">Add by Unique ID</h3>
+            <p className="text-xs text-muted-foreground mb-4">Enter your friend's 8-character unique ID to send them a request.</p>
             <div className="flex gap-2">
               <input
                 value={addCode}
