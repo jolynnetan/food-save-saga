@@ -217,10 +217,10 @@ export default function Dashboard() {
           )}
           <div className="flex-1 min-w-0">
             <h2 className="text-2xl font-bold leading-tight text-balance">
-              {getGreeting()}! 👋
+              {getGreeting(t)}! 👋
             </h2>
             <p className="text-primary-foreground/80 mt-1 text-sm leading-relaxed">
-              You've saved <span className="font-bold text-primary-foreground">3.2 kg</span> of food this week. Keep going!
+              {t("savedThisWeek", { amount: "3.2 kg" })}
             </p>
             {gamificationEnabled && (
               <div className="mt-2.5 flex items-center gap-2 flex-wrap">
