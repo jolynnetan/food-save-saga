@@ -556,7 +556,7 @@ export default function Challenges() {
                               : "bg-primary text-primary-foreground shadow-sm"
                           }`}
                         >
-                          {isClaimed ? <><Check size={12} /> Claimed</> : <><Gift size={12} /> FREE</>}
+                          {isClaimed ? <><Check size={12} /> {t("claimed")}</> : <><Gift size={12} /> {t("free")}</>}
                         </button>
                       </div>
                     );
