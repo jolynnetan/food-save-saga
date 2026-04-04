@@ -618,7 +618,14 @@ export default function Challenges() {
             </div>
             <div className="flex gap-2">
               <button onClick={() => setShowTerms(null)} className="flex-1 bg-muted text-muted-foreground rounded-xl py-3 text-sm font-semibold transition-all active:scale-[0.97]">Cancel</button>
-              <button onClick={() => confirmRedeem(showTerms)} className="flex-1 bg-primary text-primary-foreground rounded-xl py-3 text-sm font-semibold transition-all active:scale-[0.97] shadow-lg shadow-primary/20">Accept & Redeem</button>
+              {points >= showTerms.cost ? (
+                <button onClick={() => confirmRedeem(showTerms)} className="flex-1 bg-primary text-primary-foreground rounded-xl py-3 text-sm font-semibold transition-all active:scale-[0.97] shadow-lg shadow-primary/20">Accept & Redeem</button>
+              ) : (
+                <div className="flex-1 flex flex-col items-center justify-center bg-muted/80 rounded-xl py-2.5 gap-0.5">
+                  <span className="text-xs font-semibold text-muted-foreground flex items-center gap-1"><Lock size={12} /> Insufficient Points</span>
+                  <span className="text-[10px] text-muted-foreground tabular-nums">Need {(showTerms.cost - points).toLocaleString()} more pts</span>
+                </div>
+              )}
             </div>
           </div>
         </div>
