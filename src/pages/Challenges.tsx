@@ -399,14 +399,14 @@ export default function Challenges() {
   return (
     <div className="px-4 py-5 max-w-lg mx-auto space-y-5">
       <div className="animate-fade-up">
-        <h2 className="text-2xl font-bold text-foreground text-balance">Challenges & Rewards</h2>
-        <p className="text-muted-foreground mt-1">Earn points and redeem for real impact</p>
+        <h2 className="text-2xl font-bold text-foreground text-balance">{t("challengesAndRewards")}</h2>
+        <p className="text-muted-foreground mt-1">{t("earnPointsDesc")}</p>
       </div>
 
       {/* Points banner */}
       <div className="bg-primary/10 border border-primary/20 rounded-xl px-4 py-3 flex items-center justify-between animate-fade-up" style={{ animationDelay: "60ms" }}>
-        <span className="text-sm text-foreground">Your Points</span>
-        <span className="text-lg font-bold text-primary tabular-nums">{points.toLocaleString()} pts</span>
+        <span className="text-sm text-foreground">{t("yourPoints")}</span>
+        <span className="text-lg font-bold text-primary tabular-nums">{points.toLocaleString()} {t("pts")}</span>
       </div>
 
       {/* Top toggle */}
