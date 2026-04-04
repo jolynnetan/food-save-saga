@@ -748,14 +748,14 @@ export default function Challenges() {
         <div className="fixed inset-0 bg-foreground/50 z-50 flex items-end sm:items-center justify-center p-4">
           <div className="bg-card rounded-2xl w-full max-w-md p-5 space-y-4 animate-scale-in text-center">
             <span className="text-5xl">{showVoucher.emoji}</span>
-            <h3 className="text-lg font-bold text-foreground">Voucher Redeemed! 🎉</h3>
+            <h3 className="text-lg font-bold text-foreground">{t("voucherRedeemed")}</h3>
             <p className="text-sm text-muted-foreground">{showVoucher.title}</p>
             <div className="bg-muted rounded-xl p-4 border-2 border-dashed border-primary/30">
-              <p className="text-[10px] text-muted-foreground mb-1">Your voucher code</p>
+              <p className="text-[10px] text-muted-foreground mb-1">{t("yourVoucherCode")}</p>
               <p className="text-xl font-bold text-primary tracking-widest tabular-nums">{showVoucher.voucherCode}</p>
             </div>
-            <p className="text-[10px] text-muted-foreground">Screenshot this code. Show it at participating stores to redeem.</p>
-            <button onClick={() => setShowVoucher(null)} className="w-full bg-primary text-primary-foreground rounded-xl py-3 text-sm font-semibold transition-all active:scale-[0.97]">Got it!</button>
+            <p className="text-[10px] text-muted-foreground">{t("screenshotCode")}</p>
+            <button onClick={() => setShowVoucher(null)} className="w-full bg-primary text-primary-foreground rounded-xl py-3 text-sm font-semibold transition-all active:scale-[0.97]">{t("gotIt")}</button>
           </div>
         </div>
       )}
