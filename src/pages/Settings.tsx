@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useSettings, useT, languages } from "@/contexts/SettingsContext";
 import { useGamification } from "@/contexts/GamificationContext";
 import { useAuth } from "@/contexts/AuthContext";
+import ProfileCard from "@/components/ProfileCard";
 
 type FontSize = "small" | "medium" | "large";
 
