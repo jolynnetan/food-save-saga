@@ -615,10 +615,10 @@ export default function Challenges() {
         <DialogContent className="max-w-sm rounded-2xl">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-base">
-              <span className="text-xl">{proofChallenge?.emoji}</span> Complete Challenge
+              <span className="text-xl">{proofChallenge?.emoji}</span> {t("completeChallenge")}
             </DialogTitle>
             <DialogDescription className="text-xs">
-              Submit proof that you completed: <span className="font-medium text-foreground">{proofChallenge?.title}</span>
+              {t("submitProof")}: <span className="font-medium text-foreground">{proofChallenge?.title}</span>
             </DialogDescription>
           </DialogHeader>
 
