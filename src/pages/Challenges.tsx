@@ -713,7 +713,7 @@ export default function Challenges() {
               <span className="text-2xl">{showTerms.emoji}</span>
               <div>
                 <p className="text-sm font-semibold text-foreground">{showTerms.title}</p>
-                <p className="text-xs text-primary font-medium tabular-nums">{showTerms.cost === 0 ? "FREE 🎂" : `${showTerms.cost.toLocaleString()} pts`}</p>
+                <p className="text-xs text-primary font-medium tabular-nums">{showTerms.cost === 0 ? `${t("free")} 🎂` : `${showTerms.cost.toLocaleString()} ${t("pts")}`}</p>
               </div>
             </div>
             <div className="bg-muted/50 rounded-xl p-4">
