@@ -4,7 +4,15 @@ import { Lock, CheckCircle2 } from "lucide-react";
 
 export default function Achievements() {
   const { badges, xp, level, xpProgress } = useGamification();
+  const t = useT();
   const unlockedCount = badges.filter(b => b.unlocked).length;
+
+  const categoryLabels: Record<string, { label: string; emoji: string }> = {
+    streak: { label: t("streaks"), emoji: "🔥" },
+    waste: { label: t("foodSaving"), emoji: "🥬" },
+    community: { label: t("community"), emoji: "🤝" },
+    mastery: { label: t("mastery"), emoji: "🎯" },
+  };
 
   const grouped = badges.reduce((acc, badge) => {
     if (!acc[badge.category]) acc[badge.category] = [];
