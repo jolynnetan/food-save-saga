@@ -705,7 +705,7 @@ export default function Challenges() {
           <div className="bg-card rounded-2xl w-full max-w-md p-5 space-y-4 animate-scale-in">
             <div className="flex items-center justify-between">
               <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
-                <FileText size={18} className="text-primary" /> Terms & Conditions
+                <FileText size={18} className="text-primary" /> {t("termsAndConditions")}
               </h3>
               <button onClick={() => setShowTerms(null)} className="text-muted-foreground hover:text-foreground"><X size={18} /></button>
             </div>
