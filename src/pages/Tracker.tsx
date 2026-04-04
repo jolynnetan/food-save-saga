@@ -4,6 +4,7 @@ import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, Cell } from 
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { useT } from "@/contexts/SettingsContext";
 import { format, subDays, startOfDay } from "date-fns";
 
 type FoodEntry = {
