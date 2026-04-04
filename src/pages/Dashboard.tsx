@@ -515,7 +515,7 @@ export default function Dashboard() {
       {/* Daily Tip */}
       <section className="animate-fade-up" style={{ animationDelay: "400ms" }}>
         <h3 className="text-base font-bold text-foreground mb-3 flex items-center gap-2">
-          <span>💡</span> Daily Tip
+          <span>💡</span> {t("dailyTip")}
         </h3>
         <div className="relative overflow-hidden rounded-2xl border border-warning/15 shadow-soft-sm">
           <div className="absolute inset-0 bg-gradient-to-br from-warning/5 to-streak/5" />
