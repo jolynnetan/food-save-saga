@@ -104,6 +104,8 @@ export default function Dashboard() {
   const { level, xp, xpProgress, dailyMissions, completeMission, recentAchievements, gamificationEnabled, seasonalEvent } = useGamification();
   const [todayTasks, setTodayTasks] = useState(getDailyChallenges);
   const [todayCalories, setTodayCalories] = useState(0);
+  const [quickTools, setQuickTools] = useState<QuickTool[]>(getSelectedTools);
+  const [editToolsOpen, setEditToolsOpen] = useState(false);
   const isSimple = appMode === "simple";
 
   // Fetch today's calorie total from DB
