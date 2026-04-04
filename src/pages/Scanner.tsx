@@ -120,6 +120,7 @@ const parseScanPayload = async (data: unknown) => {
 
 export default function Scanner() {
   const { user } = useAuth();
+  const t = useT();
   const navigate = useNavigate();
   const [image, setImage] = useState<string | null>(null);
   const [scanning, setScanning] = useState(false);
