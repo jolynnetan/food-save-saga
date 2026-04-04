@@ -198,17 +198,12 @@ export default function Settings() {
 
       {/* Sign out */}
       <section className="animate-fade-up" style={{ animationDelay: "240ms" }}>
-        <div className="bg-card border rounded-2xl p-4">
-          <div className="flex items-center gap-3 mb-3">
-            <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
-          </div>
-          <button
-            onClick={handleSignOut}
-            className="w-full flex items-center justify-center gap-2 bg-destructive/10 text-destructive rounded-xl py-2.5 text-sm font-semibold transition-all btn-press"
-          >
-            <LogOut size={16} /> Sign Out
-          </button>
-        </div>
+        <button
+          onClick={handleSignOut}
+          className="w-full flex items-center justify-center gap-2 bg-destructive/10 text-destructive border border-destructive/15 rounded-2xl py-3 text-sm font-semibold transition-all btn-press"
+        >
+          <LogOut size={16} /> Sign Out
+        </button>
       </section>
     </div>
   );
