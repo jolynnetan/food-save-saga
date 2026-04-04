@@ -516,8 +516,8 @@ export default function Friends() {
 
           {/* Share your code */}
           <div className="bg-primary/5 border border-primary/15 rounded-2xl p-5 text-center">
-            <p className="text-sm font-semibold text-foreground mb-1">Or share your code</p>
-            <p className="text-xs text-muted-foreground mb-3">Tell your friends to enter this code to connect with you</p>
+            <p className="text-sm font-semibold text-foreground mb-1">Or share your ID</p>
+            <p className="text-xs text-muted-foreground mb-3">Tell your friends to enter this ID to connect with you</p>
             <div className="inline-flex items-center gap-2 bg-card border rounded-xl px-5 py-3">
               <span className="text-lg font-mono font-bold text-primary tracking-[0.3em]">{myCode}</span>
               <button onClick={copyCode} className="text-muted-foreground hover:text-primary transition-colors">
