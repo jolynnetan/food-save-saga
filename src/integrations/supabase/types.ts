@@ -214,6 +214,105 @@ export type Database = {
         }
         Relationships: []
       }
+      friend_codes: {
+        Row: {
+          code: string
+          created_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      friend_messages: {
+        Row: {
+          created_at: string
+          emoji: string
+          from_user_id: string
+          id: string
+          message: string
+          to_user_id: string
+          type: string
+        }
+        Insert: {
+          created_at?: string
+          emoji?: string
+          from_user_id: string
+          id?: string
+          message?: string
+          to_user_id: string
+          type?: string
+        }
+        Update: {
+          created_at?: string
+          emoji?: string
+          from_user_id?: string
+          id?: string
+          message?: string
+          to_user_id?: string
+          type?: string
+        }
+        Relationships: []
+      }
+      friend_requests: {
+        Row: {
+          created_at: string
+          from_user_id: string
+          id: string
+          status: string
+          to_user_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          from_user_id: string
+          id?: string
+          status?: string
+          to_user_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          from_user_id?: string
+          id?: string
+          status?: string
+          to_user_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      friendships: {
+        Row: {
+          created_at: string
+          friend_id: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          friend_id: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          friend_id?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       pantry_items: {
         Row: {
           created_at: string
@@ -458,7 +557,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      accept_friend_request: {
+        Args: { request_id: string }
+        Returns: undefined
+      }
       claim_food_drop: { Args: { drop_id: string }; Returns: undefined }
+      generate_friend_code: { Args: never; Returns: string }
+      lookup_friend_code: { Args: { lookup_code: string }; Returns: string }
     }
     Enums: {
       [_ in never]: never
