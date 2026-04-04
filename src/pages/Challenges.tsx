@@ -433,7 +433,7 @@ export default function Challenges() {
         <>
           {/* Category tabs */}
           <div className="flex items-center gap-2 animate-fade-up" style={{ animationDelay: "120ms" }}>
-            {challengeTabs.map(({ key, label, icon: Icon }) => (
+            {challengeTabKeys.map(({ key, labelKey, icon: Icon }) => (
               <button
                 key={key}
                 onClick={() => setActiveTab(key)}
@@ -443,7 +443,8 @@ export default function Challenges() {
                     : "bg-muted text-muted-foreground hover:bg-muted/80"
                 }`}
               >
-                <Icon size={14} /> {label}
+                <Icon size={14} /> {t(labelKey)}
+              </button>
               </button>
             ))}
             <button
