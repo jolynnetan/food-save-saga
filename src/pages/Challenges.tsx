@@ -710,7 +710,7 @@ export default function Challenges() {
               <span className="text-2xl">{showTerms.emoji}</span>
               <div>
                 <p className="text-sm font-semibold text-foreground">{showTerms.title}</p>
-                <p className="text-xs text-primary font-medium tabular-nums">{showTerms.cost.toLocaleString()} pts</p>
+                <p className="text-xs text-primary font-medium tabular-nums">{showTerms.cost === 0 ? "FREE 🎂" : `${showTerms.cost.toLocaleString()} pts`}</p>
               </div>
             </div>
             <div className="bg-muted/50 rounded-xl p-4">
@@ -725,7 +725,9 @@ export default function Challenges() {
             </div>
             <div className="flex gap-2">
               <button onClick={() => setShowTerms(null)} className="flex-1 bg-muted text-muted-foreground rounded-xl py-3 text-sm font-semibold transition-all active:scale-[0.97]">Cancel</button>
-              {points >= showTerms.cost ? (
+              {birthdayVouchers.some(b => b.id === showTerms.id) ? (
+                <button onClick={() => confirmBirthdayRedeem(showTerms)} className="flex-1 bg-primary text-primary-foreground rounded-xl py-3 text-sm font-semibold transition-all active:scale-[0.97] shadow-lg shadow-primary/20">Accept & Claim Free</button>
+              ) : points >= showTerms.cost ? (
                 <button onClick={() => confirmRedeem(showTerms)} className="flex-1 bg-primary text-primary-foreground rounded-xl py-3 text-sm font-semibold transition-all active:scale-[0.97] shadow-lg shadow-primary/20">Accept & Redeem</button>
               ) : (
                 <div className="flex-1 flex flex-col items-center justify-center bg-muted/80 rounded-xl py-2.5 gap-0.5">
