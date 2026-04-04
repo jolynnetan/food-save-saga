@@ -1,10 +1,12 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { Flame, Calendar, Star, Gift, Check, Lock, Heart, TreePine, Sparkles, ShoppingBag, X, FileText, RefreshCw, Camera, Upload, MessageSquare } from "lucide-react";
+import { Flame, Calendar, Star, Gift, Check, Lock, Heart, TreePine, Sparkles, ShoppingBag, X, FileText, RefreshCw, Camera, Upload, MessageSquare, Cake } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { usePoints } from "@/contexts/PointsContext";
 import { addRedeemedItem } from "@/pages/Store";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 
 type Challenge = {
   id: number;
