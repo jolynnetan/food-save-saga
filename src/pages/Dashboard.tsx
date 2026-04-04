@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { Flame, Leaf, TrendingDown, ChevronRight, Camera, Apple, Package, MapPin, ShoppingCart, Calculator, Trophy, Clock, BarChart3, Building2, BellRing, Sparkles, Zap } from "lucide-react";
+import { Flame, Leaf, TrendingDown, ChevronRight, Camera, Apple, Package, MapPin, ShoppingCart, Calculator, Trophy, Clock, BarChart3, Building2, BellRing, Sparkles, Zap, Pencil } from "lucide-react";
+import QuickToolsEditor, { getSelectedTools, type QuickTool } from "@/components/QuickToolsEditor";
 import ImpactStory from "@/components/ImpactStory";
 import { Link } from "react-router-dom";
 import { usePoints } from "@/contexts/PointsContext";
@@ -46,14 +47,7 @@ const motivationalQuotes = [
   "The best time to fight food waste was yesterday. The second best time is right now. ⏰",
 ];
 
-const moreShortcuts = [
-  { to: "/tracker", icon: BarChart3, title: "Tracker", desc: "Waste analytics", color: "text-success", bg: "bg-success/10", border: "border-success/20" },
-  { to: "/pantry", icon: Package, title: "Pantry", desc: "Track expiry", color: "text-primary", bg: "bg-primary/10", border: "border-primary/20" },
-  { to: "/foodbank", icon: Building2, title: "Foodbank", desc: "NGO donations", color: "text-earth", bg: "bg-earth/10", border: "border-earth/20" },
-  { to: "/shopping", icon: ShoppingCart, title: "Shopping", desc: "Smart lists", color: "text-success", bg: "bg-success/10", border: "border-success/20" },
-  { to: "/leaderboard", icon: Trophy, title: "Leaderboard", desc: "Rank up", color: "text-streak", bg: "bg-streak/10", border: "border-streak/20" },
-  { to: "/reminders", icon: BellRing, title: "Reminders", desc: "Food checks", color: "text-primary", bg: "bg-primary/10", border: "border-primary/20" },
-];
+// Quick tools are now user-customizable via QuickToolsEditor
 
 function getDailyQuote() {
   const today = new Date();
@@ -110,6 +104,8 @@ export default function Dashboard() {
   const { level, xp, xpProgress, dailyMissions, completeMission, recentAchievements, gamificationEnabled, seasonalEvent } = useGamification();
   const [todayTasks, setTodayTasks] = useState(getDailyChallenges);
   const [todayCalories, setTodayCalories] = useState(0);
+  const [quickTools, setQuickTools] = useState<QuickTool[]>(getSelectedTools);
+  const [editToolsOpen, setEditToolsOpen] = useState(false);
   const isSimple = appMode === "simple";
 
   // Fetch today's calorie total from DB
@@ -132,7 +128,10 @@ export default function Dashboard() {
   useEffect(() => {
     const handleFocus = () => setTodayTasks(getDailyChallenges());
     window.addEventListener("focus", handleFocus);
-    const handleStorage = () => setTodayTasks(getDailyChallenges());
+    const handleStorage = () => {
+      setTodayTasks(getDailyChallenges());
+      setQuickTools(getSelectedTools());
+    };
     window.addEventListener("storage", handleStorage);
     return () => {
       window.removeEventListener("focus", handleFocus);
@@ -411,10 +410,18 @@ export default function Dashboard() {
             <span className="text-lg">🧰</span>
             <h3 className="text-base font-bold text-foreground">Quick Tools</h3>
           </div>
-          <Link to="/more" className="text-sm text-primary font-semibold hover:underline">See all</Link>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setEditToolsOpen(true)}
+              className="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary font-semibold transition-colors btn-press"
+            >
+              <Pencil size={12} /> Edit
+            </button>
+            <Link to="/more" className="text-sm text-primary font-semibold hover:underline">See all</Link>
+          </div>
         </div>
         <div className="grid grid-cols-3 gap-2.5">
-          {moreShortcuts.map((f) => (
+          {quickTools.map((f) => (
             <Link
               key={f.to}
               to={f.to}
@@ -431,6 +438,9 @@ export default function Dashboard() {
           ))}
         </div>
       </section>
+
+      {/* Quick Tools Editor */}
+      <QuickToolsEditor open={editToolsOpen} onClose={() => { setEditToolsOpen(false); setQuickTools(getSelectedTools()); }} />
 
       {/* Daily Motivation */}
       {!isSimple && (
