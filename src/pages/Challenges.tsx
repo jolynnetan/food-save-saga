@@ -514,7 +514,7 @@ export default function Challenges() {
         <>
           {/* Reward category tabs */}
           <div className="flex gap-2 overflow-x-auto no-scrollbar animate-fade-up" style={{ animationDelay: "120ms" }}>
-            {rewardCategories.map(({ key, label, icon: Icon }) => (
+            {rewardCategoryKeys.map(({ key, labelKey, icon: Icon }) => (
               <button
                 key={key}
                 onClick={() => setRewardCategory(key)}
@@ -524,7 +524,8 @@ export default function Challenges() {
                     : "bg-muted text-muted-foreground hover:bg-muted/80"
                 }`}
               >
-                <Icon size={14} /> {label}
+                <Icon size={14} /> {t(labelKey)}
+              </button>
               </button>
             ))}
           </div>
