@@ -424,9 +424,9 @@ export default function Dashboard() {
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <span className="text-lg">🏅</span>
-              <h3 className="text-base font-bold text-foreground">Recent Achievements</h3>
+              <h3 className="text-base font-bold text-foreground">{t("recentAchievements")}</h3>
             </div>
-            <Link to="/achievements" className="text-sm text-primary font-semibold hover:underline">View all</Link>
+            <Link to="/achievements" className="text-sm text-primary font-semibold hover:underline">{t("viewAll")}</Link>
           </div>
           <div className="flex gap-2.5 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-none">
             {recentAchievements.slice(0, 5).map((a, i) => (
