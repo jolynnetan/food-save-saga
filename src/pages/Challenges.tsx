@@ -157,6 +157,12 @@ const rewardsList: Reward[] = [
   { id: 14, title: "RM25 Meal Kit Voucher", emoji: "📦", description: "RM25 off a zero-waste meal kit", cost: 3500, category: "voucher", terms: "Valid for 60 days from redemption. First-time subscription only. Cannot be used with other discounts.", voucherCode: "MEALKIT-25" },
 ];
 
+const birthdayVouchers: Reward[] = [
+  { id: 901, title: "🎂 Birthday RM15 Voucher", emoji: "🎁", description: "Free RM15 grocery voucher — Happy Birthday!", cost: 0, category: "voucher", terms: "Valid for 30 days from redemption. Birthday month exclusive. One per year. Minimum purchase of RM30.", voucherCode: "BDAY-15" },
+  { id: 902, title: "🎈 Birthday Eco Kit", emoji: "🎉", description: "Free eco container set for your birthday!", cost: 0, category: "eco", terms: "Valid during your birthday month only. One per year. Collect at participating stores." },
+  { id: 903, title: "🎊 Birthday Meal Donation", emoji: "💝", description: "We donate a meal in your name — on us!", cost: 0, category: "donate", terms: "Automatically donated during your birthday month. One per year." },
+];
+
 const challengeTabs = [
   { key: "daily" as const, label: "Daily", icon: Flame },
   { key: "weekly" as const, label: "Weekly", icon: Calendar },
