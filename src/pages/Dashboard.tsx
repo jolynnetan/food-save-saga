@@ -128,7 +128,10 @@ export default function Dashboard() {
   useEffect(() => {
     const handleFocus = () => setTodayTasks(getDailyChallenges());
     window.addEventListener("focus", handleFocus);
-    const handleStorage = () => setTodayTasks(getDailyChallenges());
+    const handleStorage = () => {
+      setTodayTasks(getDailyChallenges());
+      setQuickTools(getSelectedTools());
+    };
     window.addEventListener("storage", handleStorage);
     return () => {
       window.removeEventListener("focus", handleFocus);
