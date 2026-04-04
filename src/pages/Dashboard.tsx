@@ -29,22 +29,54 @@ function getDailyChallenges() {
 }
 
 const tips = [
-  "Store herbs in a glass of water to keep them fresh 3x longer 🌿",
-  "Freeze overripe bananas for smoothies later 🍌",
-  "Use stale bread to make croutons or breadcrumbs 🍞",
+  { text: "Store herbs in a glass of water to keep them fresh 3x longer", emoji: "🌿", category: "Storage" },
+  { text: "Freeze overripe bananas for smoothies later", emoji: "🍌", category: "Freezing" },
+  { text: "Use stale bread to make croutons or breadcrumbs", emoji: "🍞", category: "Repurpose" },
+  { text: "Keep apples away from other fruits — they release ethylene gas", emoji: "🍎", category: "Storage" },
+  { text: "Wrap celery in aluminium foil to keep it crisp for weeks", emoji: "🥬", category: "Storage" },
+  { text: "Leftover rice? Make fried rice — it's actually better with day-old rice", emoji: "🍚", category: "Repurpose" },
+  { text: "Store mushrooms in a paper bag, not plastic, to prevent sliminess", emoji: "🍄", category: "Storage" },
+  { text: "Wilting greens? Soak in ice water for 15 minutes to revive them", emoji: "🥗", category: "Rescue" },
+  { text: "Freeze leftover herbs in olive oil using ice cube trays", emoji: "🧊", category: "Freezing" },
+  { text: "Turn vegetable scraps into homemade broth instead of binning them", emoji: "🍲", category: "Repurpose" },
+  { text: "Store tomatoes stem-side down to keep them fresher longer", emoji: "🍅", category: "Storage" },
+  { text: "Overripe avocados make perfect chocolate mousse — really!", emoji: "🥑", category: "Repurpose" },
+  { text: "Keep ginger in the freezer — it grates even easier when frozen", emoji: "🫚", category: "Freezing" },
+  { text: "Regrow spring onions by placing roots in water on a windowsill", emoji: "🧅", category: "Grow" },
+  { text: "Slightly stale chips? Microwave for 30 seconds to restore crunch", emoji: "🥔", category: "Rescue" },
+  { text: "Plan your meals before shopping to reduce impulse buys by 30%", emoji: "📋", category: "Planning" },
+  { text: "Use the FIFO method: First In, First Out — eat older items first", emoji: "📦", category: "Planning" },
+  { text: "Blend overripe fruit into pancake or waffle batter for natural sweetness", emoji: "🥞", category: "Repurpose" },
+  { text: "Pickle your vegetable scraps — quick pickles are ready in 30 minutes", emoji: "🥒", category: "Repurpose" },
+  { text: "Store berries with a paper towel to absorb moisture and prevent mold", emoji: "🫐", category: "Storage" },
+  { text: "Batch cook on weekends to use up ingredients before they expire", emoji: "🍳", category: "Planning" },
+  { text: "Don't throw away citrus peels — dry them for tea or zest for baking", emoji: "🍋", category: "Repurpose" },
+  { text: "Check your fridge temperature — 1-4°C is ideal for maximum freshness", emoji: "🌡️", category: "Storage" },
+  { text: "Freeze wine in ice cube trays for cooking later", emoji: "🍷", category: "Freezing" },
+  { text: "Soft carrots? Soak in cold water overnight to make them crisp again", emoji: "🥕", category: "Rescue" },
+  { text: "Ripen fruit faster by placing it in a paper bag with a banana", emoji: "🍐", category: "Storage" },
+  { text: "Label all freezer items with the date so nothing gets forgotten", emoji: "🏷️", category: "Planning" },
+  { text: "Compost what you truly can't eat — it returns nutrients to the earth", emoji: "🌱", category: "Compost" },
+  { text: "Challenge yourself: try a 'zero waste' week using only what's in your kitchen", emoji: "🏆", category: "Challenge" },
+  { text: "Share excess food with neighbors — apps like SavePlate make it easy!", emoji: "🤝", category: "Share" },
 ];
 
 const motivationalQuotes = [
-  "One-third of all food produced globally is wasted — your small actions today change that statistic. 🌍",
-  "Every meal you save feeds possibility. Food security starts on your plate. 💚",
-  "828 million people go hungry every night. Reducing waste is an act of solidarity. ✊",
-  "When you finish your leftovers, you're not just saving money — you're saving the planet's resources. 🌱",
-  "It takes 1,000 litres of water to produce 1 litre of milk. Nothing we save is too small to matter. 💧",
-  "Food waste in landfills produces methane, 80× more potent than CO₂. Your choices make the air cleaner. 🌬️",
-  "A family that reduces food waste saves an average of $1,500 a year. Your wallet thanks you too. 💰",
-  "Every grain of rice represents someone's labour under the sun. Honour it by wasting less. 🌾",
-  "Sustainable eating isn't a sacrifice — it's a superpower. You're already a hero. 🦸",
-  "The best time to fight food waste was yesterday. The second best time is right now. ⏰",
+  { text: "One-third of all food produced globally is wasted — your small actions today change that statistic.", emoji: "🌍", stat: "1.3 billion tons wasted yearly" },
+  { text: "Every meal you save feeds possibility. Food security starts on your plate.", emoji: "💚", stat: "Feed 2 billion people with saved food" },
+  { text: "828 million people go hungry every night. Reducing waste is an act of solidarity.", emoji: "✊", stat: "10% of the world population" },
+  { text: "When you finish your leftovers, you're not just saving money — you're saving the planet's resources.", emoji: "🌱", stat: "25% of water used grows wasted food" },
+  { text: "It takes 1,000 litres of water to produce 1 litre of milk. Nothing we save is too small to matter.", emoji: "💧", stat: "70% of freshwater goes to agriculture" },
+  { text: "Food waste in landfills produces methane, 80× more potent than CO₂. Your choices make the air cleaner.", emoji: "🌬️", stat: "8-10% of global emissions" },
+  { text: "A family that reduces food waste saves an average of $1,500 a year. Your wallet thanks you too.", emoji: "💰", stat: "$1 trillion lost globally each year" },
+  { text: "Every grain of rice represents someone's labour under the sun. Honour it by wasting less.", emoji: "🌾", stat: "500M+ smallholder farmers worldwide" },
+  { text: "Sustainable eating isn't a sacrifice — it's a superpower. You're already a hero.", emoji: "🦸", stat: "If food waste were a country, it'd be 3rd largest emitter" },
+  { text: "The best time to fight food waste was yesterday. The second best time is right now.", emoji: "⏰", stat: "We only have until 2030 to halve waste" },
+  { text: "In Malaysia alone, 17,000 tonnes of food are wasted every single day.", emoji: "🇲🇾", stat: "64% is still edible" },
+  { text: "Your fridge is a treasure chest, not a graveyard. Use what you have before buying more.", emoji: "🧊", stat: "60% of household waste is avoidable" },
+  { text: "Each plate you finish is a step toward a world where no one sleeps hungry.", emoji: "🍽️", stat: "690M people are undernourished" },
+  { text: "Reducing food waste is the #1 most impactful climate solution available to individuals.", emoji: "🏅", stat: "Project Drawdown ranking" },
+  { text: "When we waste food, we waste every resource that went into making it — water, energy, love.", emoji: "❤️", stat: "30% of farmland grows wasted food" },
 ];
 
 // Quick tools are now user-customizable via QuickToolsEditor
@@ -55,6 +87,15 @@ function getDailyQuote() {
     (today.getTime() - new Date(today.getFullYear(), 0, 0).getTime()) / 86400000
   );
   return motivationalQuotes[dayOfYear % motivationalQuotes.length];
+}
+
+function getDailyTip() {
+  const today = new Date();
+  const dayOfYear = Math.floor(
+    (today.getTime() - new Date(today.getFullYear(), 0, 0).getTime()) / 86400000
+  );
+  // Offset by 7 so tip and quote don't repeat on same cycle
+  return tips[(dayOfYear + 7) % tips.length];
 }
 
 function getGreeting() {
@@ -448,10 +489,24 @@ export default function Dashboard() {
           <h3 className="text-base font-bold text-foreground mb-3 flex items-center gap-2">
             <span>🌍</span> Why It Matters
           </h3>
-          <div className="bg-primary/8 border border-primary/15 rounded-2xl p-4 shadow-soft-sm">
-            <p className="text-sm text-foreground leading-relaxed font-medium">
-              {getDailyQuote()}
-            </p>
+          <div className="relative overflow-hidden rounded-2xl border border-primary/15 shadow-soft-sm">
+            <div className="absolute inset-0 gradient-hero opacity-10" />
+            <div className="relative p-5">
+              <div className="flex items-start gap-3.5">
+                <div className="w-12 h-12 rounded-2xl bg-primary/15 flex items-center justify-center shrink-0 text-2xl">
+                  {getDailyQuote().emoji}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm text-foreground leading-relaxed font-medium">
+                    {getDailyQuote().text}
+                  </p>
+                  <div className="mt-2.5 inline-flex items-center gap-1.5 bg-primary/10 border border-primary/15 rounded-full px-2.5 py-1">
+                    <span className="text-[10px]">📊</span>
+                    <span className="text-[10px] font-bold text-primary">{getDailyQuote().stat}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </section>
       )}
@@ -461,10 +516,23 @@ export default function Dashboard() {
         <h3 className="text-base font-bold text-foreground mb-3 flex items-center gap-2">
           <span>💡</span> Daily Tip
         </h3>
-        <div className="gradient-card border border-border rounded-2xl p-4 shadow-soft-sm">
-          <p className="text-sm text-secondary-foreground leading-relaxed">
-            {tips[Math.floor(Math.random() * tips.length)]}
-          </p>
+        <div className="relative overflow-hidden rounded-2xl border border-warning/15 shadow-soft-sm">
+          <div className="absolute inset-0 bg-gradient-to-br from-warning/5 to-streak/5" />
+          <div className="relative p-5">
+            <div className="flex items-start gap-3.5">
+              <div className="w-12 h-12 rounded-2xl bg-warning/15 flex items-center justify-center shrink-0 text-2xl">
+                {getDailyTip().emoji}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm text-foreground leading-relaxed font-medium">
+                  {getDailyTip().text}
+                </p>
+                <div className="mt-2.5 inline-flex items-center gap-1.5 bg-warning/10 border border-warning/15 rounded-full px-2.5 py-1">
+                  <span className="text-[10px] font-bold text-warning">{getDailyTip().category}</span>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
     </div>
