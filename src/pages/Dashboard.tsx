@@ -89,6 +89,15 @@ function getDailyQuote() {
   return motivationalQuotes[dayOfYear % motivationalQuotes.length];
 }
 
+function getDailyTip() {
+  const today = new Date();
+  const dayOfYear = Math.floor(
+    (today.getTime() - new Date(today.getFullYear(), 0, 0).getTime()) / 86400000
+  );
+  // Offset by 7 so tip and quote don't repeat on same cycle
+  return tips[(dayOfYear + 7) % tips.length];
+}
+
 function getGreeting() {
   const hour = new Date().getHours();
   if (hour < 12) return "Good morning";
