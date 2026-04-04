@@ -71,10 +71,33 @@ export default function ProfileCard() {
     setSaving(false);
   };
 
+  const handleSaveBirthday = async () => {
+    if (!user || !editBirthday) return;
+    setSavingBirthday(true);
+    const { error } = await supabase
+      .from("profiles")
+      .update({ birthday: editBirthday } as any)
+      .eq("user_id", user.id);
+    if (error) {
+      toast({ title: "Error saving birthday", description: error.message, variant: "destructive" });
+    } else {
+      setBirthday(editBirthday);
+      setEditingBirthday(false);
+      toast({ title: "Birthday saved! 🎂" });
+    }
+    setSavingBirthday(false);
+  };
+
   const copyCode = () => {
     navigator.clipboard.writeText(friendCode);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const formatBirthday = (dateStr: string) => {
+    if (!dateStr) return "";
+    const d = new Date(dateStr + "T00:00:00");
+    return d.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
   };
 
   const initial = (displayName || "U")[0].toUpperCase();
