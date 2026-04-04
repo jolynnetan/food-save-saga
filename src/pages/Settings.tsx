@@ -38,11 +38,15 @@ export default function Settings() {
         <h2 className="text-2xl font-bold text-foreground text-balance">{t("settings")}</h2>
         <p className="text-muted-foreground mt-1">{t("settingsDesc")}</p>
       </div>
+      {/* Profile */}
+      <section className="animate-fade-up" style={{ animationDelay: "40ms" }}>
+        <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">Profile</h3>
+        <ProfileCard />
+      </section>
 
       {/* General section */}
       <section className="space-y-3 animate-fade-up" style={{ animationDelay: "80ms" }}>
         <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{t("general")}</h3>
-
         {/* Language */}
         <div className="bg-card border rounded-2xl p-4 space-y-3">
           <div className="flex items-center gap-3">
