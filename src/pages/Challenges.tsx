@@ -630,7 +630,7 @@ export default function Challenges() {
                 proofType === "photo" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"
               }`}
             >
-              <Camera size={14} /> Upload Photo
+              <Camera size={14} /> {t("uploadPhoto")}
             </button>
             <button
               onClick={() => setProofType("text")}
