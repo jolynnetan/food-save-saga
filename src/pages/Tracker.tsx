@@ -24,6 +24,7 @@ const statusConfig = {
 
 export default function Tracker() {
   const { user } = useAuth();
+  const t = useT();
   const [entries, setEntries] = useState<FoodEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAdd, setShowAdd] = useState(false);
