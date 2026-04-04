@@ -410,10 +410,18 @@ export default function Dashboard() {
             <span className="text-lg">🧰</span>
             <h3 className="text-base font-bold text-foreground">Quick Tools</h3>
           </div>
-          <Link to="/more" className="text-sm text-primary font-semibold hover:underline">See all</Link>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setEditToolsOpen(true)}
+              className="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary font-semibold transition-colors btn-press"
+            >
+              <Pencil size={12} /> Edit
+            </button>
+            <Link to="/more" className="text-sm text-primary font-semibold hover:underline">See all</Link>
+          </div>
         </div>
         <div className="grid grid-cols-3 gap-2.5">
-          {moreShortcuts.map((f) => (
+          {quickTools.map((f) => (
             <Link
               key={f.to}
               to={f.to}
@@ -430,6 +438,9 @@ export default function Dashboard() {
           ))}
         </div>
       </section>
+
+      {/* Quick Tools Editor */}
+      <QuickToolsEditor open={editToolsOpen} onClose={() => { setEditToolsOpen(false); setQuickTools(getSelectedTools()); }} />
 
       {/* Daily Motivation */}
       {!isSimple && (
