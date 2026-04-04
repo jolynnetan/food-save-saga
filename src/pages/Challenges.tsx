@@ -452,7 +452,7 @@ export default function Challenges() {
               className="ml-auto flex items-center gap-1 px-3 py-2 rounded-full text-xs font-medium bg-muted text-muted-foreground hover:bg-muted/80 transition-all duration-200 active:scale-[0.96]"
               title="Get new challenges"
             >
-              <RefreshCw size={13} /> New
+              <RefreshCw size={13} /> {t("newChallenges")}
             </button>
           </div>
 
