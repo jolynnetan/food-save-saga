@@ -122,8 +122,8 @@ export default function Tracker() {
     <div className="px-4 py-5 max-w-lg mx-auto space-y-5">
       <div className="flex items-center justify-between animate-fade-up">
         <div>
-          <h2 className="text-2xl font-bold text-foreground text-balance">Food Tracker</h2>
-          <p className="text-muted-foreground mt-1">Monitor your food habits</p>
+          <h2 className="text-2xl font-bold text-foreground text-balance">{t("foodTracker")}</h2>
+          <p className="text-muted-foreground mt-1">{t("monitorHabits")}</p>
         </div>
         <button
           onClick={() => setShowAdd(!showAdd)}

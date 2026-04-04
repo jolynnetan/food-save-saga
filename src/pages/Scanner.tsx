@@ -304,8 +304,8 @@ export default function Scanner() {
   return (
     <div className="px-4 py-5 max-w-lg mx-auto space-y-5 pb-28">
       <div className="animate-fade-up">
-        <h2 className="text-2xl font-bold text-foreground">Food & Leftover Scanner</h2>
-        <p className="text-muted-foreground mt-1">Scan food to get calorie reports & waste reduction tips</p>
+        <h2 className="text-2xl font-bold text-foreground">{t("foodScanner")}</h2>
+        <p className="text-muted-foreground mt-1">{t("scannerDesc")}</p>
       </div>
 
       {!image ? (
