@@ -4,6 +4,7 @@ import { Camera, Upload, X, Lightbulb, ChefHat, Recycle, Plus, Trash2, Flame, Lo
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { useT } from "@/contexts/SettingsContext";
 import { Input } from "@/components/ui/input";
 
 type ScannedItem = {
