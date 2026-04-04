@@ -687,13 +687,13 @@ export default function Challenges() {
               onClick={() => setProofChallenge(null)}
               className="flex-1 bg-muted text-muted-foreground rounded-xl py-2.5 text-sm font-semibold transition-all active:scale-[0.97]"
             >
-              Cancel
+              {t("cancel")}
             </button>
             <button
               onClick={submitProof}
               className="flex-1 bg-primary text-primary-foreground rounded-xl py-2.5 text-sm font-semibold transition-all active:scale-[0.97] shadow-lg shadow-primary/20"
             >
-              Submit & Earn +{proofChallenge?.pts} pts
+              {t("submitAndEarn")} +{proofChallenge?.pts} {t("pts")}
             </button>
           </div>
         </DialogContent>
