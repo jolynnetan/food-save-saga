@@ -525,6 +525,44 @@ export default function Challenges() {
             ))}
           </div>
 
+          {/* Birthday Vouchers */}
+          {isBirthdayMonth && (
+            <div className="space-y-3 animate-fade-up" style={{ animationDelay: "140ms" }}>
+              <div className="bg-gradient-to-r from-primary/10 via-warning/10 to-primary/10 border border-primary/20 rounded-2xl p-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <Cake size={18} className="text-primary" />
+                  <h3 className="text-sm font-bold text-foreground">🎉 Happy Birthday!</h3>
+                </div>
+                <p className="text-xs text-muted-foreground mb-3">These free rewards are available during your birthday month. Claim them before the month ends!</p>
+                <div className="space-y-2">
+                  {birthdayVouchers.map((reward) => {
+                    const isClaimed = birthdayRedeemed.includes(reward.id);
+                    return (
+                      <div key={reward.id} className={`bg-card rounded-xl p-3 flex items-center gap-3 ${isClaimed ? "opacity-50" : ""}`}>
+                        <span className="text-2xl">{reward.emoji}</span>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-semibold text-foreground">{reward.title}</p>
+                          <p className="text-[10px] text-muted-foreground">{reward.description}</p>
+                        </div>
+                        <button
+                          onClick={() => handleRedeem(reward)}
+                          disabled={isClaimed}
+                          className={`shrink-0 flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-semibold transition-all active:scale-[0.95] ${
+                            isClaimed
+                              ? "bg-success/10 text-success"
+                              : "bg-primary text-primary-foreground shadow-sm"
+                          }`}
+                        >
+                          {isClaimed ? <><Check size={12} /> Claimed</> : <><Gift size={12} /> FREE</>}
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Rewards list */}
           <div className="space-y-3">
             {filteredRewards.map((reward, i) => {
