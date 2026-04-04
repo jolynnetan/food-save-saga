@@ -285,9 +285,9 @@ export default function Friends() {
         <p className="text-muted-foreground mt-1">{t("friendsDesc")}</p>
       </div>
 
-      {/* My Friend Code Card */}
+      {/* My Unique ID Card */}
       <div className="bg-card border rounded-2xl p-4 animate-fade-up" style={{ animationDelay: "60ms" }}>
-        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Your Friend Code</p>
+        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Your Unique ID</p>
         <div className="flex items-center gap-3">
           <div className="flex-1 bg-muted rounded-xl px-4 py-3 text-center">
             <span className="text-xl font-mono font-bold text-foreground tracking-[0.3em]">
@@ -302,7 +302,7 @@ export default function Friends() {
             {copied ? <Check size={18} /> : <Copy size={18} />}
           </button>
         </div>
-        <p className="text-[10px] text-muted-foreground mt-2 text-center">Share this code with friends so they can add you</p>
+        <p className="text-[10px] text-muted-foreground mt-2 text-center">Share this ID with friends so they can add you</p>
       </div>
 
       {/* Tab navigation */}
