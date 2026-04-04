@@ -417,7 +417,7 @@ export default function Challenges() {
             topTab === "challenges" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"
           }`}
         >
-          <Flame size={16} /> Challenges
+          <Flame size={16} /> {t("challenges")}
         </button>
         <button
           onClick={() => setTopTab("rewards")}
