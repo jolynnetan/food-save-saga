@@ -457,9 +457,9 @@ export default function Dashboard() {
               onClick={() => setEditToolsOpen(true)}
               className="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary font-semibold transition-colors btn-press"
             >
-              <Pencil size={12} /> Edit
+              <Pencil size={12} /> {t("edit")}
             </button>
-            <Link to="/more" className="text-sm text-primary font-semibold hover:underline">See all</Link>
+            <Link to="/more" className="text-sm text-primary font-semibold hover:underline">{t("seeAll")}</Link>
           </div>
         </div>
         <div className="grid grid-cols-3 gap-2.5">
