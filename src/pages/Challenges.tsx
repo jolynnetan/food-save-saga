@@ -459,8 +459,8 @@ export default function Challenges() {
           {/* Progress */}
           <div className="bg-card border rounded-2xl p-4 animate-fade-up" style={{ animationDelay: "160ms" }}>
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm text-muted-foreground">{completedCount}/{filtered.length} completed</span>
-              <span className="text-sm font-semibold text-primary">+{totalPts} pts earned</span>
+              <span className="text-sm text-muted-foreground">{completedCount}/{filtered.length} {t("completed")}</span>
+              <span className="text-sm font-semibold text-primary">+{totalPts} {t("ptsEarned")}</span>
             </div>
             <div className="w-full bg-muted rounded-full h-2.5">
               <div
