@@ -638,7 +638,7 @@ export default function Challenges() {
                 proofType === "text" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"
               }`}
             >
-              <MessageSquare size={14} /> Description
+              <MessageSquare size={14} /> {t("description")}
             </button>
           </div>
 
