@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { Flame, Leaf, TrendingDown, ChevronRight, Camera, Apple, Package, MapPin, ShoppingCart, Calculator, Trophy, Clock, BarChart3, Building2, BellRing, Sparkles, Zap } from "lucide-react";
+import { Flame, Leaf, TrendingDown, ChevronRight, Camera, Apple, Package, MapPin, ShoppingCart, Calculator, Trophy, Clock, BarChart3, Building2, BellRing, Sparkles, Zap, Pencil } from "lucide-react";
+import QuickToolsEditor, { getSelectedTools, type QuickTool } from "@/components/QuickToolsEditor";
 import ImpactStory from "@/components/ImpactStory";
 import { Link } from "react-router-dom";
 import { usePoints } from "@/contexts/PointsContext";
