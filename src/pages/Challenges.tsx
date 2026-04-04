@@ -727,15 +727,15 @@ export default function Challenges() {
               </ul>
             </div>
             <div className="flex gap-2">
-              <button onClick={() => setShowTerms(null)} className="flex-1 bg-muted text-muted-foreground rounded-xl py-3 text-sm font-semibold transition-all active:scale-[0.97]">Cancel</button>
+              <button onClick={() => setShowTerms(null)} className="flex-1 bg-muted text-muted-foreground rounded-xl py-3 text-sm font-semibold transition-all active:scale-[0.97]">{t("cancel")}</button>
               {birthdayVouchers.some(b => b.id === showTerms.id) ? (
-                <button onClick={() => confirmBirthdayRedeem(showTerms)} className="flex-1 bg-primary text-primary-foreground rounded-xl py-3 text-sm font-semibold transition-all active:scale-[0.97] shadow-lg shadow-primary/20">Accept & Claim Free</button>
+                <button onClick={() => confirmBirthdayRedeem(showTerms)} className="flex-1 bg-primary text-primary-foreground rounded-xl py-3 text-sm font-semibold transition-all active:scale-[0.97] shadow-lg shadow-primary/20">{t("acceptAndClaimFree")}</button>
               ) : points >= showTerms.cost ? (
-                <button onClick={() => confirmRedeem(showTerms)} className="flex-1 bg-primary text-primary-foreground rounded-xl py-3 text-sm font-semibold transition-all active:scale-[0.97] shadow-lg shadow-primary/20">Accept & Redeem</button>
+                <button onClick={() => confirmRedeem(showTerms)} className="flex-1 bg-primary text-primary-foreground rounded-xl py-3 text-sm font-semibold transition-all active:scale-[0.97] shadow-lg shadow-primary/20">{t("acceptAndRedeem")}</button>
               ) : (
                 <div className="flex-1 flex flex-col items-center justify-center bg-muted/80 rounded-xl py-2.5 gap-0.5">
-                  <span className="text-xs font-semibold text-muted-foreground flex items-center gap-1"><Lock size={12} /> Insufficient Points</span>
-                  <span className="text-[10px] text-muted-foreground tabular-nums">Need {(showTerms.cost - points).toLocaleString()} more pts</span>
+                  <span className="text-xs font-semibold text-muted-foreground flex items-center gap-1"><Lock size={12} /> {t("insufficientPoints")}</span>
+                  <span className="text-[10px] text-muted-foreground tabular-nums">{t("needMorePts", { amount: (showTerms.cost - points).toLocaleString() })}</span>
                 </div>
               )}
             </div>
