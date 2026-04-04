@@ -377,9 +377,9 @@ export default function Dashboard() {
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
             <span className="text-lg">🎯</span>
-            <h3 className="text-base font-bold text-foreground">Today's Challenges</h3>
+            <h3 className="text-base font-bold text-foreground">{t("todaysChallenges")}</h3>
           </div>
-          <Link to="/challenges" className="text-sm text-primary font-semibold hover:underline">See all</Link>
+          <Link to="/challenges" className="text-sm text-primary font-semibold hover:underline">{t("seeAll")}</Link>
         </div>
         <div className="space-y-2.5">
           {todayTasks.map((task) => (
