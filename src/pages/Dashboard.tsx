@@ -184,9 +184,9 @@ export default function Dashboard() {
   useEffect(() => { setTodayTasks(getDailyChallenges()); }, []);
 
   const quickStats = [
-    { icon: Flame, label: "Streak", value: `${streak}`, unit: "days", color: "text-streak", bg: "bg-streak/10", border: "border-streak/20" },
-    { icon: Leaf, label: "Saved", value: "3.2", unit: "kg", color: "text-primary", bg: "bg-primary/10", border: "border-primary/20" },
-    { icon: TrendingDown, label: "CO₂", value: "-8.1", unit: "kg", color: "text-success", bg: "bg-success/10", border: "border-success/20" },
+    { icon: Flame, label: t("streak"), value: `${streak}`, unit: t("days"), color: "text-streak", bg: "bg-streak/10", border: "border-streak/20" },
+    { icon: Leaf, label: t("saved"), value: "3.2", unit: t("kg"), color: "text-primary", bg: "bg-primary/10", border: "border-primary/20" },
+    { icon: TrendingDown, label: "CO₂", value: "-8.1", unit: t("kg"), color: "text-success", bg: "bg-success/10", border: "border-success/20" },
   ];
 
   const nextLevel = LEVELS[Math.min(level.level, LEVELS.length - 1)];
