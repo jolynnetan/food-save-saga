@@ -674,7 +674,7 @@ export default function Challenges() {
             </div>
           ) : (
             <Textarea
-              placeholder="Describe how you completed this challenge..."
+              placeholder={t("describeCompletion")}
               value={proofText}
               onChange={(e) => setProofText(e.target.value)}
               rows={4}
