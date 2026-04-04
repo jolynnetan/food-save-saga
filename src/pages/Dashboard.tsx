@@ -365,8 +365,8 @@ export default function Dashboard() {
             <div className="bg-primary-foreground/15 rounded-xl p-2.5 w-fit group-hover:bg-primary-foreground/25 transition-colors duration-300">
               <Camera size={22} />
             </div>
-            <p className="font-bold text-[15px] mt-3">Scan leftovers</p>
-            <p className="text-sm text-primary-foreground/70 mt-0.5">Get recipe ideas</p>
+            <p className="font-bold text-[15px] mt-3">{t("scanLeftovers")}</p>
+            <p className="text-sm text-primary-foreground/70 mt-0.5">{t("getRecipeIdeas")}</p>
           </div>
           <ChevronRight size={18} className="opacity-50 self-end group-hover:translate-x-1 transition-transform duration-300" />
         </Link>
