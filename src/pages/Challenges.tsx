@@ -237,6 +237,7 @@ export default function Challenges() {
   const [showVoucher, setShowVoucher] = useState<Reward | null>(null);
   const { points, addPoints, spendPoints } = usePoints();
   const { toast } = useToast();
+  const t = useT();
 
   const refreshChallenges = useCallback(() => {
     const allDone = challenges.every(c => c.done);
